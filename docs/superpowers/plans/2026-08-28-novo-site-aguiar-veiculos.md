@@ -3929,7 +3929,7 @@ Expected: PASS
 
 ```bash
 cd "/Users/pedroipereira/Documents/websites /AguiarVeiculoss"
-git add site/src/lib/apiplacas.ts site/src/app/api/admin/placas site/src/components/admin/VehicleForm.tsx site/src/middleware.ts site/src/lib/auth.ts site/tests/lib/apiplacas.test.ts site/tests/app/api/admin/placas.test.ts site/tests/components/admin/VehicleForm.test.tsx site/tests/lib/auth.test.ts
+git add site/src/lib/apiplacas.ts site/src/app/api/admin/placas site/src/components/admin/VehicleForm.tsx site/tests/lib/apiplacas.test.ts site/tests/app/api/admin/placas.test.ts site/tests/components/admin/VehicleForm.test.tsx
 git commit -m "feat(site): add ApiPlacas plate lookup, server-only key, admin-only route"
 ```
 
