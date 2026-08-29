@@ -36,3 +36,30 @@ describe('VehicleForm', () => {
     expect(push).toHaveBeenCalledWith('/admin/veiculos')
   })
 })
+
+describe('VehicleForm — buscar por placa', () => {
+  it('prefills brand/model/color/fuel from a successful plate lookup', async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({
+      brand: 'Fiat', model: 'Argo', color: 'Prata', fuelType: 'Flex',
+    }), { status: 200 })) as any
+
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/placa/i), { target: { value: 'DEF4G56' } })
+    fireEvent.click(screen.getByRole('button', { name: /buscar dados/i }))
+
+    expect(await screen.findByDisplayValue('Fiat')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Argo')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Prata')).toBeInTheDocument()
+  })
+
+  it('shows a warning and keeps the form editable when the lookup fails', async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ error: 'Não foi possível buscar os dados da placa. Preencha manualmente.' }), { status: 502 })) as any
+
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/placa/i), { target: { value: 'ZZZ0000' } })
+    fireEvent.click(screen.getByRole('button', { name: /buscar dados/i }))
+
+    expect(await screen.findByText(/não foi possível buscar/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/marca/i)).not.toBeDisabled()
+  })
+})

@@ -1,0 +1,41 @@
+export interface ApiPlacasResult {
+  brand: string
+  model: string
+  yearFabrication?: number
+  yearModel?: number
+  color?: string
+  fuelType?: string
+}
+
+export class ApiPlacasError extends Error {}
+
+interface ApiPlacasRawResponse {
+  MARCA?: string
+  MODELO?: string
+  ano?: string
+  anoModelo?: string
+  cor?: string
+  combustivel?: string
+}
+
+export async function fetchVehicleDataByPlate(plate: string): Promise<ApiPlacasResult> {
+  const apiKey = process.env.APIPLACAS_API_KEY
+  if (!apiKey) throw new ApiPlacasError('APIPLACAS_API_KEY não configurada.')
+
+  const response = await fetch(`https://apiplacas.com.br/consulta/${encodeURIComponent(plate)}`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  })
+  if (!response.ok) throw new ApiPlacasError(`ApiPlacas retornou status ${response.status}`)
+
+  const data = (await response.json()) as ApiPlacasRawResponse
+  if (!data.MARCA || !data.MODELO) throw new ApiPlacasError('Resposta da ApiPlacas sem marca/modelo.')
+
+  return {
+    brand: data.MARCA,
+    model: data.MODELO,
+    yearFabrication: data.ano ? Number(data.ano) : undefined,
+    yearModel: data.anoModelo ? Number(data.anoModelo) : undefined,
+    color: data.cor,
+    fuelType: data.combustivel,
+  }
+}

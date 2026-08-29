@@ -17,6 +17,26 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
   const router = useRouter()
   const [imagePaths, setImagePaths] = useState<string[]>(images.map((image) => image.storage_path))
   const [error, setError] = useState<string | null>(null)
+  const [brand, setBrand] = useState(vehicle?.brand ?? '')
+  const [model, setModel] = useState(vehicle?.model ?? '')
+  const [color, setColor] = useState(vehicle?.color ?? '')
+  const [fuelType, setFuelType] = useState(vehicle?.fuel_type ?? '')
+  const [plate, setPlate] = useState(vehicle?.plate ?? '')
+  const [plateLookupError, setPlateLookupError] = useState<string | null>(null)
+
+  async function handlePlateLookup() {
+    setPlateLookupError(null)
+    const response = await fetch(`/api/admin/placas?plate=${encodeURIComponent(plate)}`)
+    const data = await response.json()
+    if (!response.ok) {
+      setPlateLookupError(data.error ?? 'Não foi possível buscar os dados da placa.')
+      return
+    }
+    setBrand(data.brand)
+    setModel(data.model)
+    if (data.color) setColor(data.color)
+    if (data.fuelType) setFuelType(data.fuelType)
+  }
 
   async function handleFilesSelected(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? [])
@@ -41,18 +61,18 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
     try {
       await adminSaveVehicle({
         id: vehicle?.id,
-        brand: String(formData.get('brand')),
-        model: String(formData.get('model')),
+        brand,
+        model,
         version: String(formData.get('version') || ''),
         yearModel: Number(formData.get('yearModel')),
         yearFabrication: Number(formData.get('yearFabrication')),
         mileageKm: Number(formData.get('mileageKm')),
         priceCents: Math.round(Number(formData.get('priceReais')) * 100),
-        fuelType: String(formData.get('fuelType') || ''),
+        fuelType,
         transmission: String(formData.get('transmission') || ''),
-        color: String(formData.get('color') || ''),
+        color,
         description: String(formData.get('description') || ''),
-        plate: String(formData.get('plate') || ''),
+        plate,
         imagePaths,
       })
       router.push('/admin/veiculos')
@@ -64,9 +84,9 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex max-w-2xl flex-col gap-3">
       <label htmlFor="brand">Marca</label>
-      <input id="brand" name="brand" defaultValue={vehicle?.brand} required className="rounded border p-2 text-graphite" />
+      <input id="brand" name="brand" value={brand} onChange={(e) => setBrand(e.target.value)} required className="rounded border p-2 text-graphite" />
       <label htmlFor="model">Modelo</label>
-      <input id="model" name="model" defaultValue={vehicle?.model} required className="rounded border p-2 text-graphite" />
+      <input id="model" name="model" value={model} onChange={(e) => setModel(e.target.value)} required className="rounded border p-2 text-graphite" />
       <label htmlFor="version">Versão</label>
       <input id="version" name="version" defaultValue={vehicle?.version ?? ''} className="rounded border p-2 text-graphite" />
       <label htmlFor="yearModel">Ano do modelo</label>
@@ -78,15 +98,21 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
       <label htmlFor="priceReais">Preço (em reais)</label>
       <input id="priceReais" name="priceReais" type="number" defaultValue={vehicle ? vehicle.price_cents / 100 : ''} required className="rounded border p-2 text-graphite" />
       <label htmlFor="fuelType">Combustível</label>
-      <input id="fuelType" name="fuelType" defaultValue={vehicle?.fuel_type ?? ''} className="rounded border p-2 text-graphite" />
+      <input id="fuelType" name="fuelType" value={fuelType} onChange={(e) => setFuelType(e.target.value)} className="rounded border p-2 text-graphite" />
       <label htmlFor="transmission">Câmbio</label>
       <input id="transmission" name="transmission" defaultValue={vehicle?.transmission ?? ''} className="rounded border p-2 text-graphite" />
       <label htmlFor="color">Cor</label>
-      <input id="color" name="color" defaultValue={vehicle?.color ?? ''} className="rounded border p-2 text-graphite" />
+      <input id="color" name="color" value={color} onChange={(e) => setColor(e.target.value)} className="rounded border p-2 text-graphite" />
       <label htmlFor="description">Descrição</label>
       <textarea id="description" name="description" defaultValue={vehicle?.description ?? ''} className="rounded border p-2 text-graphite" />
       <label htmlFor="plate">Placa (uso interno, nunca aparece no site)</label>
-      <input id="plate" name="plate" defaultValue={vehicle?.plate ?? ''} className="rounded border p-2 text-graphite" />
+      <div className="flex gap-2">
+        <input id="plate" name="plate" value={plate} onChange={(e) => setPlate(e.target.value)} className="rounded border p-2 text-graphite" />
+        <button type="button" onClick={handlePlateLookup} className="rounded border px-3 py-2 font-bold uppercase">
+          Buscar dados
+        </button>
+      </div>
+      {plateLookupError && <p className="text-aguiar-red">{plateLookupError}</p>}
 
       <label htmlFor="images">Fotos</label>
       <input id="images" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleFilesSelected} />
