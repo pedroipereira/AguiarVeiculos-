@@ -11,4 +11,14 @@ describe('parseVehicleFiltersFromSearchParams', () => {
     expect(parseVehicleFiltersFromSearchParams({})).toEqual({})
     expect(parseVehicleFiltersFromSearchParams({ brand: '' })).toEqual({})
   })
+
+  it('ignores a non-numeric year instead of producing NaN', () => {
+    expect(parseVehicleFiltersFromSearchParams({ year: 'abc' })).toEqual({})
+    expect(parseVehicleFiltersFromSearchParams({ brand: 'Fiat', year: 'abc' })).toEqual({ brand: 'Fiat' })
+  })
+
+  it('ignores non-numeric price params too', () => {
+    expect(parseVehicleFiltersFromSearchParams({ minPrice: 'barato', maxPrice: 'caro' })).toEqual({})
+    expect(parseVehicleFiltersFromSearchParams({ minPrice: 'Infinity' })).toEqual({})
+  })
 })

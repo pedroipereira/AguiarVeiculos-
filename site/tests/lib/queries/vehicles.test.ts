@@ -5,6 +5,7 @@ function makeFakeClient(rows: any[]) {
   const chain: any = {
     select: vi.fn(() => chain),
     eq: vi.fn(() => chain),
+    ilike: vi.fn(() => chain),
     gte: vi.fn(() => chain),
     lte: vi.fn(() => chain),
     order: vi.fn(() => chain),
@@ -12,7 +13,7 @@ function makeFakeClient(rows: any[]) {
     maybeSingle: vi.fn(async () => ({ data: rows[0] ?? null, error: null })),
     then: (resolve: any) => resolve({ data: rows, error: null }),
   }
-  return { from: vi.fn(() => chain) }
+  return { from: vi.fn(() => chain), chain }
 }
 
 describe('getFeaturedVehicles', () => {
@@ -30,6 +31,21 @@ describe('getAvailableVehicles', () => {
     const result = await getAvailableVehicles(client as any, { brand: 'Fiat' })
     expect(result).toEqual([{ id: '2', slug: 'b', brand: 'Fiat' }])
   })
+
+  it('matches the brand case-insensitively and partially with ilike', async () => {
+    const client = makeFakeClient([{ id: '2', slug: 'b', brand: 'Fiat' }])
+    await getAvailableVehicles(client as any, { brand: 'fiat' })
+    expect(client.chain.ilike).toHaveBeenCalledWith('brand', '%fiat%')
+    expect(client.chain.eq).not.toHaveBeenCalledWith('brand', expect.anything())
+  })
+
+  it('keeps year as an exact match and price as a range', async () => {
+    const client = makeFakeClient([])
+    await getAvailableVehicles(client as any, { year: 2023, minPriceCents: 5000000, maxPriceCents: 9000000 })
+    expect(client.chain.eq).toHaveBeenCalledWith('year_model', 2023)
+    expect(client.chain.gte).toHaveBeenCalledWith('price_cents', 5000000)
+    expect(client.chain.lte).toHaveBeenCalledWith('price_cents', 9000000)
+  })
 })
 
 describe('getVehicleBySlug', () => {
@@ -43,5 +59,12 @@ describe('getVehicleBySlug', () => {
     const client = makeFakeClient([{ id: '3', slug: 'vw-polo-2026' }])
     const result = await getVehicleBySlug(client as any, 'vw-polo-2026')
     expect(result).toEqual({ id: '3', slug: 'vw-polo-2026' })
+  })
+
+  it('excludes sold vehicles so their detail page falls through to the friendly 404', async () => {
+    const client = makeFakeClient([])
+    await getVehicleBySlug(client as any, 'vw-polo-2026')
+    expect(client.chain.eq).toHaveBeenCalledWith('slug', 'vw-polo-2026')
+    expect(client.chain.eq).toHaveBeenCalledWith('status', 'available')
   })
 })

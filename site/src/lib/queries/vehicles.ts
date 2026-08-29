@@ -22,7 +22,9 @@ export async function getFeaturedVehicles(client: SupabaseClient, limit = 6): Pr
 
 export async function getAvailableVehicles(client: SupabaseClient, filters: VehicleFilters = {}): Promise<VehiclePublic[]> {
   let query = client.from('vehicles_public').select('*').eq('status', 'available')
-  if (filters.brand) query = query.eq('brand', filters.brand)
+  // Case-insensitive partial match: the brand filter is free-text user input,
+  // so "fiat" must still find the vehicles stored as "Fiat".
+  if (filters.brand) query = query.ilike('brand', `%${filters.brand}%`)
   if (filters.year) query = query.eq('year_model', filters.year)
   if (filters.minPriceCents != null) query = query.gte('price_cents', filters.minPriceCents)
   if (filters.maxPriceCents != null) query = query.lte('price_cents', filters.maxPriceCents)
@@ -32,7 +34,14 @@ export async function getAvailableVehicles(client: SupabaseClient, filters: Vehi
 }
 
 export async function getVehicleBySlug(client: SupabaseClient, slug: string): Promise<VehiclePublic | null> {
-  const { data, error } = await client.from('vehicles_public').select('*').eq('slug', slug).maybeSingle()
+  // A sold vehicle must fall through to the friendly 404 (spec §Erros), so it is
+  // excluded here rather than rendered as a still-for-sale detail page.
+  const { data, error } = await client
+    .from('vehicles_public')
+    .select('*')
+    .eq('slug', slug)
+    .eq('status', 'available')
+    .maybeSingle()
   if (error) throw error
   return (data as VehiclePublic) ?? null
 }
