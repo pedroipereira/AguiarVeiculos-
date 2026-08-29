@@ -42,3 +42,9 @@ export async function getAllVehiclesAdmin(client: SupabaseClient): Promise<Vehic
   if (error) throw error
   return data as Vehicle[]
 }
+
+export async function getVehicleByIdAdmin(client: SupabaseClient, id: string): Promise<Vehicle | null> {
+  const { data, error } = await client.from('vehicles').select('*').eq('id', id).maybeSingle()
+  if (error) throw error
+  return (data as Vehicle) ?? null
+}
