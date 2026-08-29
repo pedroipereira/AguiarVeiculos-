@@ -21,7 +21,7 @@ vi.mock('@/lib/supabase/server', () => ({
   })),
 }))
 
-import Home from '@/app/page'
+import Home from '@/app/(public)/page'
 
 describe('Home page', () => {
   it('renders sections in the spec order: hero, diferenciais, por que Aguiar, galeria, contato', async () => {

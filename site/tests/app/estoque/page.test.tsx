@@ -21,7 +21,7 @@ vi.mock('@/lib/supabase/server', () => ({
   })),
 }))
 
-import EstoquePage from '@/app/estoque/page'
+import EstoquePage from '@/app/(public)/estoque/page'
 
 describe('/estoque page', () => {
   it('lists available vehicles with a link to their detail page', async () => {
