@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { VehiclePublic } from '../types'
+import type { Vehicle, VehiclePublic } from '../types'
 
 export interface VehicleFilters {
   brand?: string
@@ -35,4 +35,10 @@ export async function getVehicleBySlug(client: SupabaseClient, slug: string): Pr
   const { data, error } = await client.from('vehicles_public').select('*').eq('slug', slug).maybeSingle()
   if (error) throw error
   return (data as VehiclePublic) ?? null
+}
+
+export async function getAllVehiclesAdmin(client: SupabaseClient): Promise<Vehicle[]> {
+  const { data, error } = await client.from('vehicles').select('*').order('created_at', { ascending: false })
+  if (error) throw error
+  return data as Vehicle[]
 }
