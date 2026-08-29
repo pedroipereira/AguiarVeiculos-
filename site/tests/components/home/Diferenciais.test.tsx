@@ -6,7 +6,7 @@ describe('Diferenciais', () => {
     render(<Diferenciais />)
     expect(screen.getByText(/procedência garantida/i)).toBeInTheDocument()
     expect(screen.getByText(/financiamento em até 60x/i)).toBeInTheDocument()
-    expect(screen.getByText(/mais de 10 bancos/i)).toBeInTheDocument()
+    expect(screen.getByText('Mais de 10 bancos parceiros')).toBeInTheDocument()
     expect(screen.getByText(/aceita seu carro ou moto na troca/i)).toBeInTheDocument()
     expect(screen.getByText(/revisados e higienizados/i)).toBeInTheDocument()
   })

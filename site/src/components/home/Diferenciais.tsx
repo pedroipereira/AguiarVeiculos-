@@ -4,7 +4,7 @@ import { Section } from '@/components/ui/Section'
 const ITEMS = [
   { title: 'Procedência garantida', text: 'Todo veículo passa por checagem de procedência antes de entrar no estoque.' },
   { title: 'Financiamento em até 60x', text: 'Parcelamos sua entrada e financiamos em até 60 vezes.' },
-  { title: 'Mais de 10 bancos parceiros', text: 'Trabalhamos com diversas instituições financeiras para aumentar sua chance de aprovação.' },
+  { title: 'Mais de 10 bancos parceiros', text: 'Trabalhamos com mais de 10 bancos para aumentar sua chance de aprovação.' },
   { title: 'Aceita seu carro ou moto na troca', text: 'Recebemos seu usado como parte do pagamento.' },
   { title: 'Revisados e higienizados', text: 'Veículos revisados, higienizados e com garantia.' },
 ]
