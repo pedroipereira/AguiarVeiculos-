@@ -14,11 +14,15 @@ vi.mock('@/lib/supabase/browser', () => ({
 import { TestimonialForm } from '@/components/admin/TestimonialForm'
 
 describe('TestimonialForm', () => {
+  beforeEach(() => { upload.mockClear(); adminSaveTestimonial.mockClear(); push.mockClear() })
+
   it('uploads an image, fills the caption, and saves', async () => {
     render(<TestimonialForm />)
     const file = new File(['x'], 'cliente.jpg', { type: 'image/jpeg' })
     fireEvent.change(screen.getByLabelText(/imagem/i), { target: { files: [file] } })
-    await waitFor(() => expect(upload).toHaveBeenCalled())
+    // Wait for the resulting public URL to land in state, not just for the upload
+    // call — otherwise the submit below can race the async state update.
+    await waitFor(() => expect(getPublicUrl).toHaveBeenCalled())
 
     fireEvent.change(screen.getByLabelText(/legenda/i), { target: { value: 'Mais um sonho realizado! 🙏' } })
     fireEvent.click(screen.getByRole('button', { name: /salvar depoimento/i }))
@@ -26,6 +30,25 @@ describe('TestimonialForm', () => {
     await waitFor(() => expect(adminSaveTestimonial).toHaveBeenCalledWith(
       expect.objectContaining({ caption: 'Mais um sonho realizado! 🙏', imageUrl: 'https://x/1.jpg' }),
     ))
-    expect(push).toHaveBeenCalledWith('/admin/depoimentos')
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/admin/depoimentos'))
+  })
+
+  it('rejects an oversized image with a message and never uploads it', async () => {
+    render(<TestimonialForm />)
+    const big = new File(['x'], 'enorme.jpg', { type: 'image/jpeg' })
+    Object.defineProperty(big, 'size', { value: 6 * 1024 * 1024 })
+    fireEvent.change(screen.getByLabelText(/imagem/i), { target: { files: [big] } })
+
+    expect(await screen.findByText(/passa de 5 mb/i)).toBeInTheDocument()
+    expect(upload).not.toHaveBeenCalled()
+  })
+
+  it('rejects a non-image file', async () => {
+    render(<TestimonialForm />)
+    const pdf = new File(['x'], 'documento.pdf', { type: 'application/pdf' })
+    fireEvent.change(screen.getByLabelText(/imagem/i), { target: { files: [pdf] } })
+
+    expect(await screen.findByText(/não é um formato aceito/i)).toBeInTheDocument()
+    expect(upload).not.toHaveBeenCalled()
   })
 })

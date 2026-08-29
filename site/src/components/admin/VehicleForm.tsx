@@ -3,7 +3,7 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
-import { uploadVehicleImage } from '@/lib/storage'
+import { uploadVehicleImage, validateImageFile } from '@/lib/storage'
 import { adminSaveVehicle } from '@/app/actions/vehicles'
 import type { Vehicle, VehicleImage } from '@/lib/types'
 import { Button } from '@/components/ui/Button'
@@ -23,6 +23,7 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
   const [fuelType, setFuelType] = useState(vehicle?.fuel_type ?? '')
   const [plate, setPlate] = useState(vehicle?.plate ?? '')
   const [plateLookupError, setPlateLookupError] = useState<string | null>(null)
+  const [imageError, setImageError] = useState<string | null>(null)
 
   async function handlePlateLookup() {
     setPlateLookupError(null)
@@ -40,8 +41,20 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
 
   async function handleFilesSelected(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? [])
+    setImageError(null)
+
+    const accepted: File[] = []
+    const rejections: string[] = []
+    for (const file of files) {
+      const problem = validateImageFile(file)
+      if (problem) rejections.push(problem)
+      else accepted.push(file)
+    }
+    if (rejections.length > 0) setImageError(rejections.join(' '))
+    if (accepted.length === 0) return
+
     const client = createBrowserSupabaseClient()
-    const uploaded = await Promise.all(files.map((file) => uploadVehicleImage(client, file)))
+    const uploaded = await Promise.all(accepted.map((file) => uploadVehicleImage(client, file)))
     setImagePaths((current) => [...current, ...uploaded])
   }
 
@@ -116,6 +129,7 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
 
       <label htmlFor="images">Fotos</label>
       <input id="images" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleFilesSelected} />
+      {imageError && <p className="text-aguiar-red">{imageError}</p>}
       <ul className="flex flex-col gap-1">
         {imagePaths.map((path, index) => (
           <li key={path} className="flex items-center gap-2 text-sm">

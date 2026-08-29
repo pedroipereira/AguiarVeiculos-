@@ -27,6 +27,15 @@ describe('saveVehicle', () => {
     expect(result).toEqual({ id: 'new-id' })
   })
 
+  it('sets the slug only when creating', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+    })
+    expect(chain.insert).toHaveBeenCalledWith(expect.objectContaining({ slug: expect.stringMatching(/^fiat-argo-2023-[0-9a-f]{8}$/) }))
+  })
+
   it('updates an existing vehicle by id', async () => {
     const { from, chain } = makeClient()
     await saveVehicle({ from } as any, {
@@ -35,6 +44,35 @@ describe('saveVehicle', () => {
     })
     expect(chain.update).toHaveBeenCalled()
     expect(chain.eq).toHaveBeenCalledWith('id', 'existing-id')
+  })
+
+  it('never rewrites the slug on edit — already-shared links must keep working', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      id: 'existing-id', brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+    })
+    const payload = chain.update.mock.calls[0][0]
+    expect(payload).not.toHaveProperty('slug')
+    expect(payload).toMatchObject({ brand: 'Fiat', model: 'Argo', year_model: 2023 })
+  })
+
+  it('rejects an invalid payload instead of writing it to the database', async () => {
+    const { from, chain } = makeClient()
+    await expect(saveVehicle({ from } as any, {
+      brand: '', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+    } as any)).rejects.toThrow()
+    expect(chain.insert).not.toHaveBeenCalled()
+  })
+
+  it('rejects a NaN year (blank number field) instead of writing NaN to a not null column', async () => {
+    const { from, chain } = makeClient()
+    await expect(saveVehicle({ from } as any, {
+      brand: 'Fiat', model: 'Argo', yearModel: Number('abc'), yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+    } as any)).rejects.toThrow()
+    expect(chain.insert).not.toHaveBeenCalled()
   })
 })
 

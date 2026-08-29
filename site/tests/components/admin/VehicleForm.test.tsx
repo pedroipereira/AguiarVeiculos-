@@ -63,3 +63,36 @@ describe('VehicleForm — buscar por placa', () => {
     expect(screen.getByLabelText(/marca/i)).not.toBeDisabled()
   })
 })
+
+describe('VehicleForm — validação de upload', () => {
+  beforeEach(() => { upload.mockClear() })
+
+  it('rejects a file over 5 MB with a message and never uploads it', async () => {
+    render(<VehicleForm />)
+    const big = new File(['x'], 'enorme.jpg', { type: 'image/jpeg' })
+    Object.defineProperty(big, 'size', { value: 6 * 1024 * 1024 })
+    fireEvent.change(screen.getByLabelText(/fotos/i), { target: { files: [big] } })
+
+    expect(await screen.findByText(/passa de 5 mb/i)).toBeInTheDocument()
+    expect(upload).not.toHaveBeenCalled()
+  })
+
+  it('rejects a file whose type is not jpg/png/webp, even though `accept` can be bypassed', async () => {
+    render(<VehicleForm />)
+    const pdf = new File(['x'], 'documento.pdf', { type: 'application/pdf' })
+    fireEvent.change(screen.getByLabelText(/fotos/i), { target: { files: [pdf] } })
+
+    expect(await screen.findByText(/não é um formato aceito/i)).toBeInTheDocument()
+    expect(upload).not.toHaveBeenCalled()
+  })
+
+  it('still uploads the valid files when only some of the selection is rejected', async () => {
+    render(<VehicleForm />)
+    const ok = new File(['x'], 'boa.jpg', { type: 'image/jpeg' })
+    const bad = new File(['x'], 'documento.pdf', { type: 'application/pdf' })
+    fireEvent.change(screen.getByLabelText(/fotos/i), { target: { files: [ok, bad] } })
+
+    expect(await screen.findByText(/não é um formato aceito/i)).toBeInTheDocument()
+    await waitFor(() => expect(upload).toHaveBeenCalledTimes(1))
+  })
+})
