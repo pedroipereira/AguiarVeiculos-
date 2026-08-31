@@ -27,7 +27,7 @@ vi.mock('@/lib/supabase/server', () => ({
         gte: function () { return this },
         lte: function () { return this },
         order: async () => ({
-          data: [{ id: '1', slug: 'fiat-argo-2023', brand: 'Fiat', model: 'Argo', version: 'Drive', year_model: 2023, price_cents: 6490000 }],
+          data: [{ id: '1', slug: 'fiat-argo-2023', brand: 'Fiat', model: 'Argo', version: 'Drive', year_model: 2023, price_cents: 6490000, mileage_km: 32000 }],
           error: null,
         }),
       }

@@ -13,15 +13,25 @@ export function buildVehicleInterestMessage(
   return `Olá! Tenho interesse no ${label} que vi no site da Aguiar Veículos. Pode me passar mais informações?`
 }
 
-export function buildFinancingMessage(data: { name: string; downPayment?: string; vehicleLabel?: string }): string {
-  const parts = [
-    `Olá! Meu nome é ${data.name} e quero simular um financiamento na Aguiar Veículos.`,
-  ]
-  if (data.vehicleLabel) parts.push(`Carro de interesse: ${data.vehicleLabel}.`)
-  if (data.downPayment) parts.push(`Entrada disponível: ${data.downPayment}.`)
-  return parts.join(' ')
+export function buildFinancingMessage(data: {
+  name: string
+  vehicleLabel: string
+  downPayment: string
+  installments: number
+}): string {
+  return `Olá! Meu nome é ${data.name} e queria simular um financiamento. Tenho interesse no carro ${data.vehicleLabel} e possuo uma entrada de ${data.downPayment} sendo ${data.installments} parcelas.`
 }
 
-export function buildTradeInMessage(data: { name: string; brand: string; model: string; year: number; mileageKm: number }): string {
-  return `Olá! Meu nome é ${data.name} e quero avaliar meu ${data.brand} ${data.model} ${data.year} (${data.mileageKm} km rodados) para troca na Aguiar Veículos.`
+export function buildTradeInMessage(data: {
+  name: string
+  model: string
+  year: number
+  mileageKm: number
+  observations?: string
+}): string {
+  const parts = [
+    `Olá! Meu nome é ${data.name} e quero avaliar meu ${data.model} ${data.year} (${data.mileageKm} km rodados) para dar de entrada na Aguiar Veículos.`,
+  ]
+  if (data.observations) parts.push(`Observações: ${data.observations}.`)
+  return parts.join(' ')
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getVehicleImages, getPrimaryImageUrlsByVehicleIds } from '@/lib/queries/vehicle-images'
+import { getVehicleImages, getPrimaryImageUrlsByVehicleIds, getImageCountsByVehicleIds } from '@/lib/queries/vehicle-images'
 
 function makeFakeClient(rows: any[]) {
   const chain: any = {
@@ -57,6 +57,31 @@ describe('getPrimaryImageUrlsByVehicleIds', () => {
   it('skips the query entirely when there are no vehicle ids', async () => {
     const client = makeFakeClient([])
     const result = await getPrimaryImageUrlsByVehicleIds(client as any, [])
+    expect(result).toEqual({})
+    expect(client.from).not.toHaveBeenCalled()
+  })
+})
+
+describe('getImageCountsByVehicleIds', () => {
+  it('counts photos per vehicle from a single query', async () => {
+    const chain: any = {
+      select: vi.fn(() => chain),
+      in: vi.fn(() => chain),
+      then: (resolve: (value: { data: any[]; error: null }) => void) =>
+        resolve({ data: [{ vehicle_id: 'v1' }, { vehicle_id: 'v1' }, { vehicle_id: 'v2' }], error: null }),
+    }
+    const client = { from: vi.fn(() => chain) }
+
+    const result = await getImageCountsByVehicleIds(client as any, ['v1', 'v2'])
+
+    expect(client.from).toHaveBeenCalledWith('vehicle_images')
+    expect(chain.in).toHaveBeenCalledWith('vehicle_id', ['v1', 'v2'])
+    expect(result).toEqual({ v1: 2, v2: 1 })
+  })
+
+  it('skips the query entirely when there are no vehicle ids', async () => {
+    const client = { from: vi.fn() }
+    const result = await getImageCountsByVehicleIds(client as any, [])
     expect(result).toEqual({})
     expect(client.from).not.toHaveBeenCalled()
   })

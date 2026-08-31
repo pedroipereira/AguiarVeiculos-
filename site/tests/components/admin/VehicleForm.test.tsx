@@ -28,12 +28,83 @@ describe('VehicleForm', () => {
     fireEvent.change(screen.getByLabelText(/fotos/i), { target: { files: [file] } })
     await waitFor(() => expect(upload).toHaveBeenCalled())
 
-    fireEvent.click(screen.getByRole('button', { name: /salvar veículo/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
 
     await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
       expect.objectContaining({ brand: 'Fiat', model: 'Argo', priceCents: 6490000, imagePaths: expect.arrayContaining([expect.stringContaining('argo.jpg')]) }),
     ))
     expect(push).toHaveBeenCalledWith('/admin/veiculos')
+  })
+
+  it('saves motor, fuel tank, and seating capacity when filled in', async () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/motor/i), { target: { value: '1.6' } })
+    fireEvent.change(screen.getByLabelText(/tanque de combustível/i), { target: { value: '55' } })
+    fireEvent.change(screen.getByLabelText(/quantidade de pessoas/i), { target: { value: '5' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ engine: '1.6', fuelTankLiters: 55, seatingCapacity: 5 } as any),
+    ))
+  })
+
+  it('saves body type, doors, and horsepower when filled in', async () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/tipo de carroceria/i), { target: { value: 'Hatch' } })
+    fireEvent.change(screen.getByLabelText(/portas/i), { target: { value: '4' } })
+    fireEvent.change(screen.getByLabelText(/potência/i), { target: { value: '115' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ bodyType: 'Hatch', doors: 4, horsepower: 115 } as any),
+    ))
+  })
+
+  it('marks the vehicle as featured when "Destacar na Home" is checked', async () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.click(screen.getByLabelText(/destacar na home/i))
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ isFeatured: true } as any),
+    ))
+  })
+
+  it('leaves the vehicle unfeatured when "Destacar na Home" is left unchecked', async () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ isFeatured: false } as any),
+    ))
   })
 })
 
@@ -94,5 +165,32 @@ describe('VehicleForm — validação de upload', () => {
 
     expect(await screen.findByText(/não é um formato aceito/i)).toBeInTheDocument()
     await waitFor(() => expect(upload).toHaveBeenCalledTimes(1))
+  })
+
+  it('shows the 15-photo cap in the label', () => {
+    render(<VehicleForm />)
+    expect(screen.getByText(/fotos do veículo \(até 15\)/i)).toBeInTheDocument()
+  })
+
+  it('only uploads up to the remaining slots when a selection would exceed the 15-photo cap', async () => {
+    const images = Array.from({ length: 14 }, (_, i) => ({
+      id: String(i), vehicle_id: 'v1', storage_path: `existing-${i}.jpg`, display_order: i,
+    }))
+    render(<VehicleForm images={images as any} />)
+    const first = new File(['x'], 'primeira.jpg', { type: 'image/jpeg' })
+    const second = new File(['x'], 'segunda.jpg', { type: 'image/jpeg' })
+    fireEvent.change(screen.getByLabelText(/fotos/i), { target: { files: [first, second] } })
+
+    expect(await screen.findByText(/limite de 15 fotos/i)).toBeInTheDocument()
+    await waitFor(() => expect(upload).toHaveBeenCalledTimes(1))
+    expect(upload).toHaveBeenCalledWith(expect.stringContaining('primeira.jpg'), first)
+  })
+
+  it('disables the file input and rejects new uploads once the vehicle already has 15 photos', async () => {
+    const images = Array.from({ length: 15 }, (_, i) => ({
+      id: String(i), vehicle_id: 'v1', storage_path: `existing-${i}.jpg`, display_order: i,
+    }))
+    render(<VehicleForm images={images as any} />)
+    expect(screen.getByLabelText(/fotos/i)).toBeDisabled()
   })
 })

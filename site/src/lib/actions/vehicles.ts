@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { VehicleStatus } from '../types'
 import { vehicleFormSchema, type VehicleFormValues } from '../validation'
 import { buildVehicleSlug } from '../format'
+import { normalizeTransmission, normalizeFuelType, normalizeColor } from '../normalize'
 
 export interface SaveVehicleInput extends VehicleFormValues {
   id?: string
@@ -21,11 +22,21 @@ export async function saveVehicle(client: SupabaseClient, input: SaveVehicleInpu
     year_fabrication: values.yearFabrication,
     mileage_km: values.mileageKm,
     price_cents: values.priceCents,
-    fuel_type: values.fuelType ?? null,
-    transmission: values.transmission ?? null,
-    color: values.color ?? null,
+    // Normalized so admins typing "automatico"/"Automático"/"AUTOMÁTICO" (and
+    // similar case/accent variants for fuel and color) all collapse to one
+    // canonical stored value, instead of fragmenting the public filter pills.
+    fuel_type: normalizeFuelType(values.fuelType),
+    transmission: normalizeTransmission(values.transmission),
+    color: normalizeColor(values.color),
     description: values.description ?? null,
+    engine: values.engine ?? null,
+    fuel_tank_liters: values.fuelTankLiters ?? null,
+    seating_capacity: values.seatingCapacity ?? null,
+    body_type: values.bodyType ?? null,
+    doors: values.doors ?? null,
+    horsepower: values.horsepower ?? null,
     plate: values.plate ?? null,
+    is_featured: values.isFeatured ?? false,
   }
 
   let vehicleId = input.id

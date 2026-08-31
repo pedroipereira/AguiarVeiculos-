@@ -33,6 +33,7 @@ Manter a essência (caloroso, emotivo, grato, comunitário, viés de fé) — ma
 - "Procedência, confiança e compromisso em cada venda"
 - "Seu próximo carro está aqui"
 - "Km de felicidades"
+- "Seu próximo carro merece uma escolha à altura" — cotada para a seção Diferenciais da home (2026-08-29), aprovada mas não usada ainda; guardar para uso futuro (ex.: seção Empresa/Fundador ou outra peça).
 
 ## Palavras ou expressões proibidas
 > [A DEFINIR] — não identificado nas legendas analisadas. Perguntar ao Antonio se há algo que a marca nunca diz (ex.: nunca "barato", nunca comparar com concorrente por nome).

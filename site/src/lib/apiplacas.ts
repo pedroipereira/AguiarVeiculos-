@@ -19,8 +19,8 @@ interface ApiPlacasRawResponse {
 }
 
 export async function fetchVehicleDataByPlate(plate: string): Promise<ApiPlacasResult> {
-  const apiKey = process.env.APIPLACAS_API_KEY
-  if (!apiKey) throw new ApiPlacasError('APIPLACAS_API_KEY não configurada.')
+  const apiKey = process.env.APIPLACAS_TOKEN
+  if (!apiKey) throw new ApiPlacasError('APIPLACAS_TOKEN não configurada.')
 
   const response = await fetch(`https://apiplacas.com.br/consulta/${encodeURIComponent(plate)}`, {
     headers: { Authorization: `Bearer ${apiKey}` },

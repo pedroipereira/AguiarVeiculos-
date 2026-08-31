@@ -14,6 +14,12 @@ export interface VehiclePublic {
   transmission: string | null
   color: string | null
   description: string | null
+  engine: string | null
+  fuel_tank_liters: number | null
+  seating_capacity: number | null
+  body_type: string | null
+  doors: number | null
+  horsepower: number | null
   is_featured: boolean
   status: VehicleStatus
   created_at: string
@@ -37,6 +43,16 @@ export interface Testimonial {
   caption: string
   display_order: number
   is_published: boolean
+  created_at: string
+}
+
+export type SiteImageSlot = 'hero' | 'galeria' | 'sobre'
+
+export interface SiteImage {
+  id: string
+  slot: SiteImageSlot
+  storage_path: string
+  display_order: number
   created_at: string
 }
 

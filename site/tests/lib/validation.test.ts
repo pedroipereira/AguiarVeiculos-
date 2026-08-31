@@ -22,17 +22,61 @@ describe('vehicleFormSchema', () => {
 })
 
 describe('financingLeadSchema', () => {
-  it('requires name and phone', () => {
-    expect(financingLeadSchema.safeParse({ name: '', phone: '' }).success).toBe(false)
-    expect(financingLeadSchema.safeParse({ name: 'Maria', phone: '98999999999' }).success).toBe(true)
+  it('requires name, vehicle of interest, down payment, and installments', () => {
+    expect(financingLeadSchema.safeParse({ name: '' }).success).toBe(false)
+    expect(
+      financingLeadSchema.safeParse({
+        name: 'Maria',
+        vehicleLabel: 'Fiat Argo 2023',
+        downPayment: 'R$ 5.000',
+        installments: '48',
+      }).success,
+    ).toBe(true)
+  })
+
+  it('rejects a missing vehicle of interest, down payment, or installments', () => {
+    expect(
+      financingLeadSchema.safeParse({ name: 'Maria', vehicleLabel: '', downPayment: 'R$ 5.000', installments: '48' })
+        .success,
+    ).toBe(false)
+    expect(
+      financingLeadSchema.safeParse({ name: 'Maria', vehicleLabel: 'Fiat Argo 2023', downPayment: '', installments: '48' })
+        .success,
+    ).toBe(false)
+    expect(
+      financingLeadSchema.safeParse({ name: 'Maria', vehicleLabel: 'Fiat Argo 2023', downPayment: 'R$ 5.000' }).success,
+    ).toBe(false)
+  })
+
+  it('coerces installments to a number', () => {
+    const result = financingLeadSchema.safeParse({
+      name: 'Maria',
+      vehicleLabel: 'Fiat Argo 2023',
+      downPayment: 'R$ 5.000',
+      installments: '48',
+    })
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.installments).toBe(48)
   })
 })
 
 describe('tradeInLeadSchema', () => {
-  it('requires vehicle details plus name and phone', () => {
+  it('requires name and vehicle details, with observations optional', () => {
     const result = tradeInLeadSchema.safeParse({
-      name: 'João', phone: '98988888888', brand: 'Chevrolet', model: 'Onix', year: 2019, mileageKm: 60000,
+      name: 'João', model: 'Onix', year: 2019, mileageKm: 60000,
     })
     expect(result.success).toBe(true)
+  })
+
+  it('accepts observations when provided', () => {
+    const result = tradeInLeadSchema.safeParse({
+      name: 'João', model: 'Onix', year: 2019, mileageKm: 60000, observations: 'Único dono',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects a missing model', () => {
+    const result = tradeInLeadSchema.safeParse({ name: 'João', model: '', year: 2019, mileageKm: 60000 })
+    expect(result.success).toBe(false)
   })
 })

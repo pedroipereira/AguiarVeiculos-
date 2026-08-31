@@ -13,5 +13,7 @@ crescer vendas/estoque, expandir alcance regional, aumentar seguidores, lançar 
 
 ## Onde atua
 - Instagram: [@aguiarveiculospk](https://www.instagram.com/aguiarveiculospk) (~25 mil seguidores em meados de 2026)
-- Loja física: BR-135, Campo Dantas, Presidente Dutra - MA
+- Loja física: Av. Campo Dantas, 1689, Presidente Dutra - MA (ao lado do Posto Full, na saída para São Domingos)
 - WhatsApp: (98) 99103-0107
+- Email: aguiarveiculospdutra@hotmail.com
+- Horário de funcionamento: segunda a sexta, 7h30 às 17h30; sábado, 8h às 13h

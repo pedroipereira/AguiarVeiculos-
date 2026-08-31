@@ -18,7 +18,7 @@ function fakeClient(rows: any[], imageRows: any[] = []) {
 
 const polo = {
   id: '1', slug: 'vw-polo-2026', brand: 'Volkswagen', model: 'Polo',
-  version: 'Comfortline', year_model: 2026, price_cents: 8990000,
+  version: 'Comfortline', year_model: 2026, price_cents: 8990000, mileage_km: 8000,
 }
 
 describe('EstoqueDestaque', () => {
@@ -27,7 +27,7 @@ describe('EstoqueDestaque', () => {
     render(await EstoqueDestaque({ client }))
     expect(screen.getByText(/volkswagen polo/i)).toBeInTheDocument()
     expect(screen.getByText('R$ 89.900')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /ver todo o estoque/i })).toHaveAttribute('href', '/estoque')
+    expect(screen.getByRole('link', { name: /veja todos os nossos veículos/i })).toHaveAttribute('href', '/estoque')
   })
 
   it('renders the primary photo when the vehicle has images', async () => {

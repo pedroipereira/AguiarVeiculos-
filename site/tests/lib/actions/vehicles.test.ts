@@ -27,6 +27,64 @@ describe('saveVehicle', () => {
     expect(result).toEqual({ id: 'new-id' })
   })
 
+  it('normalizes transmission, fuel type, and color before saving', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+      transmission: 'automatico', fuelType: 'eletrico', color: 'BRANCO',
+    })
+    expect(chain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ transmission: 'Automático', fuel_type: 'Elétrico', color: 'Branco' }),
+    )
+  })
+
+  it('includes engine, fuel tank, and seating capacity when provided', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+      engine: '1.6', fuelTankLiters: 55, seatingCapacity: 5,
+    })
+    expect(chain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ engine: '1.6', fuel_tank_liters: 55, seating_capacity: 5 }),
+    )
+  })
+
+  it('writes null for engine, fuel tank, and seating capacity when not provided', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+    })
+    expect(chain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ engine: null, fuel_tank_liters: null, seating_capacity: null }),
+    )
+  })
+
+  it('includes body type, doors, and horsepower when provided', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+      bodyType: 'Hatch', doors: 4, horsepower: 115,
+    })
+    expect(chain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ body_type: 'Hatch', doors: 4, horsepower: 115 }),
+    )
+  })
+
+  it('writes null for body type, doors, and horsepower when not provided', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+    })
+    expect(chain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ body_type: null, doors: null, horsepower: null }),
+    )
+  })
+
   it('sets the slug only when creating', async () => {
     const { from, chain } = makeClient()
     await saveVehicle({ from } as any, {

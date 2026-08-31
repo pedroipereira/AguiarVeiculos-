@@ -23,9 +23,15 @@ Site institucional premium e consultivo: cura seletiva de estoque ("não enchemo
 ## Diferenciais que a marca sempre reforça
 - Procedência garantida dos veículos
 - Veículos revisados e higienizados, com garantia
+- Todo veículo passa por seleção, revisão e higienização antes de entrar no estoque
+- 90 dias de garantia para motor e câmbio em todos os veículos vendidos
+- Veículo permanece em nome da loja até a transferência ser concluída (segurança pro comprador)
+- Mais de 15 anos no mesmo endereço em Presidente Dutra - MA
 - IPVA pago / transferência grátis / tanque cheio em campanhas específicas
 - Atendimento próximo, "de confiança"
 - Prêmios: "Melhor Concessionária de Presidente Dutra e Região", "Melhores do Ano" (Embracep)
+
+> Fonte: texto institucional fornecido pelo Antonio em 2026-08-29, usado na seção Hero do site.
 
 ## Dados relevantes
 Ver `contexto/dados.md`.

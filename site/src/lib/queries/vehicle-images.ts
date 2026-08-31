@@ -39,3 +39,20 @@ export async function getPrimaryImageUrlsByVehicleIds(
   }
   return urls
 }
+
+/** Batched photo count per vehicle, for the "📷 N" badge on catalog cards. */
+export async function getImageCountsByVehicleIds(
+  client: SupabaseClient,
+  vehicleIds: string[],
+): Promise<Record<string, number>> {
+  if (vehicleIds.length === 0) return {}
+
+  const { data, error } = await client.from('vehicle_images').select('vehicle_id').in('vehicle_id', vehicleIds)
+  if (error) throw error
+
+  const counts: Record<string, number> = {}
+  for (const row of (data ?? []) as Pick<VehicleImage, 'vehicle_id'>[]) {
+    counts[row.vehicle_id] = (counts[row.vehicle_id] ?? 0) + 1
+  }
+  return counts
+}

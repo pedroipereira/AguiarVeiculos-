@@ -24,19 +24,17 @@ vi.mock('@/lib/supabase/server', () => ({
 import Home from '@/app/(public)/page'
 
 describe('Home page', () => {
-  it('renders sections in the spec order: hero, diferenciais, por que Aguiar, galeria, contato', async () => {
+  it('renders sections in the spec order: hero, estoque, financiamento, sobre a loja, galeria, contato', async () => {
     render(await Home())
     const headings = screen.getAllByRole('heading', { level: 1 }).concat(screen.getAllByRole('heading', { level: 2 }))
     const text = headings.map((h) => h.textContent)
-    expect(text[0]).toMatch(/aguiar veículos/i)
+    expect(text[0]).toMatch(/confiança/i)
     expect(text).toEqual(
       expect.arrayContaining([
-        expect.stringMatching(/diferenciais/i),
         expect.stringMatching(/financiamento e avaliação/i),
-        expect.stringMatching(/por que a aguiar veículos/i),
-        expect.stringMatching(/15 anos/i),
+        expect.stringMatching(/sobre a aguiar veículos/i),
         expect.stringMatching(/showroom/i),
-        expect.stringMatching(/contato/i),
+        expect.stringMatching(/vamos achar o seu carro/i),
       ]),
     )
   })

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { uploadVehicleImage, validateImageFile } from '@/lib/storage'
+import { uploadVehicleImage, uploadSiteImage, validateImageFile } from '@/lib/storage'
 
 describe('validateImageFile', () => {
   it('accepts jpg, png and webp under 5 MB', () => {
@@ -28,5 +28,16 @@ describe('uploadVehicleImage', () => {
     const path = await uploadVehicleImage(client as any, file)
     expect(client.storage.from).toHaveBeenCalledWith('vehicle-images')
     expect(path).toContain('polo.jpg')
+  })
+})
+
+describe('uploadSiteImage', () => {
+  it('uploads to the site-images bucket and returns the storage path', async () => {
+    const upload = vi.fn(async () => ({ error: null }))
+    const client = { storage: { from: vi.fn(() => ({ upload })) } }
+    const file = new File(['x'], 'showroom.jpg', { type: 'image/jpeg' })
+    const path = await uploadSiteImage(client as any, file)
+    expect(client.storage.from).toHaveBeenCalledWith('site-images')
+    expect(path).toContain('showroom.jpg')
   })
 })

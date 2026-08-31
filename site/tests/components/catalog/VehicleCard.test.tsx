@@ -25,7 +25,27 @@ describe('VehicleCard', () => {
     render(<VehicleCard vehicle={vehicle} />)
     expect(screen.getByRole('link')).toHaveAttribute('href', '/estoque/fiat-argo-2023')
     expect(screen.getByText(/fiat argo drive/i)).toBeInTheDocument()
-    expect(screen.getByText('2023')).toBeInTheDocument()
+    expect(screen.getByText(/2023 • 32\.000 km/)).toBeInTheDocument()
     expect(screen.getByText('R$ 64.900')).toBeInTheDocument()
+  })
+
+  it('does not show a year badge over the photo', () => {
+    render(<VehicleCard vehicle={vehicle} imageUrl="https://cdn.test/argo.jpg" />)
+    expect(screen.queryByText('2023', { selector: 'span' })).not.toBeInTheDocument()
+  })
+
+  it('shows a photo-count badge when photoCount is provided', () => {
+    render(<VehicleCard vehicle={vehicle} imageUrl="https://cdn.test/argo.jpg" photoCount={14} />)
+    expect(screen.getByText('14')).toBeInTheDocument()
+  })
+
+  it('hides the photo-count badge when there are no photos', () => {
+    render(<VehicleCard vehicle={vehicle} photoCount={0} />)
+    expect(screen.queryByText('0')).not.toBeInTheDocument()
+  })
+
+  it('hides the photo-count badge when photoCount is not provided', () => {
+    render(<VehicleCard vehicle={vehicle} imageUrl="https://cdn.test/argo.jpg" />)
+    expect(screen.queryByText(/^\d+$/)).not.toBeInTheDocument()
   })
 })

@@ -4,7 +4,7 @@ import { fetchVehicleDataByPlate, ApiPlacasError } from '@/lib/apiplacas'
 const originalFetch = global.fetch
 
 beforeEach(() => {
-  process.env.APIPLACAS_API_KEY = 'test-key'
+  process.env.APIPLACAS_TOKEN = 'test-key'
 })
 
 afterEach(() => {
@@ -34,7 +34,7 @@ describe('fetchVehicleDataByPlate', () => {
   })
 
   it('throws ApiPlacasError when the API key is missing', async () => {
-    delete process.env.APIPLACAS_API_KEY
+    delete process.env.APIPLACAS_TOKEN
     await expect(fetchVehicleDataByPlate('DEF4G56')).rejects.toThrow(ApiPlacasError)
   })
 })

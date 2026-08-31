@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024
 export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+export const MAX_VEHICLE_IMAGES = 15
 
 /**
  * Checked before anything is sent to Storage. The `accept` attribute on the file
@@ -21,6 +22,13 @@ export function validateImageFile(file: File): string | null {
 export async function uploadVehicleImage(client: SupabaseClient, file: File): Promise<string> {
   const path = `${crypto.randomUUID()}-${file.name}`
   const { error } = await client.storage.from('vehicle-images').upload(path, file)
+  if (error) throw error
+  return path
+}
+
+export async function uploadSiteImage(client: SupabaseClient, file: File): Promise<string> {
+  const path = `${crypto.randomUUID()}-${file.name}`
+  const { error } = await client.storage.from('site-images').upload(path, file)
   if (error) throw error
   return path
 }

@@ -10,8 +10,14 @@ export async function submitFinancingLead(input: FinancingLeadValues) {
   return createLead(client, {
     type: 'financing',
     name: values.name,
-    phone: values.phone,
-    details: { vehicleLabel: values.vehicleLabel ?? null, downPayment: values.downPayment ?? null },
+    // The form no longer collects a phone number — the customer's real contact
+    // reaches the dealer natively through the WhatsApp message itself.
+    phone: '',
+    details: {
+      vehicleLabel: values.vehicleLabel,
+      downPayment: values.downPayment,
+      installments: values.installments,
+    },
     vehicleId: values.vehicleId,
   })
 }
@@ -22,7 +28,9 @@ export async function submitTradeInLead(input: TradeInLeadValues) {
   return createLead(client, {
     type: 'trade_in',
     name: values.name,
-    phone: values.phone,
-    details: { brand: values.brand, model: values.model, year: values.year, mileageKm: values.mileageKm },
+    // The form no longer collects a phone number — the customer's real contact
+    // reaches the dealer natively through the WhatsApp message itself.
+    phone: '',
+    details: { model: values.model, year: values.year, mileageKm: values.mileageKm, observations: values.observations ?? null },
   })
 }
