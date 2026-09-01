@@ -5,19 +5,26 @@ import { useRouter } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 import { uploadVehicleImage, validateImageFile, MAX_VEHICLE_IMAGES } from '@/lib/storage'
 import { adminSaveVehicle } from '@/app/actions/vehicles'
-import type { Vehicle, VehicleImage } from '@/lib/types'
+import type { Vehicle, VehicleImage, VehicleExpense } from '@/lib/types'
+import { TRANSMISSION_OPTIONS, FUEL_TYPE_OPTIONS, normalizeFuelType, withCurrentValue } from '@/lib/normalize'
+import { VehicleExpensesEditor, type DraftVehicleExpense } from './VehicleExpensesEditor'
+import { VehicleFipeSection, type FipeSelection } from './VehicleFipeSection'
+import { VehicleOptionalsPicker } from './VehicleOptionalsPicker'
+import { calculateTotalCostCents, calculateEstimatedMarginCents, calculateRealizedMarginCents } from '@/lib/vehicle-costs'
+import { formatPriceFromCents } from '@/lib/format'
 import { Button } from '@/components/ui/Button'
 
 interface VehicleFormProps {
   vehicle?: Vehicle
   images?: VehicleImage[]
+  expenses?: VehicleExpense[]
 }
 
 const inputClass =
   'rounded-lg border border-support-gray/25 p-2.5 text-graphite transition-colors focus:border-aguiar-red focus:outline-none'
 const labelClass = 'text-sm font-bold'
 
-export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
+export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = [] }: VehicleFormProps) {
   const router = useRouter()
   const [imagePaths, setImagePaths] = useState<string[]>(images.map((image) => image.storage_path))
   const [error, setError] = useState<string | null>(null)
@@ -25,9 +32,26 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
   const [model, setModel] = useState(vehicle?.model ?? '')
   const [color, setColor] = useState(vehicle?.color ?? '')
   const [fuelType, setFuelType] = useState(vehicle?.fuel_type ?? '')
+  const [transmission, setTransmission] = useState(vehicle?.transmission ?? '')
   const [plate, setPlate] = useState(vehicle?.plate ?? '')
   const [plateLookupError, setPlateLookupError] = useState<string | null>(null)
   const [imageError, setImageError] = useState<string | null>(null)
+  const [priceReais, setPriceReais] = useState(vehicle ? String(vehicle.price_cents / 100) : '')
+  const [acquisitionCostReais, setAcquisitionCostReais] = useState(
+    vehicle?.acquisition_cost_cents != null ? String(vehicle.acquisition_cost_cents / 100) : '',
+  )
+  const [minSalePriceReais, setMinSalePriceReais] = useState(
+    vehicle?.min_sale_price_cents != null ? String(vehicle.min_sale_price_cents / 100) : '',
+  )
+  const [expenses, setExpenses] = useState<DraftVehicleExpense[]>(
+    initialExpenses.map((expense) => ({
+      category: expense.category,
+      description: expense.description ?? '',
+      amountReais: String(expense.amount_cents / 100),
+    })),
+  )
+  const [fipeSelection, setFipeSelection] = useState<FipeSelection | null>(null)
+  const [optionals, setOptionals] = useState<string[]>(vehicle?.optionals ?? [])
 
   async function handlePlateLookup() {
     setPlateLookupError(null)
@@ -40,7 +64,10 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
     setBrand(data.brand)
     setModel(data.model)
     if (data.color) setColor(data.color)
-    if (data.fuelType) setFuelType(data.fuelType)
+    if (data.fuelType) {
+      const normalized = normalizeFuelType(data.fuelType)
+      if (normalized) setFuelType(normalized)
+    }
   }
 
   async function handleFilesSelected(event: ChangeEvent<HTMLInputElement>) {
@@ -87,6 +114,16 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
     })
   }
 
+  const totalCostCents = calculateTotalCostCents(
+    acquisitionCostReais.trim() ? Math.round(Number(acquisitionCostReais) * 100) : null,
+    expenses.map((expense) => ({ amount_cents: Math.round((Number(expense.amountReais) || 0) * 100) })),
+  )
+  const priceCentsForMargin = Math.round((Number(priceReais) || 0) * 100)
+  const showRealizedMargin = vehicle?.status === 'sold' && vehicle.sale_price_cents != null
+  const marginCents = showRealizedMargin
+    ? calculateRealizedMarginCents(vehicle!.sale_price_cents, totalCostCents)
+    : calculateEstimatedMarginCents(priceCentsForMargin, totalCostCents)
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
@@ -99,9 +136,9 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
         yearModel: Number(formData.get('yearModel')),
         yearFabrication: Number(formData.get('yearFabrication')),
         mileageKm: Number(formData.get('mileageKm')),
-        priceCents: Math.round(Number(formData.get('priceReais')) * 100),
+        priceCents: Math.round(Number(priceReais) * 100),
         fuelType,
-        transmission: String(formData.get('transmission') || ''),
+        transmission,
         color,
         description: String(formData.get('description') || ''),
         engine: String(formData.get('engine') || ''),
@@ -113,6 +150,24 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
         plate,
         isFeatured: formData.get('isFeatured') === 'on',
         imagePaths,
+        acquisitionCostCents: acquisitionCostReais ? Math.round(Number(acquisitionCostReais) * 100) : undefined,
+        minSalePriceCents: minSalePriceReais ? Math.round(Number(minSalePriceReais) * 100) : undefined,
+        acquiredAt: String(formData.get('acquiredAt') || '') || undefined,
+        expenses: expenses
+          .filter((expense) => expense.amountReais.trim() !== '')
+          .map((expense) => ({
+            category: expense.category,
+            description: expense.description || undefined,
+            amountCents: Math.round(Number(expense.amountReais) * 100),
+          })),
+        // Seeded from the vehicle's already-saved FIPE data whenever the FIPE
+        // section itself wasn't touched, so an unrelated edit never wipes it.
+        fipeBrandCode: fipeSelection?.brandCode ?? vehicle?.fipe_brand_code ?? undefined,
+        fipeModelCode: fipeSelection?.modelCode ?? vehicle?.fipe_model_code ?? undefined,
+        fipeYearCode: fipeSelection?.yearCode ?? vehicle?.fipe_year_code ?? undefined,
+        fipeValueCents: fipeSelection?.valueCents ?? vehicle?.fipe_value_cents ?? undefined,
+        fipeFetchedAt: fipeSelection?.fetchedAt ?? vehicle?.fipe_fetched_at ?? undefined,
+        optionals,
       })
       router.push('/admin/veiculos')
     } catch {
@@ -121,7 +176,32 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-3xl flex-col gap-6 rounded-xl bg-white p-6 shadow-sm">
+    <form onSubmit={handleSubmit} noValidate className="flex max-w-3xl flex-col gap-6 rounded-xl bg-white p-6 shadow-sm">
+      <div className="flex flex-col gap-1.5 border-b border-support-gray/15 pb-6">
+        <label htmlFor="images" className={labelClass}>Fotos do veículo (até {MAX_VEHICLE_IMAGES})</label>
+        <input
+          id="images"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          disabled={imagePaths.length >= MAX_VEHICLE_IMAGES}
+          onChange={handleFilesSelected}
+          className="rounded-lg border border-support-gray/25 p-2.5 text-sm text-graphite disabled:cursor-not-allowed disabled:opacity-50"
+        />
+        {imageError && <p className="text-sm text-aguiar-red">{imageError}</p>}
+        {imagePaths.length > 0 && (
+          <ul className="flex flex-col gap-1">
+            {imagePaths.map((path, index) => (
+              <li key={path} className="flex items-center gap-2 rounded-lg bg-support-gray/5 px-3 py-2 text-sm">
+                <span className="flex-1 truncate">{path}</span>
+                <button type="button" onClick={() => moveImage(index, -1)} className="text-support-gray hover:text-graphite">↑</button>
+                <button type="button" onClick={() => moveImage(index, 1)} className="text-support-gray hover:text-graphite">↓</button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div className="flex flex-col gap-1.5 border-b border-support-gray/15 pb-6">
         <label htmlFor="plate" className={labelClass}>
           Placa (uso interno, nunca aparece no site)
@@ -181,16 +261,26 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="priceReais" className={labelClass}>Preço (em reais)</label>
-          <input id="priceReais" name="priceReais" type="number" defaultValue={vehicle ? vehicle.price_cents / 100 : ''} required placeholder="Ex.: 45900" className={inputClass} />
+          <input id="priceReais" name="priceReais" type="number" value={priceReais} onChange={(e) => setPriceReais(e.target.value)} required placeholder="Ex.: 45900" className={inputClass} />
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="transmission" className={labelClass}>Câmbio</label>
-          <input id="transmission" name="transmission" defaultValue={vehicle?.transmission ?? ''} placeholder="Ex.: Manual" className={inputClass} />
+          <select id="transmission" name="transmission" value={transmission} onChange={(e) => setTransmission(e.target.value)} className={inputClass}>
+            <option value="">Selecione</option>
+            {withCurrentValue(TRANSMISSION_OPTIONS, vehicle?.transmission).map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="fuelType" className={labelClass}>Combustível</label>
-          <input id="fuelType" name="fuelType" value={fuelType} onChange={(e) => setFuelType(e.target.value)} placeholder="Ex.: Flex" className={inputClass} />
+          <select id="fuelType" name="fuelType" value={fuelType} onChange={(e) => setFuelType(e.target.value)} className={inputClass}>
+            <option value="">Selecione</option>
+            {withCurrentValue(FUEL_TYPE_OPTIONS, vehicle?.fuel_type).map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -231,29 +321,38 @@ export function VehicleForm({ vehicle, images = [] }: VehicleFormProps) {
         Destacar na Home
       </label>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="images" className={labelClass}>Fotos do veículo (até {MAX_VEHICLE_IMAGES})</label>
-        <input
-          id="images"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          disabled={imagePaths.length >= MAX_VEHICLE_IMAGES}
-          onChange={handleFilesSelected}
-          className="rounded-lg border border-support-gray/25 p-2.5 text-sm text-graphite disabled:cursor-not-allowed disabled:opacity-50"
+      <div className="flex flex-col gap-3 border-t border-support-gray/15 pt-6">
+        <h2 className="text-lg font-bold">Opcionais</h2>
+        <VehicleOptionalsPicker selected={optionals} onChange={setOptionals} />
+      </div>
+
+      <div className="flex flex-col gap-4 border-t border-support-gray/15 pt-6">
+        <h2 className="text-lg font-bold">Custos (uso interno — nunca aparece no site)</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="acquisitionCostReais" className={labelClass}>Custo de aquisição (em reais)</label>
+            <input id="acquisitionCostReais" type="number" value={acquisitionCostReais} onChange={(e) => setAcquisitionCostReais(e.target.value)} placeholder="Ex.: 40000" className={inputClass} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="minSalePriceReais" className={labelClass}>Preço mínimo de venda (em reais)</label>
+            <input id="minSalePriceReais" type="number" value={minSalePriceReais} onChange={(e) => setMinSalePriceReais(e.target.value)} placeholder="Ex.: 42000" className={inputClass} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="acquiredAt" className={labelClass}>Data de aquisição</label>
+            <input id="acquiredAt" name="acquiredAt" type="date" defaultValue={vehicle?.acquired_at ?? ''} className={inputClass} />
+          </div>
+        </div>
+
+        <VehicleExpensesEditor expenses={expenses} onChange={setExpenses} />
+        <p className="text-sm font-bold text-graphite">
+          {showRealizedMargin ? 'Margem realizada' : 'Margem estimada'}: {formatPriceFromCents(marginCents ?? 0)}
+        </p>
+
+        <VehicleFipeSection
+          initialValueCents={vehicle?.fipe_value_cents}
+          initialFetchedAt={vehicle?.fipe_fetched_at}
+          onSelect={setFipeSelection}
         />
-        {imageError && <p className="text-sm text-aguiar-red">{imageError}</p>}
-        {imagePaths.length > 0 && (
-          <ul className="flex flex-col gap-1">
-            {imagePaths.map((path, index) => (
-              <li key={path} className="flex items-center gap-2 rounded-lg bg-support-gray/5 px-3 py-2 text-sm">
-                <span className="flex-1 truncate">{path}</span>
-                <button type="button" onClick={() => moveImage(index, -1)} className="text-support-gray hover:text-graphite">↑</button>
-                <button type="button" onClick={() => moveImage(index, 1)} className="text-support-gray hover:text-graphite">↓</button>
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
 
       {error && <p className="text-sm text-aguiar-red">{error}</p>}

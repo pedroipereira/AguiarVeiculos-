@@ -194,3 +194,162 @@ describe('VehicleForm — validação de upload', () => {
     expect(screen.getByLabelText(/fotos/i)).toBeDisabled()
   })
 })
+
+describe('VehicleForm — câmbio e combustível', () => {
+  it('saves the selected câmbio and combustível from the fixed dropdowns', async () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/câmbio/i), { target: { value: 'Automático' } })
+    fireEvent.change(screen.getByLabelText(/^combustível$/i), { target: { value: 'Flex' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ transmission: 'Automático', fuelType: 'Flex' }),
+    ))
+  })
+
+  it('normalizes the plate lookup fuel type to a fixed option before selecting it', async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({
+      brand: 'Fiat', model: 'Argo', fuelType: 'flex',
+    }), { status: 200 })) as any
+
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/placa/i), { target: { value: 'DEF4G56' } })
+    fireEvent.click(screen.getByRole('button', { name: /buscar dados/i }))
+
+    expect(await screen.findByDisplayValue('Fiat')).toBeInTheDocument()
+    expect(screen.getByLabelText(/^combustível$/i)).toHaveValue('Flex')
+  })
+
+  it("includes the vehicle's existing transmission value as an option even if it predates the fixed list", () => {
+    const legacy = { id: 'v-1', brand: 'Fiat', model: 'Argo', transmission: 'Semi-automático' } as any
+    render(<VehicleForm vehicle={legacy} />)
+    expect(screen.getByRole('option', { name: 'Semi-automático' })).toBeInTheDocument()
+  })
+})
+
+describe('VehicleForm — custos e data de aquisição', () => {
+  it('saves acquisition cost, minimum sale price, and acquired date when filled in', async () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/custo de aquisição/i), { target: { value: '40000' } })
+    fireEvent.change(screen.getByLabelText(/preço mínimo de venda/i), { target: { value: '42000' } })
+    fireEvent.change(screen.getByLabelText(/data de aquisição/i), { target: { value: '2026-08-01' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ acquisitionCostCents: 4000000, minSalePriceCents: 4200000, acquiredAt: '2026-08-01' }),
+    ))
+  })
+
+  it('omits acquisition cost, minimum sale price, and acquired date when left blank', async () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ acquisitionCostCents: undefined, minSalePriceCents: undefined, acquiredAt: undefined }),
+    ))
+  })
+})
+
+describe('VehicleForm — margem e gastos', () => {
+  it('shows the estimated margin as price minus acquisition cost and expenses', () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/custo de aquisição/i), { target: { value: '40000' } })
+    fireEvent.click(screen.getByRole('button', { name: /adicionar gasto/i }))
+    fireEvent.change(screen.getByLabelText(/valor do gasto 1/i), { target: { value: '2000' } })
+
+    expect(screen.getByText(/margem estimada: r\$ 22.900/i)).toBeInTheDocument()
+  })
+
+  it('saves the entered expenses with the vehicle', async () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.click(screen.getByRole('button', { name: /adicionar gasto/i }))
+    fireEvent.change(screen.getByLabelText(/categoria do gasto 1/i), { target: { value: 'lavagem_higienizacao' } })
+    fireEvent.change(screen.getByLabelText(/valor do gasto 1/i), { target: { value: '150' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ expenses: [{ category: 'lavagem_higienizacao', description: undefined, amountCents: 15000 }] }),
+    ))
+  })
+
+  it('shows the realized margin (using the real sale price) once the vehicle is sold', () => {
+    const sold = {
+      id: 'v-1', brand: 'Fiat', model: 'Argo', price_cents: 6490000, status: 'sold',
+      sale_price_cents: 6200000, acquisition_cost_cents: 4000000,
+    } as any
+    render(<VehicleForm vehicle={sold} />)
+    expect(screen.getByText(/margem realizada: r\$ 22.000/i)).toBeInTheDocument()
+  })
+})
+
+describe('VehicleForm — FIPE', () => {
+  it('keeps the vehicle\'s already-saved FIPE data when the FIPE section is left untouched', async () => {
+    const vehicle = {
+      id: 'v-1', brand: 'Fiat', model: 'Argo',
+      fipe_brand_code: '21', fipe_model_code: '437', fipe_year_code: '1987-1',
+      fipe_value_cents: 614700, fipe_fetched_at: '2026-08-01T12:00:00.000Z',
+    } as any
+    render(<VehicleForm vehicle={vehicle} />)
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(expect.objectContaining({
+      fipeBrandCode: '21', fipeModelCode: '437', fipeYearCode: '1987-1',
+      fipeValueCents: 614700, fipeFetchedAt: '2026-08-01T12:00:00.000Z',
+    })))
+  })
+})
+
+describe('VehicleForm — opcionais', () => {
+  it('saves the selected optionals', async () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Ar condicionado' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Teto solar' }))
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ optionals: ['Ar condicionado', 'Teto solar'] }),
+    ))
+  })
+
+  it('pre-selects the pills for a vehicle that already has optionals', () => {
+    const vehicle = { id: 'v-1', brand: 'Fiat', model: 'Argo', optionals: ['Blindagem'] } as any
+    render(<VehicleForm vehicle={vehicle} />)
+    expect(screen.getByRole('button', { name: 'Blindagem' })).toHaveAttribute('aria-pressed', 'true')
+  })
+})
