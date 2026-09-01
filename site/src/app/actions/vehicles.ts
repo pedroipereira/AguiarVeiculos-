@@ -39,6 +39,7 @@ export async function adminSetVehicleStatus(id: string, status: VehicleStatus) {
   await vehicleActions.setVehicleStatus(client, id, status)
   revalidatePath('/admin/veiculos')
   revalidatePath('/estoque')
+  revalidatePath('/')
 }
 
 export async function adminMarkVehicleSold(id: string, input: MarkVehicleSoldInput) {
@@ -47,4 +48,5 @@ export async function adminMarkVehicleSold(id: string, input: MarkVehicleSoldInp
   await vehicleActions.markVehicleSold(client, id, input)
   revalidatePath('/admin/veiculos')
   revalidatePath('/estoque')
+  revalidatePath('/')
 }
