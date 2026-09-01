@@ -15,16 +15,22 @@ interface ApiPlacasRawResponse {
   ano?: string
   anoModelo?: string
   cor?: string
-  combustivel?: string
+  // The real API (wdapi2.com.br) nests fuel type under `extra`, not at the top level.
+  extra?: {
+    combustivel?: string
+  }
 }
 
 export async function fetchVehicleDataByPlate(plate: string): Promise<ApiPlacasResult> {
   const apiKey = process.env.APIPLACAS_TOKEN
   if (!apiKey) throw new ApiPlacasError('APIPLACAS_TOKEN não configurada.')
 
-  const response = await fetch(`https://apiplacas.com.br/consulta/${encodeURIComponent(plate)}`, {
-    headers: { Authorization: `Bearer ${apiKey}` },
-  })
+  // apiplacas.com.br is only the account/docs site — the actual API lives on
+  // wdapi2.com.br, and the token is a URL path segment, not an auth header
+  // (confirmed against the provider's real documentation).
+  const response = await fetch(
+    `https://wdapi2.com.br/consulta/${encodeURIComponent(plate)}/${encodeURIComponent(apiKey)}`,
+  )
   if (!response.ok) throw new ApiPlacasError(`ApiPlacas retornou status ${response.status}`)
 
   const data = (await response.json()) as ApiPlacasRawResponse
@@ -36,6 +42,6 @@ export async function fetchVehicleDataByPlate(plate: string): Promise<ApiPlacasR
     yearFabrication: data.ano ? Number(data.ano) : undefined,
     yearModel: data.anoModelo ? Number(data.anoModelo) : undefined,
     color: data.cor,
-    fuelType: data.combustivel,
+    fuelType: data.extra?.combustivel,
   }
 }

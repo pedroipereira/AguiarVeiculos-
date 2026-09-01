@@ -15,17 +15,18 @@ afterEach(() => {
 describe('fetchVehicleDataByPlate', () => {
   it('maps a successful ApiPlacas response to ApiPlacasResult', async () => {
     global.fetch = vi.fn(async () => new Response(JSON.stringify({
-      MARCA: 'FIAT', MODELO: 'ARGO', ano: '2023', anoModelo: '2023', cor: 'PRATA', combustivel: 'FLEX',
+      MARCA: 'FIAT', MODELO: 'ARGO', ano: '2023', anoModelo: '2023', cor: 'PRATA',
+      extra: { combustivel: 'FLEX' },
     }), { status: 200 })) as any
 
     const result = await fetchVehicleDataByPlate('DEF4G56')
     expect(result).toEqual({
       brand: 'FIAT', model: 'ARGO', yearFabrication: 2023, yearModel: 2023, color: 'PRATA', fuelType: 'FLEX',
     })
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('DEF4G56'),
-      expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer test-key' }) }),
-    )
+    // The real API lives on wdapi2.com.br with the token as a URL path segment
+    // (confirmed against the provider's documentation) — not apiplacas.com.br,
+    // and not an Authorization header.
+    expect(global.fetch).toHaveBeenCalledWith('https://wdapi2.com.br/consulta/DEF4G56/test-key')
   })
 
   it('throws ApiPlacasError when the external API returns an error status', async () => {
