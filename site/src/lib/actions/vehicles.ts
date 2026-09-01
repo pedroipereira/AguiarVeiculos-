@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { VehicleStatus } from '../types'
-import { vehicleFormSchema, type VehicleFormValues } from '../validation'
+import { vehicleFormSchema, markVehicleSoldSchema, type VehicleFormValues } from '../validation'
 import { buildVehicleSlug } from '../format'
 import { normalizeTransmission, normalizeFuelType, normalizeColor } from '../normalize'
 
@@ -37,6 +37,15 @@ export async function saveVehicle(client: SupabaseClient, input: SaveVehicleInpu
     horsepower: values.horsepower ?? null,
     plate: values.plate ?? null,
     is_featured: values.isFeatured ?? false,
+    acquisition_cost_cents: values.acquisitionCostCents ?? null,
+    min_sale_price_cents: values.minSalePriceCents ?? null,
+    acquired_at: values.acquiredAt ?? null,
+    fipe_brand_code: values.fipeBrandCode ?? null,
+    fipe_model_code: values.fipeModelCode ?? null,
+    fipe_year_code: values.fipeYearCode ?? null,
+    fipe_value_cents: values.fipeValueCents ?? null,
+    fipe_fetched_at: values.fipeFetchedAt ?? null,
+    optionals: values.optionals,
   }
 
   let vehicleId = input.id
@@ -60,11 +69,43 @@ export async function saveVehicle(client: SupabaseClient, input: SaveVehicleInpu
     if (error) throw error
   }
 
+  await client.from('vehicle_expenses').delete().eq('vehicle_id', vehicleId)
+  if (values.expenses.length > 0) {
+    const expenseRows = values.expenses.map((expense) => ({
+      vehicle_id: vehicleId,
+      category: expense.category,
+      description: expense.description ?? null,
+      amount_cents: expense.amountCents,
+    }))
+    const { error: expensesError } = await client.from('vehicle_expenses').insert(expenseRows)
+    if (expensesError) throw expensesError
+  }
+
   return { id: vehicleId! }
 }
 
 export async function deleteVehicle(client: SupabaseClient, id: string): Promise<void> {
   const { error } = await client.from('vehicles').delete().eq('id', id)
+  if (error) throw error
+}
+
+export interface MarkVehicleSoldInput {
+  salePriceCents: number
+  soldAt: string
+  buyerLeadId?: string
+}
+
+export async function markVehicleSold(client: SupabaseClient, id: string, input: MarkVehicleSoldInput): Promise<void> {
+  const values = markVehicleSoldSchema.parse(input)
+  const { error } = await client
+    .from('vehicles')
+    .update({
+      status: 'sold',
+      sale_price_cents: values.salePriceCents,
+      sold_at: values.soldAt,
+      buyer_lead_id: values.buyerLeadId ?? null,
+    })
+    .eq('id', id)
   if (error) throw error
 }
 
@@ -74,6 +115,12 @@ export async function setVehicleFeatured(client: SupabaseClient, id: string, isF
 }
 
 export async function setVehicleStatus(client: SupabaseClient, id: string, status: VehicleStatus): Promise<void> {
-  const { error } = await client.from('vehicles').update({ status }).eq('id', id)
+  const payload: Record<string, unknown> = { status }
+  if (status !== 'sold') {
+    payload.sale_price_cents = null
+    payload.sold_at = null
+    payload.buyer_lead_id = null
+  }
+  const { error } = await client.from('vehicles').update(payload).eq('id', id)
   if (error) throw error
 }
