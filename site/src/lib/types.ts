@@ -1,4 +1,21 @@
-export type VehicleStatus = 'available' | 'sold'
+export type VehicleStatus = 'available' | 'preparing' | 'sold'
+
+export type VehicleExpenseCategory =
+  | 'pintura'
+  | 'lavagem_higienizacao'
+  | 'mecanica'
+  | 'documentacao'
+  | 'funilaria'
+  | 'outros'
+
+export interface VehicleExpense {
+  id: string
+  vehicle_id: string
+  category: VehicleExpenseCategory
+  description: string | null
+  amount_cents: number
+  created_at: string
+}
 
 export interface VehiclePublic {
   id: string
@@ -28,6 +45,18 @@ export interface VehiclePublic {
 
 export interface Vehicle extends VehiclePublic {
   plate: string | null
+  acquired_at: string | null
+  acquisition_cost_cents: number | null
+  min_sale_price_cents: number | null
+  sale_price_cents: number | null
+  sold_at: string | null
+  buyer_lead_id: string | null
+  fipe_brand_code: string | null
+  fipe_model_code: string | null
+  fipe_year_code: string | null
+  fipe_value_cents: number | null
+  fipe_fetched_at: string | null
+  optionals: string[]
 }
 
 export interface VehicleImage {
