@@ -38,7 +38,7 @@ describe('VehicleStockCard', () => {
 
   it('shows a "Definir margem" pill when acquisition cost or minimum price is missing', () => {
     render(<VehicleStockCard vehicle={makeVehicle()} totalCostCents={0} thresholdDays={90} leads={[]} />)
-    expect(screen.getByRole('link', { name: /definir margem/i })).toHaveAttribute('href', '/admin/veiculos/v-1')
+    expect(screen.getByRole('link', { name: /definir margem/i })).toHaveAttribute('href', '/admin/veiculos/v-1#custos')
   })
 
   it('shows the minimum-price band with custo/lucro once a margin is defined', () => {
@@ -52,6 +52,41 @@ describe('VehicleStockCard', () => {
   it('shows the days-in-stock badge, computed from acquired_at', () => {
     render(<VehicleStockCard vehicle={makeVehicle({ acquired_at: '2026-08-01' })} totalCostCents={0} thresholdDays={90} leads={[]} />)
     expect(screen.getByText('31 dias')).toBeInTheDocument()
+  })
+
+  it('turns the days badge red when an available vehicle is at or past the turnover threshold', () => {
+    render(
+      <VehicleStockCard
+        vehicle={makeVehicle({ status: 'available', acquired_at: '2020-01-01' })}
+        totalCostCents={0}
+        thresholdDays={90}
+        leads={[]}
+      />,
+    )
+    expect(screen.getByText(/\d+ dias/)).toHaveClass('bg-aguiar-red')
+  })
+
+  it('keeps the days badge neutral for preparing or sold vehicles even at a high day count', () => {
+    const { unmount } = render(
+      <VehicleStockCard
+        vehicle={makeVehicle({ status: 'preparing', acquired_at: '2020-01-01' })}
+        totalCostCents={0}
+        thresholdDays={90}
+        leads={[]}
+      />,
+    )
+    expect(screen.getByText(/\d+ dias/)).toHaveClass('bg-graphite')
+    unmount()
+
+    render(
+      <VehicleStockCard
+        vehicle={makeVehicle({ status: 'sold', acquired_at: '2020-01-01' })}
+        totalCostCents={0}
+        thresholdDays={90}
+        leads={[]}
+      />,
+    )
+    expect(screen.getByText(/\d+ dias/)).toHaveClass('bg-graphite')
   })
 
   it('deletes the vehicle on confirm', () => {
