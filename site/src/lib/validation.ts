@@ -1,4 +1,18 @@
 import { z } from 'zod'
+import { VEHICLE_OPTIONALS } from './vehicle-optionals'
+
+export const vehicleExpenseSchema = z
+  .object({
+    category: z.enum(['pintura', 'lavagem_higienizacao', 'mecanica', 'documentacao', 'funilaria', 'outros']),
+    description: z.string().optional(),
+    amountCents: z.coerce.number().int().min(0),
+  })
+  .superRefine((value, ctx) => {
+    if (value.category === 'outros' && !value.description?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['description'], message: 'Descrição é obrigatória para categoria "Outros"' })
+    }
+  })
+export type VehicleExpenseFormValues = z.infer<typeof vehicleExpenseSchema>
 
 export const vehicleFormSchema = z.object({
   brand: z.string().min(1, 'Marca é obrigatória'),
@@ -20,8 +34,25 @@ export const vehicleFormSchema = z.object({
   horsepower: z.coerce.number().int().min(0).optional(),
   plate: z.string().optional(),
   isFeatured: z.boolean().optional(),
+  acquisitionCostCents: z.coerce.number().int().min(0).optional(),
+  minSalePriceCents: z.coerce.number().int().min(0).optional(),
+  expenses: z.array(vehicleExpenseSchema).optional().default([]),
+  acquiredAt: z.string().optional(),
+  fipeBrandCode: z.string().optional(),
+  fipeModelCode: z.string().optional(),
+  fipeYearCode: z.string().optional(),
+  fipeValueCents: z.coerce.number().int().min(0).optional(),
+  fipeFetchedAt: z.string().optional(),
+  optionals: z.array(z.enum(VEHICLE_OPTIONALS)).optional().default([]),
 })
 export type VehicleFormValues = z.infer<typeof vehicleFormSchema>
+
+export const markVehicleSoldSchema = z.object({
+  salePriceCents: z.coerce.number().int().min(0, 'Preço de venda não pode ser negativo'),
+  soldAt: z.string().min(1, 'Informe a data da venda'),
+  buyerLeadId: z.string().uuid().optional(),
+})
+export type MarkVehicleSoldValues = z.infer<typeof markVehicleSoldSchema>
 
 export const financingLeadSchema = z.object({
   name: z.string().min(2, 'Informe seu nome'),
