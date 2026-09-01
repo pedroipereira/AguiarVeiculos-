@@ -9,9 +9,9 @@ vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: vi.fn(async () => ({ auth: { getUser } })),
 }))
 
-vi.mock('@/lib/apiplacas', () => ({
+vi.mock('@/lib/puxaplaca', () => ({
   fetchVehicleDataByPlate,
-  ApiPlacasError: class ApiPlacasError extends Error {},
+  PuxaPlacaError: class PuxaPlacaError extends Error {},
 }))
 
 import { GET } from '@/app/api/admin/placas/route'
@@ -36,7 +36,7 @@ describe('GET /api/admin/placas', () => {
     expect(await response.json()).toEqual({ brand: 'Fiat', model: 'Argo' })
   })
 
-  it('returns 502 with a friendly message when ApiPlacas fails, never blocking manual entry', async () => {
+  it('returns 502 with a friendly message when PuxaPlaca fails, never blocking manual entry', async () => {
     getUser.mockResolvedValueOnce({ data: { user: { id: 'admin-1' } } })
     fetchVehicleDataByPlate.mockRejectedValueOnce(new Error('boom'))
     const response = await GET(new Request('http://localhost/api/admin/placas?plate=ZZZ0000'))

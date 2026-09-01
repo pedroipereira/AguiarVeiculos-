@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { fetchVehicleDataByPlate } from '@/lib/apiplacas'
+import { fetchVehicleDataByPlate } from '@/lib/puxaplaca'
 
 export async function GET(request: Request) {
   const client = await createServerSupabaseClient()
