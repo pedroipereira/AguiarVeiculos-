@@ -30,3 +30,13 @@ export const COLOR_OPTIONS = [
 export const normalizeTransmission = makeNormalizer(TRANSMISSION_OPTIONS)
 export const normalizeFuelType = makeNormalizer(FUEL_TYPE_OPTIONS)
 export const normalizeColor = makeNormalizer(COLOR_OPTIONS)
+
+/**
+ * Select-options list for a normalized field, guaranteed to include the
+ * record's current stored value even if it predates the canonical list
+ * (so editing an old/legacy row never silently blanks or loses its value).
+ */
+export function withCurrentValue(options: string[], current: string | null | undefined): string[] {
+  if (!current || options.includes(current)) return options
+  return [current, ...options]
+}

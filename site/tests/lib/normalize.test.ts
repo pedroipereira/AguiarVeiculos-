@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normalizeTransmission, normalizeFuelType, normalizeColor } from '@/lib/normalize'
+import { normalizeTransmission, normalizeFuelType, normalizeColor, withCurrentValue } from '@/lib/normalize'
 
 describe('normalizeTransmission', () => {
   it('collapses case and accent variants to the canonical value', () => {
@@ -33,5 +33,20 @@ describe('normalizeColor', () => {
   it('collapses case and accent variants to the canonical value', () => {
     expect(normalizeColor('branco')).toBe('Branco')
     expect(normalizeColor('VERMELHO')).toBe('Vermelho')
+  })
+})
+
+describe('withCurrentValue', () => {
+  it('returns the options unchanged when the current value is already in the list', () => {
+    expect(withCurrentValue(['Manual', 'Automático'], 'Manual')).toEqual(['Manual', 'Automático'])
+  })
+
+  it('prepends the current value when it is not in the list, so an old row never loses its value', () => {
+    expect(withCurrentValue(['Manual', 'Automático'], 'Semi-automático')).toEqual(['Semi-automático', 'Manual', 'Automático'])
+  })
+
+  it('returns the options unchanged when there is no current value', () => {
+    expect(withCurrentValue(['Manual', 'Automático'], null)).toEqual(['Manual', 'Automático'])
+    expect(withCurrentValue(['Manual', 'Automático'], undefined)).toEqual(['Manual', 'Automático'])
   })
 })
