@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { formatPriceFromCents } from '@/lib/format'
 
 export interface FipeSelection {
@@ -34,6 +34,14 @@ export function VehicleFipeSection({ initialValueCents, initialFetchedAt, onSele
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Request-token guards: each cascading fetch (modelos/anos/valor) captures the
+  // token current at request time and only applies its response if that token is
+  // still the latest when the response arrives. This discards stale responses
+  // from a superseded selection instead of letting them clobber newer state.
+  const modelsRequestRef = useRef(0)
+  const yearsRequestRef = useRef(0)
+  const valueRequestRef = useRef(0)
+
   useEffect(() => {
     if (!expanded || brands.length > 0) return
     setLoading(true)
@@ -50,31 +58,52 @@ export function VehicleFipeSection({ initialValueCents, initialFetchedAt, onSele
     setModelCode('')
     setModels([])
     setYears([])
+    const requestId = ++modelsRequestRef.current
     if (!code) return
     setLoading(true)
     setError(null)
     fetch(`/api/admin/fipe/modelos?marca=${encodeURIComponent(code)}`)
       .then((response) => response.json())
-      .then((data) => setModels(data))
-      .catch(() => setError('Não foi possível carregar os modelos da FIPE.'))
-      .finally(() => setLoading(false))
+      .then((data) => {
+        if (modelsRequestRef.current !== requestId) return
+        setModels(data)
+      })
+      .catch(() => {
+        if (modelsRequestRef.current !== requestId) return
+        setError('Não foi possível carregar os modelos da FIPE.')
+      })
+      .finally(() => {
+        if (modelsRequestRef.current !== requestId) return
+        setLoading(false)
+      })
   }
 
   function selectModel(code: string) {
     setModelCode(code)
     setYears([])
+    const requestId = ++yearsRequestRef.current
     if (!code) return
     setLoading(true)
     setError(null)
     fetch(`/api/admin/fipe/anos?marca=${encodeURIComponent(brandCode)}&modelo=${encodeURIComponent(code)}`)
       .then((response) => response.json())
-      .then((data) => setYears(data))
-      .catch(() => setError('Não foi possível carregar os anos da FIPE.'))
-      .finally(() => setLoading(false))
+      .then((data) => {
+        if (yearsRequestRef.current !== requestId) return
+        setYears(data)
+      })
+      .catch(() => {
+        if (yearsRequestRef.current !== requestId) return
+        setError('Não foi possível carregar os anos da FIPE.')
+      })
+      .finally(() => {
+        if (yearsRequestRef.current !== requestId) return
+        setLoading(false)
+      })
   }
 
   async function selectYear(code: string) {
     if (!code) return
+    const requestId = ++valueRequestRef.current
     setError(null)
     setLoading(true)
     try {
@@ -83,14 +112,16 @@ export function VehicleFipeSection({ initialValueCents, initialFetchedAt, onSele
       )
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
+      if (valueRequestRef.current !== requestId) return
       const nowIso = new Date().toISOString()
       setValueCents(data.valueCents)
       setFetchedAt(nowIso)
       onSelect({ brandCode, modelCode, yearCode: code, valueCents: data.valueCents, fetchedAt: nowIso })
     } catch {
+      if (valueRequestRef.current !== requestId) return
       setError('Não foi possível consultar o preço FIPE.')
     } finally {
-      setLoading(false)
+      if (valueRequestRef.current === requestId) setLoading(false)
     }
   }
 

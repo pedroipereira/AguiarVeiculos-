@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { vi, beforeEach } from 'vitest'
 import { VehicleFipeSection } from '@/components/admin/VehicleFipeSection'
 
@@ -58,5 +58,46 @@ describe('VehicleFipeSection', () => {
     fireEvent.change(screen.getByLabelText(/ano fipe/i), { target: { value: '1987-1' } })
 
     expect(await screen.findByText(/não foi possível consultar/i)).toBeInTheDocument()
+  })
+
+  it('discards a stale /modelos response that resolves after a newer marca selection', async () => {
+    // Regression test for a request-token race: select Fiat (slow /modelos response),
+    // then reselect VW before Fiat's response arrives (fast /modelos response). The
+    // stale Fiat response must not overwrite the VW models list once it finally lands.
+    let resolveFiatModelos: (value: Response) => void = () => {}
+    const fiatModelosPromise = new Promise<Response>((resolve) => { resolveFiatModelos = resolve })
+
+    global.fetch = vi.fn(async (url: string) => {
+      if (url.includes('/marcas')) {
+        return new Response(
+          JSON.stringify([{ code: '21', name: 'Fiat' }, { code: '30', name: 'VW' }]),
+          { status: 200 },
+        )
+      }
+      if (url.includes('/modelos') && url.includes('marca=21')) return fiatModelosPromise
+      if (url.includes('/modelos') && url.includes('marca=30')) {
+        return new Response(JSON.stringify([{ code: '999', name: 'Gol' }]), { status: 200 })
+      }
+      throw new Error(`unexpected url ${url}`)
+    }) as any
+
+    render(<VehicleFipeSection onSelect={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: /buscar na fipe/i }))
+    await screen.findByRole('option', { name: 'Fiat' })
+
+    // Select Fiat first — kicks off the slow /modelos fetch that stays pending.
+    fireEvent.change(screen.getByLabelText(/marca fipe/i), { target: { value: '21' } })
+    // Before it resolves, reselect VW — kicks off a second, faster /modelos fetch.
+    fireEvent.change(screen.getByLabelText(/marca fipe/i), { target: { value: '30' } })
+    await screen.findByRole('option', { name: 'Gol' })
+
+    // Now let the stale Fiat response resolve after the newer VW response already landed.
+    await act(async () => {
+      resolveFiatModelos(new Response(JSON.stringify([{ code: '437', name: '147 C/ CL' }]), { status: 200 }))
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    expect(screen.queryByRole('option', { name: '147 C/ CL' })).not.toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Gol' })).toBeInTheDocument()
   })
 })
