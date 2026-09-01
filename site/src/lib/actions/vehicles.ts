@@ -1,10 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { z } from 'zod'
 import type { VehicleStatus } from '../types'
-import { vehicleFormSchema, markVehicleSoldSchema, type VehicleFormValues } from '../validation'
+import { vehicleFormSchema, markVehicleSoldSchema } from '../validation'
 import { buildVehicleSlug } from '../format'
 import { normalizeTransmission, normalizeFuelType, normalizeColor } from '../normalize'
 
-export interface SaveVehicleInput extends VehicleFormValues {
+export interface SaveVehicleInput extends z.input<typeof vehicleFormSchema> {
   id?: string
   imagePaths: string[]
 }
