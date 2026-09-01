@@ -36,7 +36,7 @@ export function VehicleExpensesEditor({ expenses, onChange }: VehicleExpensesEdi
   return (
     <div className="flex flex-col gap-3">
       {expenses.map((expense, index) => (
-        <div key={index} className="grid grid-cols-1 gap-2 rounded-lg bg-support-gray/5 p-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
+        <div key={index} className="grid grid-cols-1 gap-2 rounded-lg bg-white p-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
           <select
             aria-label={`Categoria do gasto ${index + 1}`}
             value={expense.category}

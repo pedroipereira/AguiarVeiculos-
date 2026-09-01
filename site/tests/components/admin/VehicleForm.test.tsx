@@ -9,7 +9,14 @@ vi.mock('@/app/actions/vehicles', () => ({ adminSaveVehicle }))
 
 const upload = vi.fn(async () => ({ error: null }))
 vi.mock('@/lib/supabase/browser', () => ({
-  createBrowserSupabaseClient: () => ({ storage: { from: () => ({ upload }) } }),
+  createBrowserSupabaseClient: () => ({
+    storage: {
+      from: () => ({
+        upload,
+        getPublicUrl: (path: string) => ({ data: { publicUrl: `https://cdn.test/${path}` } }),
+      }),
+    },
+  }),
 }))
 
 import { VehicleForm } from '@/components/admin/VehicleForm'
@@ -22,7 +29,7 @@ describe('VehicleForm', () => {
     fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
-    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
 
     const file = new File(['x'], 'argo.jpg', { type: 'image/jpeg' })
     fireEvent.change(screen.getByLabelText(/fotos/i), { target: { files: [file] } })
@@ -43,7 +50,7 @@ describe('VehicleForm', () => {
     fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
-    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
     fireEvent.change(screen.getByLabelText(/motor/i), { target: { value: '1.6' } })
     fireEvent.change(screen.getByLabelText(/tanque de combustível/i), { target: { value: '55' } })
     fireEvent.change(screen.getByLabelText(/quantidade de pessoas/i), { target: { value: '5' } })
@@ -62,7 +69,7 @@ describe('VehicleForm', () => {
     fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
-    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
     fireEvent.change(screen.getByLabelText(/tipo de carroceria/i), { target: { value: 'Hatch' } })
     fireEvent.change(screen.getByLabelText(/portas/i), { target: { value: '4' } })
     fireEvent.change(screen.getByLabelText(/potência/i), { target: { value: '115' } })
@@ -81,7 +88,7 @@ describe('VehicleForm', () => {
     fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
-    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
     fireEvent.click(screen.getByLabelText(/destacar na home/i))
 
     fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
@@ -98,7 +105,7 @@ describe('VehicleForm', () => {
     fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
-    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
 
     fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
 
@@ -227,6 +234,41 @@ describe('VehicleForm — validação de upload', () => {
   })
 })
 
+describe('VehicleForm — reordenar fotos', () => {
+  it('reorders photos via drag-and-drop, moving the dropped-on photo to the front', () => {
+    const images = [
+      { id: '1', vehicle_id: 'v1', storage_path: 'a.jpg', display_order: 0 },
+      { id: '2', vehicle_id: 'v1', storage_path: 'b.jpg', display_order: 1 },
+    ]
+    render(<VehicleForm images={images as any} />)
+
+    const firstPhoto = screen.getByAltText('Foto 1 do veículo')
+    const secondPhoto = screen.getByAltText('Foto 2 do veículo')
+
+    fireEvent.dragStart(secondPhoto.parentElement!)
+    fireEvent.dragOver(firstPhoto.parentElement!)
+    fireEvent.drop(firstPhoto.parentElement!)
+
+    expect(screen.getByAltText('Foto 1 do veículo')).toHaveAttribute('src', 'https://cdn.test/b.jpg')
+    expect(screen.getByAltText('Foto 2 do veículo')).toHaveAttribute('src', 'https://cdn.test/a.jpg')
+  })
+
+  it('removes a photo when its remove button is clicked, keeping the others', () => {
+    const images = [
+      { id: '1', vehicle_id: 'v1', storage_path: 'a.jpg', display_order: 0 },
+      { id: '2', vehicle_id: 'v1', storage_path: 'b.jpg', display_order: 1 },
+      { id: '3', vehicle_id: 'v1', storage_path: 'c.jpg', display_order: 2 },
+    ]
+    render(<VehicleForm images={images as any} />)
+
+    fireEvent.click(screen.getByLabelText('Remover foto 2'))
+
+    expect(screen.queryByAltText(/foto 3 do veículo/i)).not.toBeInTheDocument()
+    expect(screen.getByAltText('Foto 1 do veículo')).toHaveAttribute('src', 'https://cdn.test/a.jpg')
+    expect(screen.getByAltText('Foto 2 do veículo')).toHaveAttribute('src', 'https://cdn.test/c.jpg')
+  })
+})
+
 describe('VehicleForm — câmbio e combustível', () => {
   it('saves the selected câmbio and combustível from the fixed dropdowns', async () => {
     render(<VehicleForm />)
@@ -235,7 +277,7 @@ describe('VehicleForm — câmbio e combustível', () => {
     fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
-    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
     fireEvent.change(screen.getByLabelText(/câmbio/i), { target: { value: 'Automático' } })
     fireEvent.change(screen.getByLabelText(/^combustível$/i), { target: { value: 'Flex' } })
 
@@ -268,16 +310,24 @@ describe('VehicleForm — câmbio e combustível', () => {
 
 describe('VehicleForm — custos e data de aquisição', () => {
   it('saves acquisition cost, minimum sale price, and acquired date when filled in', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-15T12:00:00.000Z'))
     render(<VehicleForm />)
     fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
     fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
     fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
-    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
     fireEvent.change(screen.getByLabelText(/custo de aquisição/i), { target: { value: '40000' } })
     fireEvent.change(screen.getByLabelText(/preço mínimo de venda/i), { target: { value: '42000' } })
-    fireEvent.change(screen.getByLabelText(/data de aquisição/i), { target: { value: '2026-08-01' } })
+
+    fireEvent.click(screen.getByLabelText(/data de aquisição/i))
+    fireEvent.click(screen.getByRole('button', { name: '1' }))
+    // Fake timers only needed to pin which month the picker opens on — torn
+    // down before any `waitFor` below, which polls via real setTimeout and
+    // would otherwise hang forever (and leak fake timers into later tests).
+    vi.useRealTimers()
 
     fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
 
@@ -293,7 +343,7 @@ describe('VehicleForm — custos e data de aquisição', () => {
     fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
-    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
 
     fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
 
@@ -306,7 +356,7 @@ describe('VehicleForm — custos e data de aquisição', () => {
 describe('VehicleForm — margem e gastos', () => {
   it('shows the estimated margin as price minus acquisition cost and expenses', () => {
     render(<VehicleForm />)
-    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
     fireEvent.change(screen.getByLabelText(/custo de aquisição/i), { target: { value: '40000' } })
     fireEvent.click(screen.getByRole('button', { name: /adicionar gasto/i }))
     fireEvent.change(screen.getByLabelText(/valor do gasto 1/i), { target: { value: '2000' } })
@@ -321,7 +371,7 @@ describe('VehicleForm — margem e gastos', () => {
     fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
-    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
     fireEvent.click(screen.getByRole('button', { name: /adicionar gasto/i }))
     fireEvent.change(screen.getByLabelText(/categoria do gasto 1/i), { target: { value: 'lavagem_higienizacao' } })
     fireEvent.change(screen.getByLabelText(/valor do gasto 1/i), { target: { value: '150' } })
@@ -369,7 +419,7 @@ describe('VehicleForm — opcionais', () => {
     fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
     fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
-    fireEvent.change(screen.getByLabelText(/preço \(em reais\)/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
     fireEvent.click(screen.getByRole('button', { name: 'Ar condicionado' }))
     fireEvent.click(screen.getByRole('button', { name: 'Teto solar' }))
 

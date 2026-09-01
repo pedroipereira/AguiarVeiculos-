@@ -1,15 +1,16 @@
 'use client'
 
-import { useState, type FormEvent, type ChangeEvent } from 'react'
+import { useMemo, useState, type DragEvent, type FormEvent, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
-import { uploadVehicleImage, validateImageFile, MAX_VEHICLE_IMAGES } from '@/lib/storage'
+import { uploadVehicleImage, validateImageFile, getPublicImageUrl, MAX_VEHICLE_IMAGES } from '@/lib/storage'
 import { adminSaveVehicle } from '@/app/actions/vehicles'
 import type { Vehicle, VehicleImage, VehicleExpense } from '@/lib/types'
 import { TRANSMISSION_OPTIONS, FUEL_TYPE_OPTIONS, normalizeFuelType, withCurrentValue } from '@/lib/normalize'
 import { VehicleExpensesEditor, type DraftVehicleExpense } from './VehicleExpensesEditor'
 import { VehicleFipeSection, type FipeSelection } from './VehicleFipeSection'
 import { VehicleOptionalsPicker } from './VehicleOptionalsPicker'
+import { VehicleDatePicker } from './VehicleDatePicker'
 import { isValidOptional, type VehicleOptional } from '@/lib/vehicle-optionals'
 import { calculateTotalCostCents, calculateEstimatedMarginCents, calculateRealizedMarginCents } from '@/lib/vehicle-costs'
 import { formatPriceFromCents } from '@/lib/format'
@@ -22,12 +23,14 @@ interface VehicleFormProps {
 }
 
 const inputClass =
-  'rounded-lg border border-support-gray/25 p-2.5 text-graphite transition-colors focus:border-aguiar-red focus:outline-none'
+  'h-11 rounded-lg border border-support-gray/25 p-2.5 text-graphite transition-colors focus:border-aguiar-red focus:outline-none'
 const labelClass = 'text-sm font-bold'
 
 export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = [] }: VehicleFormProps) {
   const router = useRouter()
+  const supabase = useMemo(() => createBrowserSupabaseClient(), [])
   const [imagePaths, setImagePaths] = useState<string[]>(images.map((image) => image.storage_path))
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [brand, setBrand] = useState(vehicle?.brand ?? '')
   const [model, setModel] = useState(vehicle?.model ?? '')
@@ -54,6 +57,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
   const [minSalePriceReais, setMinSalePriceReais] = useState(
     vehicle?.min_sale_price_cents != null ? String(vehicle.min_sale_price_cents / 100) : '',
   )
+  const [acquiredAt, setAcquiredAt] = useState(vehicle?.acquired_at ?? '')
   const [expenses, setExpenses] = useState<DraftVehicleExpense[]>(
     initialExpenses.map((expense) => ({
       category: expense.category,
@@ -122,8 +126,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
     event.target.value = ''
     if (toUpload.length === 0) return
 
-    const client = createBrowserSupabaseClient()
-    const uploaded = await Promise.all(toUpload.map((file) => uploadVehicleImage(client, file)))
+    const uploaded = await Promise.all(toUpload.map((file) => uploadVehicleImage(supabase, file)))
     setImagePaths((current) => [...current, ...uploaded])
   }
 
@@ -133,14 +136,27 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
     setOptionals(next.filter(isValidOptional))
   }
 
-  function moveImage(index: number, direction: -1 | 1) {
+  function handleRemoveImage(index: number) {
+    setImagePaths((current) => current.filter((_, i) => i !== index))
+  }
+
+  function handleImageDragStart(index: number) {
+    setDraggedIndex(index)
+  }
+
+  function handleImageDragOver(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault()
+  }
+
+  function handleImageDrop(index: number) {
     setImagePaths((current) => {
+      if (draggedIndex === null || draggedIndex === index) return current
       const next = [...current]
-      const target = index + direction
-      if (target < 0 || target >= next.length) return next
-      ;[next[index], next[target]] = [next[target], next[index]]
+      const [moved] = next.splice(draggedIndex, 1)
+      next.splice(index, 0, moved)
       return next
     })
+    setDraggedIndex(null)
   }
 
   const totalCostCents = calculateTotalCostCents(
@@ -181,7 +197,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
         imagePaths,
         acquisitionCostCents: acquisitionCostReais.trim() ? Math.round(Number(acquisitionCostReais) * 100) : undefined,
         minSalePriceCents: minSalePriceReais.trim() ? Math.round(Number(minSalePriceReais) * 100) : undefined,
-        acquiredAt: String(formData.get('acquiredAt') || '') || undefined,
+        acquiredAt: acquiredAt || undefined,
         expenses: expenses
           .filter((expense) => expense.amountReais.trim() !== '')
           .map((expense) => ({
@@ -205,7 +221,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-3xl flex-col gap-6 rounded-xl bg-white p-6 shadow-sm">
+    <form onSubmit={handleSubmit} className="flex w-full max-w-[1600px] flex-col gap-6 rounded-xl bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-1.5 border-b border-support-gray/15 pb-6">
         <label htmlFor="images" className={labelClass}>Fotos do veículo (até {MAX_VEHICLE_IMAGES})</label>
         <input
@@ -219,21 +235,46 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
         />
         {imageError && <p className="text-sm text-aguiar-red">{imageError}</p>}
         {imagePaths.length > 0 && (
-          <ul className="flex flex-col gap-1">
-            {imagePaths.map((path, index) => (
-              <li key={path} className="flex items-center gap-2 rounded-lg bg-support-gray/5 px-3 py-2 text-sm">
-                <span className="flex-1 truncate">{path}</span>
-                <button type="button" onClick={() => moveImage(index, -1)} className="text-support-gray hover:text-graphite">↑</button>
-                <button type="button" onClick={() => moveImage(index, 1)} className="text-support-gray hover:text-graphite">↓</button>
-              </li>
-            ))}
-          </ul>
+          <>
+            <p className="text-xs text-support-gray">Arraste as fotos para reordenar. A primeira é a capa do anúncio.</p>
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+              {imagePaths.map((path, index) => (
+                <div
+                  key={path}
+                  draggable
+                  onDragStart={() => handleImageDragStart(index)}
+                  onDragOver={handleImageDragOver}
+                  onDrop={() => handleImageDrop(index)}
+                  className="group relative aspect-square cursor-grab overflow-hidden rounded-lg border border-support-gray/25 bg-support-gray/5 active:cursor-grabbing"
+                >
+                  <img
+                    src={getPublicImageUrl(supabase, 'vehicle-images', path)}
+                    alt={`Foto ${index + 1} do veículo`}
+                    className="h-full w-full object-cover"
+                  />
+                  {index === 0 && (
+                    <span className="absolute left-1 top-1 rounded bg-aguiar-red px-1.5 py-0.5 text-xs font-bold text-white">
+                      Capa
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    aria-label={`Remover foto ${index + 1}`}
+                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-graphite/70 text-xs leading-none text-white opacity-0 transition-opacity hover:bg-aguiar-red group-hover:opacity-100"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
       <div className="flex flex-col gap-1.5 border-b border-support-gray/15 pb-6">
         <label htmlFor="plate" className={labelClass}>
-          Placa (uso interno, nunca aparece no site)
+          Placa
         </label>
         <div className="flex gap-2">
           <input
@@ -253,96 +294,130 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
           </button>
         </div>
         {plateLookupError && <p className="text-sm text-aguiar-red">{plateLookupError}</p>}
-        <p className="text-sm text-support-gray">Confira os campos abaixo antes de salvar.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="brand" className={labelClass}>Marca</label>
-          <input id="brand" name="brand" value={brand} onChange={(e) => setBrand(e.target.value)} required className={inputClass} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="model" className={labelClass}>Modelo</label>
-          <input id="model" name="model" value={model} onChange={(e) => setModel(e.target.value)} required placeholder="Ex.: HB20" className={inputClass} />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-4 rounded-xl bg-card-gray p-6">
+          <h2 className="text-lg font-bold">Dados do carro</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="brand" className={labelClass}>Marca</label>
+              <input id="brand" name="brand" value={brand} onChange={(e) => setBrand(e.target.value)} required placeholder="Ex.: Fiat" className={inputClass} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="model" className={labelClass}>Modelo</label>
+              <input id="model" name="model" value={model} onChange={(e) => setModel(e.target.value)} required placeholder="Ex.: HB20" className={inputClass} />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="version" className={labelClass}>Versão</label>
+              <input id="version" name="version" defaultValue={vehicle?.version ?? ''} placeholder="Ex.: Comfort" className={inputClass} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="yearModel" className={labelClass}>Ano do modelo</label>
+              <input id="yearModel" name="yearModel" type="number" value={yearModel} onChange={(e) => setYearModel(e.target.value)} required placeholder="Ex.: 2024" className={inputClass} />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="yearFabrication" className={labelClass}>Ano de fabricação</label>
+              <input id="yearFabrication" name="yearFabrication" type="number" value={yearFabrication} onChange={(e) => setYearFabrication(e.target.value)} required placeholder="Ex.: 2023" className={inputClass} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="mileageKm" className={labelClass}>Quilometragem</label>
+              <input id="mileageKm" name="mileageKm" type="number" defaultValue={vehicle?.mileage_km} required placeholder="Ex.: 12000" className={inputClass} />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="color" className={labelClass}>Cor</label>
+              <input id="color" name="color" value={color} onChange={(e) => setColor(e.target.value)} placeholder="Ex.: Branco" className={inputClass} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="transmission" className={labelClass}>Câmbio</label>
+              <select id="transmission" name="transmission" value={transmission} onChange={(e) => setTransmission(e.target.value)} className={inputClass}>
+                <option value="">Selecione</option>
+                {withCurrentValue(TRANSMISSION_OPTIONS, vehicle?.transmission).map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="fuelType" className={labelClass}>Combustível</label>
+              <select id="fuelType" name="fuelType" value={fuelType} onChange={(e) => setFuelType(e.target.value)} className={inputClass}>
+                <option value="">Selecione</option>
+                {withCurrentValue(FUEL_TYPE_OPTIONS, vehicle?.fuel_type).map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="engine" className={labelClass}>Motor</label>
+              <input id="engine" name="engine" value={engine} onChange={(e) => setEngine(e.target.value)} placeholder="Ex.: 1.6" className={inputClass} />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="fuelTankLiters" className={labelClass}>Tanque de combustível (litros)</label>
+              <input id="fuelTankLiters" name="fuelTankLiters" type="number" defaultValue={vehicle?.fuel_tank_liters ?? ''} placeholder="Ex.: 55" className={inputClass} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="seatingCapacity" className={labelClass}>Quantidade de pessoas</label>
+              <input id="seatingCapacity" name="seatingCapacity" type="number" value={seatingCapacity} onChange={(e) => setSeatingCapacity(e.target.value)} placeholder="Ex.: 5" className={inputClass} />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="bodyType" className={labelClass}>Tipo de carroceria</label>
+              <input id="bodyType" name="bodyType" value={bodyType} onChange={(e) => setBodyType(e.target.value)} placeholder="Ex.: Hatch" className={inputClass} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="doors" className={labelClass}>Portas</label>
+              <input id="doors" name="doors" type="number" defaultValue={vehicle?.doors ?? ''} placeholder="Ex.: 4" className={inputClass} />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="horsepower" className={labelClass}>Potência (cv)</label>
+              <input id="horsepower" name="horsepower" type="number" value={horsepower} onChange={(e) => setHorsepower(e.target.value)} placeholder="Ex.: 116" className={inputClass} />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="description" className={labelClass}>Descrição</label>
+            <textarea id="description" name="description" defaultValue={vehicle?.description ?? ''} rows={4} className="rounded-lg border border-support-gray/25 p-2.5 text-graphite transition-colors focus:border-aguiar-red focus:outline-none" />
+          </div>
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="version" className={labelClass}>Versão</label>
-          <input id="version" name="version" defaultValue={vehicle?.version ?? ''} placeholder="Ex.: Comfort" className={inputClass} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="yearModel" className={labelClass}>Ano do modelo</label>
-          <input id="yearModel" name="yearModel" type="number" value={yearModel} onChange={(e) => setYearModel(e.target.value)} required placeholder="Ex.: 2024" className={inputClass} />
-        </div>
+        <div id="custos" className="flex flex-col gap-4 rounded-xl bg-card-gray p-6">
+          <h2 className="text-lg font-bold">Valores e custos</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="priceReais" className={labelClass}>Preço</label>
+              <input id="priceReais" name="priceReais" type="number" value={priceReais} onChange={(e) => setPriceReais(e.target.value)} required placeholder="Ex.: 45900" className={inputClass} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="acquisitionCostReais" className={labelClass}>Custo de aquisição</label>
+              <input id="acquisitionCostReais" type="number" value={acquisitionCostReais} onChange={(e) => setAcquisitionCostReais(e.target.value)} placeholder="Ex.: 40000" className={inputClass} />
+            </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="yearFabrication" className={labelClass}>Ano de fabricação</label>
-          <input id="yearFabrication" name="yearFabrication" type="number" value={yearFabrication} onChange={(e) => setYearFabrication(e.target.value)} required placeholder="Ex.: 2023" className={inputClass} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="mileageKm" className={labelClass}>Quilometragem</label>
-          <input id="mileageKm" name="mileageKm" type="number" defaultValue={vehicle?.mileage_km} required placeholder="Ex.: 12000" className={inputClass} />
-        </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="minSalePriceReais" className={labelClass}>Preço mínimo de venda</label>
+              <input id="minSalePriceReais" type="number" value={minSalePriceReais} onChange={(e) => setMinSalePriceReais(e.target.value)} placeholder="Ex.: 42000" className={inputClass} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="acquiredAt" className={labelClass}>Data de aquisição</label>
+              <VehicleDatePicker id="acquiredAt" value={acquiredAt} onChange={setAcquiredAt} />
+            </div>
+          </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="color" className={labelClass}>Cor</label>
-          <input id="color" name="color" value={color} onChange={(e) => setColor(e.target.value)} placeholder="Ex.: Branco" className={inputClass} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="priceReais" className={labelClass}>Preço (em reais)</label>
-          <input id="priceReais" name="priceReais" type="number" value={priceReais} onChange={(e) => setPriceReais(e.target.value)} required placeholder="Ex.: 45900" className={inputClass} />
-        </div>
+          <VehicleExpensesEditor expenses={expenses} onChange={setExpenses} />
+          <p className="text-sm font-bold text-graphite">
+            {showRealizedMargin ? 'Margem realizada' : 'Margem estimada'}: {formatPriceFromCents(marginCents ?? 0)}
+          </p>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="transmission" className={labelClass}>Câmbio</label>
-          <select id="transmission" name="transmission" value={transmission} onChange={(e) => setTransmission(e.target.value)} className={inputClass}>
-            <option value="">Selecione</option>
-            {withCurrentValue(TRANSMISSION_OPTIONS, vehicle?.transmission).map((option) => (
-              <option key={option} value={option}>{option}</option>
-            ))}
-          </select>
+          <VehicleFipeSection
+            initialValueCents={vehicle?.fipe_value_cents}
+            initialFetchedAt={vehicle?.fipe_fetched_at}
+            onSelect={setFipeSelection}
+          />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="fuelType" className={labelClass}>Combustível</label>
-          <select id="fuelType" name="fuelType" value={fuelType} onChange={(e) => setFuelType(e.target.value)} className={inputClass}>
-            <option value="">Selecione</option>
-            {withCurrentValue(FUEL_TYPE_OPTIONS, vehicle?.fuel_type).map((option) => (
-              <option key={option} value={option}>{option}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="engine" className={labelClass}>Motor</label>
-          <input id="engine" name="engine" value={engine} onChange={(e) => setEngine(e.target.value)} placeholder="Ex.: 1.6" className={inputClass} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="fuelTankLiters" className={labelClass}>Tanque de combustível (litros)</label>
-          <input id="fuelTankLiters" name="fuelTankLiters" type="number" defaultValue={vehicle?.fuel_tank_liters ?? ''} placeholder="Ex.: 55" className={inputClass} />
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="seatingCapacity" className={labelClass}>Quantidade de pessoas</label>
-          <input id="seatingCapacity" name="seatingCapacity" type="number" value={seatingCapacity} onChange={(e) => setSeatingCapacity(e.target.value)} placeholder="Ex.: 5" className={inputClass} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="bodyType" className={labelClass}>Tipo de carroceria</label>
-          <input id="bodyType" name="bodyType" value={bodyType} onChange={(e) => setBodyType(e.target.value)} placeholder="Ex.: Hatch" className={inputClass} />
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="doors" className={labelClass}>Portas</label>
-          <input id="doors" name="doors" type="number" defaultValue={vehicle?.doors ?? ''} placeholder="Ex.: 4" className={inputClass} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="horsepower" className={labelClass}>Potência (cv)</label>
-          <input id="horsepower" name="horsepower" type="number" value={horsepower} onChange={(e) => setHorsepower(e.target.value)} placeholder="Ex.: 116" className={inputClass} />
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="description" className={labelClass}>Descrição</label>
-        <textarea id="description" name="description" defaultValue={vehicle?.description ?? ''} rows={3} className={inputClass} />
       </div>
 
       <label className="flex items-center gap-2 text-sm font-bold">
@@ -353,35 +428,6 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
       <div className="flex flex-col gap-3 border-t border-support-gray/15 pt-6">
         <h2 className="text-lg font-bold">Opcionais</h2>
         <VehicleOptionalsPicker selected={optionals} onChange={handleOptionalsChange} />
-      </div>
-
-      <div id="custos" className="flex flex-col gap-4 border-t border-support-gray/15 pt-6">
-        <h2 className="text-lg font-bold">Custos (uso interno — nunca aparece no site)</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="acquisitionCostReais" className={labelClass}>Custo de aquisição (em reais)</label>
-            <input id="acquisitionCostReais" type="number" value={acquisitionCostReais} onChange={(e) => setAcquisitionCostReais(e.target.value)} placeholder="Ex.: 40000" className={inputClass} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="minSalePriceReais" className={labelClass}>Preço mínimo de venda (em reais)</label>
-            <input id="minSalePriceReais" type="number" value={minSalePriceReais} onChange={(e) => setMinSalePriceReais(e.target.value)} placeholder="Ex.: 42000" className={inputClass} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="acquiredAt" className={labelClass}>Data de aquisição</label>
-            <input id="acquiredAt" name="acquiredAt" type="date" defaultValue={vehicle?.acquired_at ?? ''} className={inputClass} />
-          </div>
-        </div>
-
-        <VehicleExpensesEditor expenses={expenses} onChange={setExpenses} />
-        <p className="text-sm font-bold text-graphite">
-          {showRealizedMargin ? 'Margem realizada' : 'Margem estimada'}: {formatPriceFromCents(marginCents ?? 0)}
-        </p>
-
-        <VehicleFipeSection
-          initialValueCents={vehicle?.fipe_value_cents}
-          initialFetchedAt={vehicle?.fipe_fetched_at}
-          onSelect={setFipeSelection}
-        />
       </div>
 
       {error && <p className="text-sm text-aguiar-red">{error}</p>}

@@ -20,7 +20,7 @@ interface VehicleFipeSectionProps {
 }
 
 const inputClass =
-  'rounded-lg border border-support-gray/25 p-2 text-sm text-graphite transition-colors focus:border-aguiar-red focus:outline-none'
+  'h-11 rounded-lg border border-support-gray/25 p-2.5 text-graphite transition-colors focus:border-aguiar-red focus:outline-none'
 
 export function VehicleFipeSection({ initialValueCents, initialFetchedAt, onSelect }: VehicleFipeSectionProps) {
   const [expanded, setExpanded] = useState(false)
@@ -135,7 +135,7 @@ export function VehicleFipeSection({ initialValueCents, initialFetchedAt, onSele
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg bg-support-gray/5 p-4">
+    <div className="flex flex-col gap-2 rounded-lg bg-white p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold">Referência FIPE</h3>
         <button type="button" onClick={() => setExpanded(true)} className="text-sm font-bold text-aguiar-red">
