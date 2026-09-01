@@ -133,6 +133,38 @@ describe('VehicleForm — buscar por placa', () => {
     expect(await screen.findByText(/não foi possível buscar/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/marca/i)).not.toBeDisabled()
   })
+
+  it('prefills every field the plate lookup can answer: year model/fabrication, horsepower, seats, motor, and body type', async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({
+      brand: 'Fiat', model: 'Argo', color: 'Prata', fuelType: 'Flex',
+      yearModel: 2023, yearFabrication: 2023, horsepower: 116, seatingCapacity: 5, engine: '1.3', bodyType: 'HATCH',
+    }), { status: 200 })) as any
+
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/placa/i), { target: { value: 'DEF4G56' } })
+    fireEvent.click(screen.getByRole('button', { name: /buscar dados/i }))
+
+    await screen.findByDisplayValue('Fiat')
+    expect(screen.getByLabelText(/ano do modelo/i)).toHaveValue(2023)
+    expect(screen.getByLabelText(/ano de fabricação/i)).toHaveValue(2023)
+    expect(screen.getByLabelText(/potência/i)).toHaveValue(116)
+    expect(screen.getByLabelText(/quantidade de pessoas/i)).toHaveValue(5)
+    expect(screen.getByLabelText(/^motor$/i)).toHaveValue('1.3')
+    expect(screen.getByLabelText(/tipo de carroceria/i)).toHaveValue('HATCH')
+  })
+
+  it('leaves combustível unselected when the lookup returns a fuel type outside the fixed list', async () => {
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({
+      brand: 'VW', model: 'Passat', fuelType: 'Indeterminado',
+    }), { status: 200 })) as any
+
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/placa/i), { target: { value: 'ABC1D23' } })
+    fireEvent.click(screen.getByRole('button', { name: /buscar dados/i }))
+
+    await screen.findByDisplayValue('VW')
+    expect(screen.getByLabelText(/^combustível$/i)).toHaveValue('')
+  })
 })
 
 describe('VehicleForm — validação de upload', () => {

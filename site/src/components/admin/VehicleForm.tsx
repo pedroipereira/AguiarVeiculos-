@@ -34,6 +34,16 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
   const [color, setColor] = useState(vehicle?.color ?? '')
   const [fuelType, setFuelType] = useState(vehicle?.fuel_type ?? '')
   const [transmission, setTransmission] = useState(vehicle?.transmission ?? '')
+  const [yearModel, setYearModel] = useState(vehicle?.year_model != null ? String(vehicle.year_model) : '')
+  const [yearFabrication, setYearFabrication] = useState(
+    vehicle?.year_fabrication != null ? String(vehicle.year_fabrication) : '',
+  )
+  const [engine, setEngine] = useState(vehicle?.engine ?? '')
+  const [seatingCapacity, setSeatingCapacity] = useState(
+    vehicle?.seating_capacity != null ? String(vehicle.seating_capacity) : '',
+  )
+  const [bodyType, setBodyType] = useState(vehicle?.body_type ?? '')
+  const [horsepower, setHorsepower] = useState(vehicle?.horsepower != null ? String(vehicle.horsepower) : '')
   const [plate, setPlate] = useState(vehicle?.plate ?? '')
   const [plateLookupError, setPlateLookupError] = useState<string | null>(null)
   const [imageError, setImageError] = useState<string | null>(null)
@@ -70,8 +80,17 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
     if (data.color) setColor(data.color)
     if (data.fuelType) {
       const normalized = normalizeFuelType(data.fuelType)
-      if (normalized) setFuelType(normalized)
+      // Only auto-select when the lookup value actually matches one of the
+      // fixed dropdown options — an unrecognized value (e.g. "Indeterminado")
+      // would otherwise sit in state but render as if nothing were selected.
+      if (normalized && (FUEL_TYPE_OPTIONS as string[]).includes(normalized)) setFuelType(normalized)
     }
+    if (data.yearModel) setYearModel(String(data.yearModel))
+    if (data.yearFabrication) setYearFabrication(String(data.yearFabrication))
+    if (data.horsepower) setHorsepower(String(data.horsepower))
+    if (data.seatingCapacity) setSeatingCapacity(String(data.seatingCapacity))
+    if (data.engine) setEngine(data.engine)
+    if (data.bodyType) setBodyType(data.bodyType)
   }
 
   async function handleFilesSelected(event: ChangeEvent<HTMLInputElement>) {
@@ -143,20 +162,20 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
         brand,
         model,
         version: String(formData.get('version') || ''),
-        yearModel: Number(formData.get('yearModel')),
-        yearFabrication: Number(formData.get('yearFabrication')),
+        yearModel: Number(yearModel),
+        yearFabrication: Number(yearFabrication),
         mileageKm: Number(formData.get('mileageKm')),
         priceCents: Math.round(Number(priceReais) * 100),
         fuelType,
         transmission,
         color,
         description: String(formData.get('description') || ''),
-        engine: String(formData.get('engine') || ''),
+        engine,
         fuelTankLiters: formData.get('fuelTankLiters') ? Number(formData.get('fuelTankLiters')) : undefined,
-        seatingCapacity: formData.get('seatingCapacity') ? Number(formData.get('seatingCapacity')) : undefined,
-        bodyType: String(formData.get('bodyType') || ''),
+        seatingCapacity: seatingCapacity ? Number(seatingCapacity) : undefined,
+        bodyType,
         doors: formData.get('doors') ? Number(formData.get('doors')) : undefined,
-        horsepower: formData.get('horsepower') ? Number(formData.get('horsepower')) : undefined,
+        horsepower: horsepower ? Number(horsepower) : undefined,
         plate,
         isFeatured: formData.get('isFeatured') === 'on',
         imagePaths,
@@ -253,12 +272,12 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="yearModel" className={labelClass}>Ano do modelo</label>
-          <input id="yearModel" name="yearModel" type="number" defaultValue={vehicle?.year_model} required placeholder="Ex.: 2024" className={inputClass} />
+          <input id="yearModel" name="yearModel" type="number" value={yearModel} onChange={(e) => setYearModel(e.target.value)} required placeholder="Ex.: 2024" className={inputClass} />
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="yearFabrication" className={labelClass}>Ano de fabricação</label>
-          <input id="yearFabrication" name="yearFabrication" type="number" defaultValue={vehicle?.year_fabrication} required placeholder="Ex.: 2023" className={inputClass} />
+          <input id="yearFabrication" name="yearFabrication" type="number" value={yearFabrication} onChange={(e) => setYearFabrication(e.target.value)} required placeholder="Ex.: 2023" className={inputClass} />
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="mileageKm" className={labelClass}>Quilometragem</label>
@@ -295,7 +314,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="engine" className={labelClass}>Motor</label>
-          <input id="engine" name="engine" defaultValue={vehicle?.engine ?? ''} placeholder="Ex.: 1.6" className={inputClass} />
+          <input id="engine" name="engine" value={engine} onChange={(e) => setEngine(e.target.value)} placeholder="Ex.: 1.6" className={inputClass} />
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="fuelTankLiters" className={labelClass}>Tanque de combustível (litros)</label>
@@ -304,11 +323,11 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="seatingCapacity" className={labelClass}>Quantidade de pessoas</label>
-          <input id="seatingCapacity" name="seatingCapacity" type="number" defaultValue={vehicle?.seating_capacity ?? ''} placeholder="Ex.: 5" className={inputClass} />
+          <input id="seatingCapacity" name="seatingCapacity" type="number" value={seatingCapacity} onChange={(e) => setSeatingCapacity(e.target.value)} placeholder="Ex.: 5" className={inputClass} />
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="bodyType" className={labelClass}>Tipo de carroceria</label>
-          <input id="bodyType" name="bodyType" defaultValue={vehicle?.body_type ?? ''} placeholder="Ex.: Hatch" className={inputClass} />
+          <input id="bodyType" name="bodyType" value={bodyType} onChange={(e) => setBodyType(e.target.value)} placeholder="Ex.: Hatch" className={inputClass} />
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -317,7 +336,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="horsepower" className={labelClass}>Potência (hp)</label>
-          <input id="horsepower" name="horsepower" type="number" defaultValue={vehicle?.horsepower ?? ''} placeholder="Ex.: 116" className={inputClass} />
+          <input id="horsepower" name="horsepower" type="number" value={horsepower} onChange={(e) => setHorsepower(e.target.value)} placeholder="Ex.: 116" className={inputClass} />
         </div>
       </div>
 
