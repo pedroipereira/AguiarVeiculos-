@@ -176,7 +176,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex max-w-3xl flex-col gap-6 rounded-xl bg-white p-6 shadow-sm">
+    <form onSubmit={handleSubmit} className="flex max-w-3xl flex-col gap-6 rounded-xl bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-1.5 border-b border-support-gray/15 pb-6">
         <label htmlFor="images" className={labelClass}>Fotos do veículo (até {MAX_VEHICLE_IMAGES})</label>
         <input

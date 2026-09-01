@@ -315,6 +315,7 @@ describe('VehicleForm — FIPE', () => {
   it('keeps the vehicle\'s already-saved FIPE data when the FIPE section is left untouched', async () => {
     const vehicle = {
       id: 'v-1', brand: 'Fiat', model: 'Argo',
+      year_model: 2023, year_fabrication: 2023, mileage_km: 32000, price_cents: 6490000,
       fipe_brand_code: '21', fipe_model_code: '437', fipe_year_code: '1987-1',
       fipe_value_cents: 614700, fipe_fetched_at: '2026-08-01T12:00:00.000Z',
     } as any
