@@ -117,6 +117,17 @@ Nenhuma das colunas/tabelas novas entra em `vehicles_public` nem em nenhuma
 view pública — mesma garantia estrutural de hoje (view com whitelist
 explícita de colunas + RLS).
 
+### Limiar de giro (editável)
+
+O "90 dias" da aba "Girar" e do badge de dias parado **não é fixo no
+código** — é uma configuração editável pelo admin, guardada como mais uma
+linha em `site_settings` (tabela chave/valor que já existe e já tem form
+próprio em Configurações — `SiteSettingsForm.tsx`/`adminSetSiteSetting`):
+chave `stock_turnover_threshold_days`, valor padrão `'90'`. A página de
+Configurações ganha um campo numérico simples para esse valor; a grade de
+Estoque lê esse número (com fallback para 90 se a linha não existir) em vez
+de usar uma constante fixa.
+
 ### Catálogo de opcionais
 
 Lista fixa (`VEHICLE_OPTIONALS` em `src/lib/vehicle-optionals.ts`), moldada
@@ -146,7 +157,7 @@ Veículo"):
 1. **Fotos do veículo** (até 15) — no topo, grid de thumbnails com
    drag-and-drop (já existe, só reposicionado).
 2. **Placa** (uso interno, nunca aparece no site) + botão "Buscar dados"
-   (integração já existente).
+   (integração já existente - quero verificar a funcionalidade).
 3. **Dados do carro**, dividido em dois grupos com título:
    - *Identificação*: Marca, Modelo, Categoria, Versão.
    - *Especificações*: Ano modelo, Ano fabricação, Km / Cor, Câmbio,
@@ -180,8 +191,8 @@ responsiva), cada card com:
 
 - Foto de capa (primeira imagem do veículo).
 - Badge de dias parado (`hoje - (acquired_at ?? created_at)`, em dias) —
-  cor neutra normalmente, vermelha quando ≥ 90 dias (mesmo limiar da aba
-  "Girar").
+  cor neutra normalmente, vermelha quando ≥ limiar de giro configurado
+  (mesmo limiar da aba "Girar", ver seção "Limiar de giro" acima).
 - Título (marca + modelo + versão), subtítulo (ano · km · cor).
 - Preço de tabela (`price_cents`).
 - Um dos dois estados, mutuamente exclusivos:
@@ -199,7 +210,8 @@ clique alterna o filtro ativo):
 - **Todos** — todos os veículos, qualquer status.
 - **Sem margem** — `acquisition_cost_cents is null or min_sale_price_cents
   is null`, excluindo vendidos.
-- **Girar (+90d)** — `status = 'available'` e dias parado ≥ 90.
+- **Girar (+Nd)** — `status = 'available'` e dias parado ≥ limiar
+  configurado (rótulo da aba mostra o número atual, ex.: "Girar (+90d)").
 - **Em preparação** — `status = 'preparing'`.
 
 Mais uma caixa de busca por texto livre (marca, modelo, versão, cor) acima
