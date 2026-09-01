@@ -10,6 +10,7 @@ import { TRANSMISSION_OPTIONS, FUEL_TYPE_OPTIONS, normalizeFuelType, withCurrent
 import { VehicleExpensesEditor, type DraftVehicleExpense } from './VehicleExpensesEditor'
 import { VehicleFipeSection, type FipeSelection } from './VehicleFipeSection'
 import { VehicleOptionalsPicker } from './VehicleOptionalsPicker'
+import { isValidOptional, type VehicleOptional } from '@/lib/vehicle-optionals'
 import { calculateTotalCostCents, calculateEstimatedMarginCents, calculateRealizedMarginCents } from '@/lib/vehicle-costs'
 import { formatPriceFromCents } from '@/lib/format'
 import { Button } from '@/components/ui/Button'
@@ -51,7 +52,10 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
     })),
   )
   const [fipeSelection, setFipeSelection] = useState<FipeSelection | null>(null)
-  const [optionals, setOptionals] = useState<string[]>(vehicle?.optionals ?? [])
+  // vehicle.optionals is plain string[] (the DB column is just text[]), so it's
+  // filtered through the VehicleOptional type guard before seeding state typed
+  // to the fixed catalog that adminSaveVehicle's payload requires.
+  const [optionals, setOptionals] = useState<VehicleOptional[]>((vehicle?.optionals ?? []).filter(isValidOptional))
 
   async function handlePlateLookup() {
     setPlateLookupError(null)
@@ -102,6 +106,12 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
     const client = createBrowserSupabaseClient()
     const uploaded = await Promise.all(toUpload.map((file) => uploadVehicleImage(client, file)))
     setImagePaths((current) => [...current, ...uploaded])
+  }
+
+  // VehicleOptionalsPicker's onChange is typed as plain string[] (Task 15), so
+  // its output is re-filtered through the same type guard before it's stored.
+  function handleOptionalsChange(next: string[]) {
+    setOptionals(next.filter(isValidOptional))
   }
 
   function moveImage(index: number, direction: -1 | 1) {
@@ -323,7 +333,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
 
       <div className="flex flex-col gap-3 border-t border-support-gray/15 pt-6">
         <h2 className="text-lg font-bold">Opcionais</h2>
-        <VehicleOptionalsPicker selected={optionals} onChange={setOptionals} />
+        <VehicleOptionalsPicker selected={optionals} onChange={handleOptionalsChange} />
       </div>
 
       <div className="flex flex-col gap-4 border-t border-support-gray/15 pt-6">
