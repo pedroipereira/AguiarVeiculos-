@@ -151,8 +151,12 @@ conteúdo — fácil de editar depois sem migration (é código, não dado).
 
 ## Formulário de veículo (`VehicleForm.tsx`)
 
-Reconstruído do zero batendo com o mockup já aprovado ("Formulário de
-Veículo"):
+Reconstruído do zero. A lista de campos abaixo reflete o mockup já aprovado
+("Formulário de Veículo"); o agrupamento visual em sub-seções com título
+(Identificação/Especificações, cartões separados, cores/bordas exatas) fica
+para o passe de polimento visual pós-plano (ver plano de implementação) —
+esta primeira passada entrega os campos funcionando dentro da mesma grade
+2 colunas que o formulário já usa hoje:
 
 1. **Fotos do veículo** (até 15) — no topo, grid de thumbnails com
    drag-and-drop (já existe, só reposicionado).
