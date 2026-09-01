@@ -107,7 +107,7 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
     ...(vehicle.seating_capacity != null ? [{ label: 'Quantidade de pessoas', value: `${vehicle.seating_capacity}` }] : []),
     ...(vehicle.body_type ? [{ label: 'Tipo de carroceria', value: vehicle.body_type }] : []),
     ...(vehicle.doors != null ? [{ label: 'Portas', value: `${vehicle.doors}` }] : []),
-    ...(vehicle.horsepower != null ? [{ label: 'Potência', value: `${vehicle.horsepower} hp` }] : []),
+    ...(vehicle.horsepower != null ? [{ label: 'Potência', value: `${vehicle.horsepower} cv` }] : []),
   ]
 
   return (

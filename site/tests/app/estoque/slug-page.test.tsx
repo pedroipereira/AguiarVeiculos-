@@ -123,7 +123,7 @@ describe('/estoque/[slug] page', () => {
     expect(screen.getByText('Portas')).toBeInTheDocument()
     expect(screen.getByText('4')).toBeInTheDocument()
     expect(screen.getByText('Potência')).toBeInTheDocument()
-    expect(screen.getByText('115 hp')).toBeInTheDocument()
+    expect(screen.getByText('115 cv')).toBeInTheDocument()
   })
 
   it('omits body type, doors, and horsepower from ficha técnica when the vehicle has none of them', async () => {

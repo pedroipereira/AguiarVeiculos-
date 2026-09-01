@@ -335,7 +335,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
           <input id="doors" name="doors" type="number" defaultValue={vehicle?.doors ?? ''} placeholder="Ex.: 4" className={inputClass} />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="horsepower" className={labelClass}>Potência (hp)</label>
+          <label htmlFor="horsepower" className={labelClass}>Potência (cv)</label>
           <input id="horsepower" name="horsepower" type="number" value={horsepower} onChange={(e) => setHorsepower(e.target.value)} placeholder="Ex.: 116" className={inputClass} />
         </div>
       </div>
