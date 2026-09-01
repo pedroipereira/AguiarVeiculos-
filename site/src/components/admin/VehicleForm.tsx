@@ -160,8 +160,8 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
         plate,
         isFeatured: formData.get('isFeatured') === 'on',
         imagePaths,
-        acquisitionCostCents: acquisitionCostReais ? Math.round(Number(acquisitionCostReais) * 100) : undefined,
-        minSalePriceCents: minSalePriceReais ? Math.round(Number(minSalePriceReais) * 100) : undefined,
+        acquisitionCostCents: acquisitionCostReais.trim() ? Math.round(Number(acquisitionCostReais) * 100) : undefined,
+        minSalePriceCents: minSalePriceReais.trim() ? Math.round(Number(minSalePriceReais) * 100) : undefined,
         acquiredAt: String(formData.get('acquiredAt') || '') || undefined,
         expenses: expenses
           .filter((expense) => expense.amountReais.trim() !== '')
@@ -336,7 +336,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
         <VehicleOptionalsPicker selected={optionals} onChange={handleOptionalsChange} />
       </div>
 
-      <div className="flex flex-col gap-4 border-t border-support-gray/15 pt-6">
+      <div id="custos" className="flex flex-col gap-4 border-t border-support-gray/15 pt-6">
         <h2 className="text-lg font-bold">Custos (uso interno — nunca aparece no site)</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">

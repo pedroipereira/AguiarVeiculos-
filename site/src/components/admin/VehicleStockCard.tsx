@@ -62,7 +62,7 @@ export function VehicleStockCard({ vehicle, coverImageUrl, totalCostCents, thres
           </div>
         ) : (
           <Link
-            href={`/admin/veiculos/${vehicle.id}`}
+            href={`/admin/veiculos/${vehicle.id}#custos`}
             className="rounded-lg bg-yellow-100 px-3 py-2 text-center text-sm font-bold text-yellow-800"
           >
             Definir margem
