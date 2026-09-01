@@ -29,6 +29,7 @@ export function VehicleFipeSection({ initialValueCents, initialFetchedAt, onSele
   const [years, setYears] = useState<FipeOption[]>([])
   const [brandCode, setBrandCode] = useState('')
   const [modelCode, setModelCode] = useState('')
+  const [yearCode, setYearCode] = useState('')
   const [valueCents, setValueCents] = useState<number | null | undefined>(initialValueCents)
   const [fetchedAt, setFetchedAt] = useState<string | null | undefined>(initialFetchedAt)
   const [loading, setLoading] = useState(false)
@@ -47,24 +48,29 @@ export function VehicleFipeSection({ initialValueCents, initialFetchedAt, onSele
     setLoading(true)
     setError(null)
     fetch('/api/admin/fipe/marcas')
-      .then((response) => response.json())
-      .then((data) => setBrands(data))
+      .then(async (response) => {
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.error)
+        setBrands(data)
+      })
       .catch(() => setError('Não foi possível carregar as marcas da FIPE.'))
       .finally(() => setLoading(false))
   }, [expanded, brands.length])
 
   function selectBrand(code: string) {
+    setError(null)
     setBrandCode(code)
     setModelCode('')
+    setYearCode('')
     setModels([])
     setYears([])
     const requestId = ++modelsRequestRef.current
     if (!code) return
     setLoading(true)
-    setError(null)
     fetch(`/api/admin/fipe/modelos?marca=${encodeURIComponent(code)}`)
-      .then((response) => response.json())
-      .then((data) => {
+      .then(async (response) => {
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.error)
         if (modelsRequestRef.current !== requestId) return
         setModels(data)
       })
@@ -73,21 +79,22 @@ export function VehicleFipeSection({ initialValueCents, initialFetchedAt, onSele
         setError('Não foi possível carregar os modelos da FIPE.')
       })
       .finally(() => {
-        if (modelsRequestRef.current !== requestId) return
-        setLoading(false)
+        if (modelsRequestRef.current === requestId) setLoading(false)
       })
   }
 
   function selectModel(code: string) {
+    setError(null)
     setModelCode(code)
+    setYearCode('')
     setYears([])
     const requestId = ++yearsRequestRef.current
     if (!code) return
     setLoading(true)
-    setError(null)
     fetch(`/api/admin/fipe/anos?marca=${encodeURIComponent(brandCode)}&modelo=${encodeURIComponent(code)}`)
-      .then((response) => response.json())
-      .then((data) => {
+      .then(async (response) => {
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.error)
         if (yearsRequestRef.current !== requestId) return
         setYears(data)
       })
@@ -96,15 +103,15 @@ export function VehicleFipeSection({ initialValueCents, initialFetchedAt, onSele
         setError('Não foi possível carregar os anos da FIPE.')
       })
       .finally(() => {
-        if (yearsRequestRef.current !== requestId) return
-        setLoading(false)
+        if (yearsRequestRef.current === requestId) setLoading(false)
       })
   }
 
   async function selectYear(code: string) {
+    setError(null)
+    setYearCode(code)
     if (!code) return
     const requestId = ++valueRequestRef.current
-    setError(null)
     setLoading(true)
     try {
       const response = await fetch(
@@ -119,6 +126,8 @@ export function VehicleFipeSection({ initialValueCents, initialFetchedAt, onSele
       onSelect({ brandCode, modelCode, yearCode: code, valueCents: data.valueCents, fetchedAt: nowIso })
     } catch {
       if (valueRequestRef.current !== requestId) return
+      setValueCents(null)
+      setFetchedAt(null)
       setError('Não foi possível consultar o preço FIPE.')
     } finally {
       if (valueRequestRef.current === requestId) setLoading(false)
@@ -159,7 +168,7 @@ export function VehicleFipeSection({ initialValueCents, initialFetchedAt, onSele
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="fipeYear" className="text-xs font-bold">Ano FIPE</label>
-            <select id="fipeYear" onChange={(e) => selectYear(e.target.value)} disabled={!modelCode} className={inputClass}>
+            <select id="fipeYear" value={yearCode} onChange={(e) => selectYear(e.target.value)} disabled={!modelCode} className={inputClass}>
               <option value="">Selecione</option>
               {years.map((year) => <option key={year.code} value={year.code}>{year.name}</option>)}
             </select>
