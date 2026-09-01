@@ -1,11 +1,24 @@
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getAllVehiclesAdmin } from '@/lib/queries/vehicles'
-import { VehicleTable } from '@/components/admin/VehicleTable'
+import { getPrimaryImageUrlsByVehicleIds } from '@/lib/queries/vehicle-images'
+import { getVehicleExpenseTotals } from '@/lib/queries/vehicle-expenses'
+import { getAllLeadsAdmin } from '@/lib/queries/leads'
+import { getSiteSetting } from '@/lib/queries/site-settings'
+import { parseTurnoverThreshold } from '@/lib/vehicle-stock'
+import { VehicleStockGrid } from '@/components/admin/VehicleStockGrid'
 
 export default async function AdminVeiculosPage() {
   const client = await createServerSupabaseClient()
   const vehicles = await getAllVehiclesAdmin(client)
+  const vehicleIds = vehicles.map((vehicle) => vehicle.id)
+
+  const [coverImageUrls, expenseTotalsCents, leads, thresholdSetting] = await Promise.all([
+    getPrimaryImageUrlsByVehicleIds(client, vehicleIds),
+    getVehicleExpenseTotals(client, vehicleIds),
+    getAllLeadsAdmin(client),
+    getSiteSetting(client, 'stock_turnover_threshold_days'),
+  ])
 
   return (
     <div>
@@ -18,7 +31,13 @@ export default async function AdminVeiculosPage() {
           Cadastrar veículo
         </Link>
       </div>
-      <VehicleTable vehicles={vehicles} />
+      <VehicleStockGrid
+        vehicles={vehicles}
+        coverImageUrls={coverImageUrls}
+        expenseTotalsCents={expenseTotalsCents}
+        thresholdDays={parseTurnoverThreshold(thresholdSetting)}
+        leads={leads}
+      />
     </div>
   )
 }
