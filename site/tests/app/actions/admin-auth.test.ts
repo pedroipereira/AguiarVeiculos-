@@ -14,7 +14,7 @@ vi.mock('@/lib/supabase/server', () => ({
   })),
 }))
 
-import { adminDeleteVehicle } from '@/app/actions/vehicles'
+import { adminDeleteVehicle, adminMarkVehicleSold } from '@/app/actions/vehicles'
 import { adminSetSiteSetting } from '@/app/actions/site-settings'
 
 describe('admin server actions — explicit auth check', () => {
@@ -37,5 +37,10 @@ describe('admin server actions — explicit auth check', () => {
   it('adminSetSiteSetting rejects an unauthenticated call too', async () => {
     getUser.mockResolvedValue({ data: { user: null }, error: null })
     await expect(adminSetSiteSetting('location_video_url', 'https://x')).rejects.toThrow('Não autenticado.')
+  })
+
+  it('adminMarkVehicleSold rejects an unauthenticated call before touching the database', async () => {
+    getUser.mockResolvedValue({ data: { user: null }, error: null })
+    await expect(adminMarkVehicleSold('v-1', { salePriceCents: 100, soldAt: '2026-08-31' })).rejects.toThrow('Não autenticado.')
   })
 })

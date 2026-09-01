@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { assertAdmin } from '@/lib/actions/assert-admin'
 import * as vehicleActions from '@/lib/actions/vehicles'
-import type { SaveVehicleInput } from '@/lib/actions/vehicles'
+import type { SaveVehicleInput, MarkVehicleSoldInput } from '@/lib/actions/vehicles'
 import type { VehicleStatus } from '@/lib/types'
 
 export async function adminSaveVehicle(input: SaveVehicleInput) {
@@ -37,6 +37,14 @@ export async function adminSetVehicleStatus(id: string, status: VehicleStatus) {
   const client = await createServerSupabaseClient()
   await assertAdmin(client)
   await vehicleActions.setVehicleStatus(client, id, status)
+  revalidatePath('/admin/veiculos')
+  revalidatePath('/estoque')
+}
+
+export async function adminMarkVehicleSold(id: string, input: MarkVehicleSoldInput) {
+  const client = await createServerSupabaseClient()
+  await assertAdmin(client)
+  await vehicleActions.markVehicleSold(client, id, input)
   revalidatePath('/admin/veiculos')
   revalidatePath('/estoque')
 }
