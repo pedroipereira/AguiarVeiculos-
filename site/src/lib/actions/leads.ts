@@ -50,13 +50,22 @@ export interface UpdateLeadInput {
 }
 
 export async function updateLead(client: SupabaseClient, id: string, input: UpdateLeadInput): Promise<void> {
+  const targetStage = input.stage ?? 'novo'
+  if (targetStage === 'vendeu' && input.vehicleId) {
+    const { data: current, error: fetchError } = await client.from('leads').select('stage').eq('id', id).single()
+    if (fetchError) throw fetchError
+    if ((current as { stage: LeadStage }).stage !== 'vendeu') {
+      throw new Error('Mova para "Vendeu" pelo quadro de leads, completando a venda do veículo.')
+    }
+  }
+
   const { error } = await client
     .from('leads')
     .update({
       name: input.name,
       phone: input.phone,
       vehicle_id: input.vehicleId ?? null,
-      stage: input.stage ?? 'novo',
+      stage: targetStage,
       notes: input.notes ?? null,
       first_contact_at: input.firstContactAt ?? null,
       store_visit_at: input.storeVisitAt ?? null,

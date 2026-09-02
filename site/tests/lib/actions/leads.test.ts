@@ -106,6 +106,53 @@ describe('updateLead', () => {
     const client = { from: vi.fn(() => chain) }
     await expect(updateLead(client as any, 'l-1', { name: 'Ana', phone: '98977777777' })).rejects.toEqual({ message: 'row-level security violation' })
   })
+
+  it('rejects moving a vehicle-linked lead to "vendeu" when its current stage is not already vendeu', async () => {
+    const selectChain: any = {
+      select: vi.fn(() => selectChain),
+      eq: vi.fn(() => selectChain),
+      single: vi.fn(async () => ({ data: { stage: 'negociando' }, error: null })),
+    }
+    const update = vi.fn(() => ({ eq: vi.fn(async () => ({ error: null })) }))
+    const client = { from: vi.fn(() => ({ ...selectChain, update })) }
+
+    await expect(
+      updateLead(client as any, 'l-1', { name: 'Maria', phone: '98999999999', vehicleId: 'v-1', stage: 'vendeu' }),
+    ).rejects.toThrow('Mova para "Vendeu" pelo quadro de leads, completando a venda do veículo.')
+    expect(update).not.toHaveBeenCalled()
+  })
+
+  it('allows updating other fields on a lead already at "vendeu" with a vehicle linked', async () => {
+    const eqAfterUpdate = vi.fn(async () => ({ error: null }))
+    const chain: any = {
+      select: vi.fn(() => chain),
+      eq: vi.fn(() => chain),
+      single: vi.fn(async () => ({ data: { stage: 'vendeu' }, error: null })),
+      update: vi.fn(() => ({ eq: eqAfterUpdate })),
+    }
+    const client = { from: vi.fn(() => chain) }
+
+    await updateLead(client as any, 'l-1', { name: 'Maria', phone: '98999999999', vehicleId: 'v-1', stage: 'vendeu' })
+
+    expect(chain.update).toHaveBeenCalledWith(
+      expect.objectContaining({ stage: 'vendeu', vehicle_id: 'v-1' }),
+    )
+    expect(eqAfterUpdate).toHaveBeenCalledWith('id', 'l-1')
+  })
+
+  it('allows moving a lead with no vehicle linked to "vendeu" without checking the current stage', async () => {
+    const select = vi.fn()
+    const single = vi.fn()
+    const eqAfterUpdate = vi.fn(async () => ({ error: null }))
+    const chain: any = { select, single, update: vi.fn(() => ({ eq: eqAfterUpdate })) }
+    const client = { from: vi.fn(() => chain) }
+
+    await updateLead(client as any, 'l-1', { name: 'Maria', phone: '98999999999', stage: 'vendeu' })
+
+    expect(select).not.toHaveBeenCalled()
+    expect(single).not.toHaveBeenCalled()
+    expect(chain.update).toHaveBeenCalledWith(expect.objectContaining({ stage: 'vendeu', vehicle_id: null }))
+  })
 })
 
 describe('updateLeadStage', () => {

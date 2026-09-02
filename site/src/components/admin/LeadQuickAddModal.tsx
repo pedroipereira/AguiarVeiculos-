@@ -125,7 +125,13 @@ export function LeadQuickAddModal({
               <label htmlFor="lead-stage" className={labelClass}>Estágio no funil</label>
               <select id="lead-stage" name="stage" defaultValue={lead?.stage ?? defaultStage} className={inputClass}>
                 {STAGE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
+                  <option
+                    key={option.value}
+                    value={option.value}
+                    disabled={option.value === 'vendeu' && !!lead?.vehicle_id && lead.stage !== 'vendeu'}
+                  >
+                    {option.label}
+                  </option>
                 ))}
               </select>
             </div>
