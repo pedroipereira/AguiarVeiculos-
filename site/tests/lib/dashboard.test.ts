@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateGoalProgress } from '@/lib/dashboard'
+import { calculateGoalProgress, resolveDateRange } from '@/lib/dashboard'
 
 describe('calculateGoalProgress', () => {
   it('returns null when no goal is set', () => {
@@ -33,5 +33,37 @@ describe('calculateGoalProgress', () => {
     const result = calculateGoalProgress(25, 20, new Date(2026, 8, 1))
     expect(result?.remaining).toBe(0)
     expect(result?.percent).toBe(125)
+  })
+})
+
+describe('resolveDateRange', () => {
+  const NOW = new Date(2026, 8, 25) // Friday, September 25th 2026
+
+  it('resolves "today" and "yesterday" as single-day ranges', () => {
+    expect(resolveDateRange('today', NOW)).toEqual({ start: '2026-09-25', end: '2026-09-25' })
+    expect(resolveDateRange('yesterday', NOW)).toEqual({ start: '2026-09-24', end: '2026-09-24' })
+  })
+
+  it('resolves "week" as the Monday-Sunday containing "now"', () => {
+    expect(resolveDateRange('week', NOW)).toEqual({ start: '2026-09-21', end: '2026-09-27' })
+  })
+
+  it('resolves "week" the same way when "now" itself falls on a Sunday', () => {
+    expect(resolveDateRange('week', new Date(2026, 8, 27))).toEqual({ start: '2026-09-21', end: '2026-09-27' })
+  })
+
+  it('resolves "month" as the full current calendar month', () => {
+    expect(resolveDateRange('month', NOW)).toEqual({ start: '2026-09-01', end: '2026-09-30' })
+  })
+
+  it('resolves "year" as the full current calendar year', () => {
+    expect(resolveDateRange('year', NOW)).toEqual({ start: '2026-01-01', end: '2026-12-31' })
+  })
+
+  it('passes "custom" through unchanged, including an inverted range', () => {
+    expect(resolveDateRange('custom', NOW, { start: '2026-01-10', end: '2026-01-05' })).toEqual({
+      start: '2026-01-10',
+      end: '2026-01-05',
+    })
   })
 })

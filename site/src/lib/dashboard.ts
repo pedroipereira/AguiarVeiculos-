@@ -28,3 +28,57 @@ export function calculateGoalProgress(soldCount: number, goal: number | null, no
     businessDaysLeft: countRemainingBusinessDays(now),
   }
 }
+
+/** Formats a Date using its local calendar fields — never toISOString(), which
+ *  shifts to UTC and can roll the date back a day in timezones behind UTC. */
+function formatDateLocal(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function addDays(date: Date, delta: number): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + delta)
+}
+
+export type DateRangePreset = 'today' | 'yesterday' | 'week' | 'month' | 'year' | 'custom'
+
+export interface DateRange {
+  start: string
+  end: string
+}
+
+export function resolveDateRange(preset: DateRangePreset, now: Date, custom?: DateRange): DateRange {
+  switch (preset) {
+    case 'today': {
+      const iso = formatDateLocal(now)
+      return { start: iso, end: iso }
+    }
+    case 'yesterday': {
+      const iso = formatDateLocal(addDays(now, -1))
+      return { start: iso, end: iso }
+    }
+    case 'week': {
+      const dayOfWeek = now.getDay() // 0 = Sunday .. 6 = Saturday
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+      const monday = addDays(now, mondayOffset)
+      const sunday = addDays(monday, 6)
+      return { start: formatDateLocal(monday), end: formatDateLocal(sunday) }
+    }
+    case 'month': {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1)
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      return { start: formatDateLocal(start), end: formatDateLocal(end) }
+    }
+    case 'year': {
+      const start = new Date(now.getFullYear(), 0, 1)
+      const end = new Date(now.getFullYear(), 11, 31)
+      return { start: formatDateLocal(start), end: formatDateLocal(end) }
+    }
+    case 'custom': {
+      if (!custom) throw new Error('resolveDateRange: "custom" preset requires a custom range')
+      return custom
+    }
+  }
+}
