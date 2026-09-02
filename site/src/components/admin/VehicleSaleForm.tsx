@@ -7,6 +7,7 @@ import { adminMarkVehicleSold } from '@/app/actions/vehicles'
 interface VehicleSaleFormProps {
   vehicleId: string
   leads: Lead[]
+  defaultBuyerLeadId?: string
   onCancel: () => void
   onSaved: () => void
 }
@@ -14,7 +15,7 @@ interface VehicleSaleFormProps {
 const inputClass =
   'rounded-lg border border-support-gray/25 p-2 text-sm text-graphite transition-colors focus:border-aguiar-red focus:outline-none'
 
-export function VehicleSaleForm({ vehicleId, leads, onCancel, onSaved }: VehicleSaleFormProps) {
+export function VehicleSaleForm({ vehicleId, leads, defaultBuyerLeadId, onCancel, onSaved }: VehicleSaleFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -53,7 +54,7 @@ export function VehicleSaleForm({ vehicleId, leads, onCancel, onSaved }: Vehicle
       </div>
       <div className="flex flex-col gap-1">
         <label htmlFor={`buyerLeadId-${vehicleId}`} className="text-sm font-bold">Comprador (opcional)</label>
-        <select id={`buyerLeadId-${vehicleId}`} name="buyerLeadId" className={inputClass}>
+        <select id={`buyerLeadId-${vehicleId}`} name="buyerLeadId" defaultValue={defaultBuyerLeadId ?? ''} className={inputClass}>
           <option value="">Sem comprador vinculado</option>
           {leads.map((lead) => (
             <option key={lead.id} value={lead.id}>{lead.name} — {lead.phone}</option>

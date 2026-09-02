@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { assertAdmin } from '@/lib/actions/assert-admin'
-import { createLead } from '@/lib/actions/leads'
+import { createLead, updateLead, updateLeadStage, deleteLead } from '@/lib/actions/leads'
 import {
   financingLeadSchema,
   tradeInLeadSchema,
@@ -12,6 +12,7 @@ import {
   type TradeInLeadValues,
   type ManualLeadValues,
 } from '@/lib/validation'
+import type { LeadStage } from '@/lib/types'
 
 export async function submitFinancingLead(input: FinancingLeadValues) {
   const values = financingLeadSchema.parse(input)
@@ -55,10 +56,43 @@ export async function adminCreateManualLead(input: ManualLeadValues) {
     details: {},
     vehicleId: values.vehicleId,
     stage: values.stage,
+    notes: values.notes,
     firstContactAt: values.firstContactAt,
     storeVisitAt: values.storeVisitAt,
     scheduledVisitDate: values.scheduledVisitDate,
     scheduledVisitTime: values.scheduledVisitTime,
   })
+  revalidatePath('/admin/leads')
+}
+
+export async function adminUpdateLead(id: string, input: ManualLeadValues) {
+  const values = manualLeadSchema.parse(input)
+  const client = await createServerSupabaseClient()
+  await assertAdmin(client)
+  await updateLead(client, id, {
+    name: values.name,
+    phone: values.phone,
+    vehicleId: values.vehicleId,
+    stage: values.stage,
+    notes: values.notes,
+    firstContactAt: values.firstContactAt,
+    storeVisitAt: values.storeVisitAt,
+    scheduledVisitDate: values.scheduledVisitDate,
+    scheduledVisitTime: values.scheduledVisitTime,
+  })
+  revalidatePath('/admin/leads')
+}
+
+export async function adminUpdateLeadStage(id: string, stage: LeadStage) {
+  const client = await createServerSupabaseClient()
+  await assertAdmin(client)
+  await updateLeadStage(client, id, stage)
+  revalidatePath('/admin/leads')
+}
+
+export async function adminDeleteLead(id: string) {
+  const client = await createServerSupabaseClient()
+  await assertAdmin(client)
+  await deleteLead(client, id)
   revalidatePath('/admin/leads')
 }

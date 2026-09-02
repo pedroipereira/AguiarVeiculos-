@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { vehicleFormSchema, financingLeadSchema, tradeInLeadSchema, vehicleExpenseSchema, markVehicleSoldSchema } from '@/lib/validation'
+import { vehicleFormSchema, financingLeadSchema, tradeInLeadSchema, vehicleExpenseSchema, markVehicleSoldSchema, manualLeadSchema } from '@/lib/validation'
 
 describe('vehicleFormSchema', () => {
   it('accepts a valid vehicle', () => {
@@ -153,5 +153,24 @@ describe('vehicleFormSchema — costs, FIPE, acquisition date, optionals', () =>
       brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
       mileageKm: 32000, priceCents: 6490000, optionals: ['Turbina de fibra'],
     })).toThrow()
+  })
+})
+
+describe('manualLeadSchema', () => {
+  it('accepts a full payload including notes', () => {
+    const result = manualLeadSchema.parse({
+      name: 'Maria', phone: '98999999999', vehicleId: '11111111-1111-1111-1111-111111111111',
+      stage: 'negociando', notes: 'Quer trocar o carro atual', firstContactAt: '2026-09-01',
+    })
+    expect(result.notes).toBe('Quer trocar o carro atual')
+  })
+
+  it('accepts a minimal payload without notes', () => {
+    const result = manualLeadSchema.parse({ name: 'João', phone: '98988888888' })
+    expect(result.notes).toBeUndefined()
+  })
+
+  it('rejects a name shorter than 2 characters', () => {
+    expect(manualLeadSchema.safeParse({ name: 'J', phone: '98988888888' }).success).toBe(false)
   })
 })
