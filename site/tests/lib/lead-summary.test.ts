@@ -28,53 +28,31 @@ function makeVehicle(overrides: Partial<Vehicle> = {}): Vehicle {
 }
 
 describe('isOverdueReturn', () => {
-  const NOW = new Date(2026, 8, 2, 12, 0) // Sept 2, 2026, 12:00 local
-
-  it('is true when the scheduled visit date/time already passed', () => {
-    const lead = makeLead({ stage: 'visita_marcada', scheduled_visit_date: '2026-09-01', scheduled_visit_time: '10:00' })
-    expect(isOverdueReturn(lead, NOW)).toBe(true)
+  it('is true for a lead sitting in "ligar de volta"', () => {
+    expect(isOverdueReturn(makeLead({ stage: 'ligar_de_volta' }))).toBe(true)
   })
 
-  it('is false when the scheduled visit is still in the future', () => {
-    const lead = makeLead({ stage: 'visita_marcada', scheduled_visit_date: '2026-09-03', scheduled_visit_time: '10:00' })
-    expect(isOverdueReturn(lead, NOW)).toBe(false)
-  })
-
-  it('treats a missing time as end of day (23:59) — today with no time is not yet overdue', () => {
-    const lead = makeLead({ stage: 'visita_marcada', scheduled_visit_date: '2026-09-02', scheduled_visit_time: null })
-    expect(isOverdueReturn(lead, NOW)).toBe(false)
-  })
-
-  it('with a missing time, a past day is overdue', () => {
-    const lead = makeLead({ stage: 'visita_marcada', scheduled_visit_date: '2026-09-01', scheduled_visit_time: null })
-    expect(isOverdueReturn(lead, NOW)).toBe(true)
-  })
-
-  it('is false for any stage other than visita_marcada, even with a past date', () => {
-    const lead = makeLead({ stage: 'negociando', scheduled_visit_date: '2026-09-01', scheduled_visit_time: '10:00' })
-    expect(isOverdueReturn(lead, NOW)).toBe(false)
-  })
-
-  it('is false when there is no scheduled_visit_date at all', () => {
-    const lead = makeLead({ stage: 'visita_marcada', scheduled_visit_date: null })
-    expect(isOverdueReturn(lead, NOW)).toBe(false)
+  it('is false for any other stage', () => {
+    expect(isOverdueReturn(makeLead({ stage: 'novo' }))).toBe(false)
+    expect(isOverdueReturn(makeLead({ stage: 'visita_marcada' }))).toBe(false)
+    expect(isOverdueReturn(makeLead({ stage: 'negociando' }))).toBe(false)
+    expect(isOverdueReturn(makeLead({ stage: 'vendeu' }))).toBe(false)
+    expect(isOverdueReturn(makeLead({ stage: 'nao_comprou' }))).toBe(false)
   })
 })
 
 describe('getLeadSummaryCounts', () => {
-  const NOW = new Date(2026, 8, 2, 12, 0)
-
   it('counts active, negotiating, overdue, and sold-in-month independently', () => {
     const leads = [
       makeLead({ id: 'a', stage: 'novo' }),
       makeLead({ id: 'b', stage: 'negociando' }),
-      makeLead({ id: 'c', stage: 'visita_marcada', scheduled_visit_date: '2026-09-01', scheduled_visit_time: '10:00' }),
+      makeLead({ id: 'c', stage: 'ligar_de_volta' }),
       makeLead({ id: 'd', stage: 'vendeu' }),
       makeLead({ id: 'e', stage: 'nao_comprou' }),
     ]
     const vehicles = [makeVehicle({ id: 'v-1', sold_at: '2026-09-02' }), makeVehicle({ id: 'v-2', sold_at: '2026-08-15' })]
 
-    expect(getLeadSummaryCounts(leads, vehicles, '2026-09', NOW)).toEqual({
+    expect(getLeadSummaryCounts(leads, vehicles, '2026-09')).toEqual({
       active: 3, // a, b, c (not d=vendeu or e=nao_comprou)
       negotiating: 1, // b
       overdue: 1, // c
@@ -86,16 +64,16 @@ describe('getLeadSummaryCounts', () => {
     const leads = [makeLead({ id: 'a', stage: 'novo' })]
     const vehicles = [makeVehicle({ sold_at: '2026-08-15' })]
 
-    expect(getLeadSummaryCounts(leads, vehicles, '2026-08', NOW).soldInMonth).toBe(1)
-    expect(getLeadSummaryCounts(leads, vehicles, '2026-01', NOW).soldInMonth).toBe(0)
-    expect(getLeadSummaryCounts(leads, vehicles, '2026-01', NOW).active).toBe(1)
+    expect(getLeadSummaryCounts(leads, vehicles, '2026-08').soldInMonth).toBe(1)
+    expect(getLeadSummaryCounts(leads, vehicles, '2026-01').soldInMonth).toBe(0)
+    expect(getLeadSummaryCounts(leads, vehicles, '2026-01').active).toBe(1)
   })
 
   it('treats an empty or malformed month as matching nothing, not everything', () => {
     const vehicles = [makeVehicle({ sold_at: '2026-09-02' })]
-    expect(getLeadSummaryCounts([], vehicles, '', NOW).soldInMonth).toBe(0)
-    expect(getLeadSummaryCounts([], vehicles, 'garbage', NOW).soldInMonth).toBe(0)
-    expect(getLeadSummaryCounts([], vehicles, '2026-9', NOW).soldInMonth).toBe(0) // not zero-padded
+    expect(getLeadSummaryCounts([], vehicles, '').soldInMonth).toBe(0)
+    expect(getLeadSummaryCounts([], vehicles, 'garbage').soldInMonth).toBe(0)
+    expect(getLeadSummaryCounts([], vehicles, '2026-9').soldInMonth).toBe(0) // not zero-padded
   })
 })
 

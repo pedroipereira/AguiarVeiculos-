@@ -7,19 +7,9 @@ export interface LeadSummaryCounts {
   soldInMonth: number
 }
 
-function parseScheduledVisitDateTime(dateStr: string, timeStr: string | null): Date {
-  const [year, month, day] = dateStr.split('-').map(Number)
-  const [hour, minute] = (timeStr ?? '23:59').split(':').map(Number)
-  return new Date(year, month - 1, day, hour, minute)
-}
-
-/** True when a lead sits in "visita marcada" and that visit's date/time has already passed. */
-export function isOverdueReturn(
-  lead: Pick<Lead, 'stage' | 'scheduled_visit_date' | 'scheduled_visit_time'>,
-  now: Date = new Date(),
-): boolean {
-  if (lead.stage !== 'visita_marcada' || !lead.scheduled_visit_date) return false
-  return parseScheduledVisitDateTime(lead.scheduled_visit_date, lead.scheduled_visit_time) < now
+/** True when a lead is sitting in "ligar de volta" — a callback still owed to them. */
+export function isOverdueReturn(lead: Pick<Lead, 'stage'>): boolean {
+  return lead.stage === 'ligar_de_volta'
 }
 
 /** True when `soldAt` is set and falls within `month`, which must be a valid `YYYY-MM` string. */
@@ -32,16 +22,11 @@ function matchesMonth(soldAt: string | null | undefined, month: string): boolean
  * the other three always reflect the current state, never a past month
  * (there is no stage-change history to reconstruct "who was active in May").
  */
-export function getLeadSummaryCounts(
-  leads: Lead[],
-  vehicles: Vehicle[],
-  month: string,
-  now: Date = new Date(),
-): LeadSummaryCounts {
+export function getLeadSummaryCounts(leads: Lead[], vehicles: Vehicle[], month: string): LeadSummaryCounts {
   return {
     active: leads.filter((lead) => lead.stage !== 'vendeu' && lead.stage !== 'nao_comprou').length,
     negotiating: leads.filter((lead) => lead.stage === 'negociando').length,
-    overdue: leads.filter((lead) => isOverdueReturn(lead, now)).length,
+    overdue: leads.filter((lead) => isOverdueReturn(lead)).length,
     soldInMonth: vehicles.filter((vehicle) => matchesMonth(vehicle.sold_at, month)).length,
   }
 }
