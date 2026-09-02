@@ -14,7 +14,7 @@ describe('createLead', () => {
     expect(chain.insert).toHaveBeenCalledWith({
       type: 'financing', name: 'Maria', phone: '98999999999',
       details: { downPayment: '5000' }, vehicle_id: null,
-      stage: 'novo', first_contact_at: null, store_visit_at: null,
+      stage: 'novo', notes: null, first_contact_at: null, store_visit_at: null,
       scheduled_visit_date: null, scheduled_visit_time: null,
     })
   })
@@ -29,8 +29,37 @@ describe('createLead', () => {
     expect(chain.insert).toHaveBeenCalledWith({
       type: 'manual', name: 'Ana', phone: '98988888888',
       details: {}, vehicle_id: null,
-      stage: 'visita_marcada', first_contact_at: null, store_visit_at: null,
+      stage: 'visita_marcada', notes: null, first_contact_at: null, store_visit_at: null,
       scheduled_visit_date: '2026-09-10', scheduled_visit_time: '14:00',
+    })
+  })
+
+  it('includes notes in the insert payload when provided', async () => {
+    const chain: any = { insert: vi.fn(async () => ({ error: null })) }
+    const client = { from: vi.fn(() => chain) }
+    await createLead(client as any, {
+      type: 'manual', name: 'Carlos', phone: '98977777777', details: {},
+      notes: 'Ligar segunda-feira',
+    })
+    expect(chain.insert).toHaveBeenCalledWith({
+      type: 'manual', name: 'Carlos', phone: '98977777777',
+      details: {}, vehicle_id: null,
+      stage: 'novo', notes: 'Ligar segunda-feira', first_contact_at: null, store_visit_at: null,
+      scheduled_visit_date: null, scheduled_visit_time: null,
+    })
+  })
+
+  it('writes notes: null when notes is omitted', async () => {
+    const chain: any = { insert: vi.fn(async () => ({ error: null })) }
+    const client = { from: vi.fn(() => chain) }
+    await createLead(client as any, {
+      type: 'trade_in', name: 'Sofia', phone: '98966666666', details: {},
+    })
+    expect(chain.insert).toHaveBeenCalledWith({
+      type: 'trade_in', name: 'Sofia', phone: '98966666666',
+      details: {}, vehicle_id: null,
+      stage: 'novo', notes: null, first_contact_at: null, store_visit_at: null,
+      scheduled_visit_date: null, scheduled_visit_time: null,
     })
   })
 

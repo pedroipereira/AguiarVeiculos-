@@ -56,6 +56,7 @@ export async function adminCreateManualLead(input: ManualLeadValues) {
     details: {},
     vehicleId: values.vehicleId,
     stage: values.stage,
+    notes: values.notes,
     firstContactAt: values.firstContactAt,
     storeVisitAt: values.storeVisitAt,
     scheduledVisitDate: values.scheduledVisitDate,

@@ -8,6 +8,7 @@ export interface CreateLeadInput {
   details: Record<string, unknown>
   vehicleId?: string
   stage?: LeadStage
+  notes?: string
   firstContactAt?: string
   storeVisitAt?: string
   scheduledVisitDate?: string
@@ -27,6 +28,7 @@ export async function createLead(client: SupabaseClient, input: CreateLeadInput)
     details: input.details,
     vehicle_id: input.vehicleId ?? null,
     stage: input.stage ?? 'novo',
+    notes: input.notes ?? null,
     first_contact_at: input.firstContactAt ?? null,
     store_visit_at: input.storeVisitAt ?? null,
     scheduled_visit_date: input.scheduledVisitDate ?? null,
