@@ -149,3 +149,44 @@ describe('getStoreSnapshot', () => {
     expect(getStoreSnapshot(vehicles, {}).investedCents).toBe(0)
   })
 })
+
+import { getFunnelData } from '@/lib/dashboard'
+import type { Lead } from '@/lib/types'
+
+function makeLead(overrides: Partial<Lead> = {}): Lead {
+  return {
+    id: 'l-1', type: 'manual', name: 'Cliente', phone: '99999999999', details: null,
+    vehicle_id: null, stage: 'novo', first_contact_at: null, store_visit_at: null,
+    scheduled_visit_date: null, scheduled_visit_time: null, notes: null,
+    created_at: '2026-01-01T00:00:00.000Z',
+    ...overrides,
+  }
+}
+
+describe('getFunnelData', () => {
+  it('counts leads per funnel stage, in funnel order', () => {
+    const leads = [
+      makeLead({ id: '1', stage: 'novo' }),
+      makeLead({ id: '2', stage: 'novo' }),
+      makeLead({ id: '3', stage: 'negociando' }),
+      makeLead({ id: '4', stage: 'vendeu' }),
+    ]
+    expect(getFunnelData(leads)).toEqual([
+      { stage: 'novo', label: 'Lead novo', count: 2 },
+      { stage: 'visita_marcada', label: 'Visita marcada', count: 0 },
+      { stage: 'negociando', label: 'Negociando', count: 1 },
+      { stage: 'ligar_de_volta', label: 'Ligar de volta', count: 0 },
+      { stage: 'vendeu', label: 'Vendeu', count: 1 },
+    ])
+  })
+
+  it('excludes "não comprou" leads from the funnel entirely', () => {
+    const leads = [makeLead({ id: '1', stage: 'nao_comprou' })]
+    const total = getFunnelData(leads).reduce((sum, entry) => sum + entry.count, 0)
+    expect(total).toBe(0)
+  })
+
+  it('returns all five stages at zero for an empty lead list', () => {
+    expect(getFunnelData([])).toHaveLength(5)
+  })
+})

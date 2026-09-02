@@ -136,3 +136,22 @@ export function getStoreSnapshot(vehicles: Vehicle[], expenseTotals: Record<stri
 
   return { investedCents, listValueCents, expectedProfitCents: listValueCents - investedCents }
 }
+
+import type { Lead, LeadStage } from './types'
+import { LEAD_STAGE_LABELS } from './lead-kanban'
+
+export const FUNNEL_STAGES: LeadStage[] = ['novo', 'visita_marcada', 'negociando', 'ligar_de_volta', 'vendeu']
+
+export interface FunnelStageCount {
+  stage: LeadStage
+  label: string
+  count: number
+}
+
+export function getFunnelData(leads: Lead[]): FunnelStageCount[] {
+  return FUNNEL_STAGES.map((stage) => ({
+    stage,
+    label: LEAD_STAGE_LABELS[stage],
+    count: leads.filter((lead) => lead.stage === stage).length,
+  }))
+}
