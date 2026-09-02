@@ -13,7 +13,7 @@ describe('AdminSidebar', () => {
 
     expect(screen.getByRole('link', { name: /painel/i })).toHaveAttribute('href', '/admin')
     expect(screen.getByRole('link', { name: /estoque/i })).toHaveAttribute('href', '/admin/veiculos')
-    expect(screen.getByRole('link', { name: /leads/i })).toHaveAttribute('href', '/admin/leads')
+    expect(screen.getByRole('link', { name: /clientes/i })).toHaveAttribute('href', '/admin/leads')
     expect(screen.getByRole('link', { name: /^site$/i })).toHaveAttribute('href', '/admin/imagens')
 
     for (const label of ['Agenda', 'Metas', 'Relatórios']) {
@@ -28,7 +28,7 @@ describe('AdminSidebar', () => {
     render(<AdminSidebar vehicles={[]} />)
 
     expect(screen.getByRole('link', { name: /estoque/i })).toHaveClass('text-aguiar-red')
-    expect(screen.getByRole('link', { name: /leads/i })).not.toHaveClass('text-aguiar-red')
+    expect(screen.getByRole('link', { name: /clientes/i })).not.toHaveClass('text-aguiar-red')
     expect(screen.getByRole('link', { name: /painel/i })).not.toHaveClass('text-aguiar-red')
   })
 

@@ -45,7 +45,7 @@ export function LeadsOverview({ leads, vehicles, vehicleOptions }: LeadsOverview
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold uppercase">Leads</h1>
+        <h1 className="text-2xl font-bold uppercase">Clientes</h1>
         <button
           type="button"
           onClick={() => setShowLeadModal(true)}

@@ -25,7 +25,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Painel', href: '/admin', Icon: PainelIcon },
   { label: 'Estoque', href: '/admin/veiculos', Icon: EstoqueIcon },
-  { label: 'Leads', href: '/admin/leads', Icon: LeadsIcon },
+  { label: 'Clientes', href: '/admin/leads', Icon: LeadsIcon },
   { label: 'Agenda', Icon: AgendaIcon },
   { label: 'Metas', Icon: MetasIcon },
   { label: 'Relatórios', Icon: RelatoriosIcon },
