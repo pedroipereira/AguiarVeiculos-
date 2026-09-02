@@ -101,5 +101,6 @@ export interface Lead {
   store_visit_at: string | null
   scheduled_visit_date: string | null
   scheduled_visit_time: string | null
+  notes: string | null
   created_at: string
 }
