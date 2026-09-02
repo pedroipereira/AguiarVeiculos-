@@ -105,11 +105,13 @@ calcula essas regras diretamente.
 - **`LeadSummaryCards.tsx`** (novo) — os 4 cards, visual idêntico ao
   `StockStatsRow` (chip de ícone + número `anton.className text-3xl`).
   Props: `{ activeCount, negotiatingCount, overdueCount, soldCount }`
-  (números já calculados, o componente só exibe). Ícones: reaproveita
-  `LeadsIcon` (Em negociação) e `ClockIcon` (Retornos atrasados), já
-  existentes em `icons.tsx`; adiciona dois novos ícones no mesmo estilo
-  de linha (`IconBase`, `viewBox 0 0 24 24`, `strokeWidth 1.75`):
-  `UsersIcon` (Clientes ativos) e `BanknoteIcon` (Vendas no mês).
+  (números já calculados, o componente só exibe). Ícones: reaproveita 4
+  ícones já existentes em `icons.tsx`, nenhum novo — `LeadsIcon` (Clientes
+  ativos — já é visualmente duas pessoas), `AlertCircleIcon` (Em
+  negociação — mesmo ícone de "precisa de atenção" usado em "Sem margem"
+  no Estoque), `ClockIcon` (Retornos atrasados), `CheckCircleIcon` (Vendas
+  no mês — mesmo ícone de "positivo/completo" usado em "Disponíveis" no
+  Estoque).
 - **`BuyersList.tsx`** (novo) — lista/tabela dos compradores do mês
   filtrado: nome, telefone, veículo (marca/modelo/versão), valor da
   venda (`formatPriceFromCents`), data da venda (`formatIsoDate`). Props:
