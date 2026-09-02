@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import type { Lead, Vehicle } from '@/lib/types'
 import type { VehicleOption } from '@/lib/queries/vehicles'
-import { getLeadSummaryCounts, getBuyers, getCurrentMonthValue } from '@/lib/lead-summary'
+import { getLeadSummaryCounts, getBuyers, getCurrentMonthValue, formatMonthLabel, shiftMonth } from '@/lib/lead-summary'
 import { LeadSummaryCards } from './LeadSummaryCards'
 import { LeadKanbanBoard } from './LeadKanbanBoard'
 import { BuyersList } from './BuyersList'
@@ -68,15 +68,25 @@ export function LeadsOverview({ leads, vehicles, vehicleOptions }: LeadsOverview
           ))}
         </div>
 
-        <label className="flex items-center gap-2 text-sm font-bold text-graphite">
-          Mês
-          <input
-            type="month"
-            value={month}
-            onChange={(event) => setMonth(event.target.value)}
-            className="rounded-lg border border-support-gray/25 px-3 py-1.5 text-sm text-graphite focus:border-aguiar-red focus:outline-none"
-          />
-        </label>
+        <div className="flex items-center gap-1 rounded-full border border-support-gray/25 px-1 py-1">
+          <button
+            type="button"
+            onClick={() => setMonth((current) => shiftMonth(current, -1))}
+            aria-label="Mês anterior"
+            className="rounded-full p-2 text-graphite transition-colors hover:bg-support-gray/10"
+          >
+            ‹
+          </button>
+          <span className="min-w-[9rem] text-center text-sm font-bold text-graphite">{formatMonthLabel(month)}</span>
+          <button
+            type="button"
+            onClick={() => setMonth((current) => shiftMonth(current, 1))}
+            aria-label="Próximo mês"
+            className="rounded-full p-2 text-graphite transition-colors hover:bg-support-gray/10"
+          >
+            ›
+          </button>
+        </div>
       </div>
 
       {activeTab === 'funil' ? (

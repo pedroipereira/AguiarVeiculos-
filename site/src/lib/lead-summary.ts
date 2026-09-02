@@ -70,3 +70,21 @@ export function getBuyers(leads: Lead[], vehicles: Vehicle[], month: string): { 
 export function getCurrentMonthValue(now: Date = new Date()): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 }
+
+const MONTH_LABELS = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+]
+
+/** Formats a `YYYY-MM` value as "Mês Ano" in Portuguese, e.g. "Junho 2026". */
+export function formatMonthLabel(month: string): string {
+  const [year, monthNum] = month.split('-').map(Number)
+  return `${MONTH_LABELS[monthNum - 1]} ${year}`
+}
+
+/** Shifts a `YYYY-MM` value by `delta` months (may be negative), rolling over the year as needed. */
+export function shiftMonth(month: string, delta: number): string {
+  const [year, monthNum] = month.split('-').map(Number)
+  const shifted = new Date(year, monthNum - 1 + delta, 1)
+  return getCurrentMonthValue(shifted)
+}

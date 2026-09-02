@@ -85,7 +85,8 @@ describe('LEAD_STAGE_ACCENTS', () => {
     expect(LEAD_STAGE_ACCENTS.vendeu.headerText).toBe('text-green-700')
   })
 
-  it('gives "nao_comprou" the brand red', () => {
-    expect(LEAD_STAGE_ACCENTS.nao_comprou.headerText).toBe('text-aguiar-red')
+  it('gives every stage its own distinct color — no two stages share the same header background', () => {
+    const backgrounds = LEAD_STAGES.map((stage) => LEAD_STAGE_ACCENTS[stage].headerBg)
+    expect(new Set(backgrounds).size).toBe(LEAD_STAGES.length)
   })
 })

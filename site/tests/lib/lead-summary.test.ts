@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isOverdueReturn, getLeadSummaryCounts, getBuyers, getCurrentMonthValue } from '@/lib/lead-summary'
+import { isOverdueReturn, getLeadSummaryCounts, getBuyers, getCurrentMonthValue, formatMonthLabel, shiftMonth } from '@/lib/lead-summary'
 import type { Lead, Vehicle } from '@/lib/types'
 
 function makeLead(overrides: Partial<Lead> = {}): Lead {
@@ -149,5 +149,31 @@ describe('getCurrentMonthValue', () => {
   it('formats as YYYY-MM, zero-padded', () => {
     expect(getCurrentMonthValue(new Date(2026, 0, 15))).toBe('2026-01')
     expect(getCurrentMonthValue(new Date(2026, 8, 15))).toBe('2026-09')
+  })
+})
+
+describe('formatMonthLabel', () => {
+  it('formats a YYYY-MM value as "Mês Ano" in Portuguese', () => {
+    expect(formatMonthLabel('2026-06')).toBe('Junho 2026')
+    expect(formatMonthLabel('2026-01')).toBe('Janeiro 2026')
+    expect(formatMonthLabel('2026-12')).toBe('Dezembro 2026')
+  })
+})
+
+describe('shiftMonth', () => {
+  it('moves forward one month', () => {
+    expect(shiftMonth('2026-06', 1)).toBe('2026-07')
+  })
+
+  it('moves backward one month', () => {
+    expect(shiftMonth('2026-06', -1)).toBe('2026-05')
+  })
+
+  it('rolls over into the next year', () => {
+    expect(shiftMonth('2026-12', 1)).toBe('2027-01')
+  })
+
+  it('rolls back into the previous year', () => {
+    expect(shiftMonth('2026-01', -1)).toBe('2025-12')
   })
 })

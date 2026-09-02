@@ -51,16 +51,17 @@ export interface LeadStageAccent {
 }
 
 /**
- * Per-stage accent colors for the kanban — every value reuses a color
- * already established elsewhere in the app (Estoque's "Sem margem"
- * yellow, its "Lucro" green, the brand red) rather than introducing a new
- * palette.
+ * Per-stage accent colors for the kanban — one distinct color per stage
+ * (requested after testing showed 3 stages sharing the same neutral gray
+ * was hard to tell apart at a glance), following the same
+ * one-color-per-stage pattern as the revendcar.com.br reference used to
+ * design this board.
  */
 export const LEAD_STAGE_ACCENTS: Record<LeadStage, LeadStageAccent> = {
-  novo: { headerBg: 'bg-support-gray/10', headerText: 'text-graphite', cardBorder: 'border-support-gray/40' },
-  visita_marcada: { headerBg: 'bg-support-gray/10', headerText: 'text-graphite', cardBorder: 'border-support-gray/40' },
+  novo: { headerBg: 'bg-blue-100', headerText: 'text-blue-800', cardBorder: 'border-blue-500' },
+  visita_marcada: { headerBg: 'bg-orange-100', headerText: 'text-orange-800', cardBorder: 'border-orange-500' },
   negociando: { headerBg: 'bg-yellow-100', headerText: 'text-yellow-800', cardBorder: 'border-yellow-500' },
-  ligar_de_volta: { headerBg: 'bg-support-gray/10', headerText: 'text-graphite', cardBorder: 'border-support-gray/40' },
+  ligar_de_volta: { headerBg: 'bg-pink-100', headerText: 'text-pink-800', cardBorder: 'border-pink-500' },
   vendeu: { headerBg: 'bg-green-50', headerText: 'text-green-700', cardBorder: 'border-green-600' },
-  nao_comprou: { headerBg: 'bg-aguiar-red/10', headerText: 'text-aguiar-red', cardBorder: 'border-aguiar-red' },
+  nao_comprou: { headerBg: 'bg-graphite/10', headerText: 'text-graphite', cardBorder: 'border-graphite' },
 }

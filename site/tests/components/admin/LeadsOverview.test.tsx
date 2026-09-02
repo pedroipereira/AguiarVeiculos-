@@ -16,7 +16,7 @@ const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }))
 
 import { LeadsOverview } from '@/components/admin/LeadsOverview'
-import { getCurrentMonthValue } from '@/lib/lead-summary'
+import { getCurrentMonthValue, shiftMonth, formatMonthLabel } from '@/lib/lead-summary'
 import type { Lead, Vehicle } from '@/lib/types'
 
 function makeLead(overrides: Partial<Lead> = {}): Lead {
@@ -83,21 +83,36 @@ describe('LeadsOverview', () => {
     expect(screen.queryByText('Lead novo')).not.toBeInTheDocument()
   })
 
-  it('changing the month updates "Vendas no mês" without changing "Clientes ativos"', () => {
+  it('stepping the month backward updates "Vendas no mês" without changing "Clientes ativos"', () => {
+    const currentMonth = getCurrentMonthValue()
+    const previousMonth = shiftMonth(currentMonth, -1)
     const leads = [makeLead({ id: 'a', stage: 'novo' })]
-    const vehicles = [makeVehicle({ sold_at: '2026-08-15' })]
+    const vehicles = [makeVehicle({ sold_at: `${previousMonth}-15` })]
     render(<LeadsOverview leads={leads} vehicles={vehicles} vehicleOptions={VEHICLE_OPTIONS} />)
 
-    fireEvent.change(screen.getByLabelText('Mês'), { target: { value: '2026-08' } })
-    const soldCard = screen.getByText('Vendas no mês').closest('div') as HTMLElement
-    expect(within(soldCard).getByText('1')).toBeInTheDocument()
+    const soldCardNow = screen.getByText('Vendas no mês').closest('div') as HTMLElement
+    expect(within(soldCardNow).getByText('0')).toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText('Mês'), { target: { value: '2026-01' } })
-    const soldCardAfter = screen.getByText('Vendas no mês').closest('div') as HTMLElement
-    expect(within(soldCardAfter).getByText('0')).toBeInTheDocument()
+    fireEvent.click(screen.getByLabelText('Mês anterior'))
+
+    const soldCardPrev = screen.getByText('Vendas no mês').closest('div') as HTMLElement
+    expect(within(soldCardPrev).getByText('1')).toBeInTheDocument()
 
     const activeCard = screen.getByText('Clientes ativos').closest('div') as HTMLElement
     expect(within(activeCard).getByText('1')).toBeInTheDocument()
+  })
+
+  it('shows the current month label by default, and the prev/next buttons step it', () => {
+    const currentMonth = getCurrentMonthValue()
+    render(<LeadsOverview leads={[]} vehicles={[]} vehicleOptions={VEHICLE_OPTIONS} />)
+    expect(screen.getByText(formatMonthLabel(currentMonth))).toBeInTheDocument()
+
+    fireEvent.click(screen.getByLabelText('Mês anterior'))
+    expect(screen.getByText(formatMonthLabel(shiftMonth(currentMonth, -1)))).toBeInTheDocument()
+
+    fireEvent.click(screen.getByLabelText('Próximo mês'))
+    fireEvent.click(screen.getByLabelText('Próximo mês'))
+    expect(screen.getByText(formatMonthLabel(shiftMonth(currentMonth, 1)))).toBeInTheDocument()
   })
 
   it('opens the "Novo cliente" modal', () => {
