@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useOptimistic, useState, useTransition } from 'react'
 import { DndContext, PointerSensor, useSensor, useSensors, useDroppable, type DragEndEvent } from '@dnd-kit/core'
 import type { Lead, LeadStage } from '@/lib/types'
 import type { VehicleOption } from '@/lib/queries/vehicles'
@@ -27,7 +27,7 @@ function LeadKanbanColumn({ stage, leads, vehicles, onMoveToStage }: LeadKanbanC
   return (
     <div
       ref={setNodeRef}
-      className={`flex w-72 shrink-0 flex-col gap-3 rounded-xl p-3 ${isOver ? 'bg-card-gray' : 'bg-card-gray/50'}`}
+      className={`flex w-56 shrink-0 flex-col gap-3 rounded-xl p-3 ${isOver ? 'bg-card-gray' : 'bg-card-gray/50'}`}
     >
       <div className="flex items-center justify-between px-1">
         <h2 className="text-sm font-bold uppercase tracking-wide text-graphite">{LEAD_STAGE_LABELS[stage]}</h2>
@@ -48,7 +48,19 @@ export function LeadKanbanBoard({ leads, vehicles }: LeadKanbanBoardProps) {
   // A small activation distance lets a plain click on a card's buttons pass
   // through as a click instead of being swallowed as a (zero-distance) drag.
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
-  const groups = groupLeadsByStage(leads)
+  // Moving a card waits on a full server round-trip (the action's
+  // revalidatePath, then Next re-fetching this page's leads) before the
+  // prop-driven `leads` reflects the new stage — without this, that round
+  // trip reads as a multi-second delay before the card visually moves.
+  // useOptimistic shows the move immediately and reconciles with the real
+  // `leads` prop once the server confirms (or silently reverts on failure).
+  const [optimisticLeads, setOptimisticLeadStage] = useOptimistic(
+    leads,
+    (state, update: { id: string; stage: LeadStage }) =>
+      state.map((candidate) => (candidate.id === update.id ? { ...candidate, stage: update.stage } : candidate)),
+  )
+  const [, startTransition] = useTransition()
+  const groups = groupLeadsByStage(optimisticLeads)
 
   function handleStageChange(lead: Lead, stage: LeadStage) {
     if (stage === lead.stage) return
@@ -57,20 +69,23 @@ export function LeadKanbanBoard({ leads, vehicles }: LeadKanbanBoardProps) {
       setSaleFormLead(lead)
       return
     }
-    adminUpdateLeadStage(lead.id, stage)
+    startTransition(async () => {
+      setOptimisticLeadStage({ id: lead.id, stage })
+      await adminUpdateLeadStage(lead.id, stage)
+    })
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const targetId = event.over?.id
     if (typeof targetId !== 'string' || !LEAD_STAGES.includes(targetId as LeadStage)) return
-    const lead = leads.find((candidate) => candidate.id === event.active.id)
+    const lead = optimisticLeads.find((candidate) => candidate.id === event.active.id)
     if (lead) handleStageChange(lead, targetId as LeadStage)
   }
 
   return (
     <>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="flex gap-3 overflow-x-auto pb-4">
           {LEAD_STAGES.map((stage) => (
             <LeadKanbanColumn
               key={stage}

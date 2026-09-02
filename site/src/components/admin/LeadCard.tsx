@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import type { Lead, LeadStage } from '@/lib/types'
@@ -19,11 +19,27 @@ interface LeadCardProps {
 export function LeadCard({ lead, vehicles, onMoveToStage }: LeadCardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
   // The whole card is the drag handle — dnd-kit's PointerSensor (configured
   // with an activation distance in LeadKanbanBoard) only starts a drag after
   // the pointer moves past a threshold, so a plain click on a button inside
   // the card still fires normally.
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: lead.id })
+
+  // Same outside-click pattern as VehicleDatePicker: closes the menu on any
+  // click elsewhere, without an invisible full-screen overlay that would
+  // swallow the first click on a different element.
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleOutsideMouseDown(event: MouseEvent) {
+      const target = event.target as Node
+      if (menuButtonRef.current?.contains(target) || menuRef.current?.contains(target)) return
+      setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleOutsideMouseDown)
+    return () => document.removeEventListener('mousedown', handleOutsideMouseDown)
+  }, [menuOpen])
 
   const vehicle = vehicles.find((option) => option.id === lead.vehicle_id)
   const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined
@@ -40,6 +56,7 @@ export function LeadCard({ lead, vehicles, onMoveToStage }: LeadCardProps) {
         <p className="font-bold">{lead.name}</p>
         <div className="relative">
           <button
+            ref={menuButtonRef}
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
             aria-label="Mais opções"
@@ -48,7 +65,7 @@ export function LeadCard({ lead, vehicles, onMoveToStage }: LeadCardProps) {
             ⋯
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full z-10 mt-1 w-44 rounded-lg border border-support-gray/25 bg-white p-1 shadow-lg">
+            <div ref={menuRef} className="absolute right-0 top-full z-10 mt-1 w-44 rounded-lg border border-support-gray/25 bg-white p-1 shadow-lg">
               <p className="px-2 py-1 text-xs font-bold uppercase tracking-wide text-support-gray">Mover para</p>
               {LEAD_STAGES.filter((stage) => stage !== lead.stage).map((stage) => (
                 <button

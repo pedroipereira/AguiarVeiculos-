@@ -86,4 +86,19 @@ describe('LeadCard', () => {
     expect(screen.getByText('Editar lead')).toBeInTheDocument()
     expect(screen.getByLabelText(/^nome$/i)).toHaveValue('Maria')
   })
+
+  it('closes the "..." menu when clicking anywhere outside it', () => {
+    renderCard(makeLead())
+    fireEvent.click(screen.getByLabelText('Mais opções'))
+    expect(screen.getByText('Mover para')).toBeInTheDocument()
+    fireEvent.mouseDown(document.body)
+    expect(screen.queryByText('Mover para')).not.toBeInTheDocument()
+  })
+
+  it('does not close the menu when clicking inside it', () => {
+    renderCard(makeLead())
+    fireEvent.click(screen.getByLabelText('Mais opções'))
+    fireEvent.mouseDown(screen.getByText('Mover para'))
+    expect(screen.getByText('Mover para')).toBeInTheDocument()
+  })
 })

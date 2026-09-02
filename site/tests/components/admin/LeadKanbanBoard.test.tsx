@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within, act } from '@testing-library/react'
 import { vi } from 'vitest'
 
 const { adminUpdateLeadStage, adminDeleteLead, adminCreateManualLead, adminUpdateLead } = vi.hoisted(() => ({
@@ -50,6 +50,34 @@ describe('LeadKanbanBoard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Negociando' }))
 
     await waitFor(() => expect(adminUpdateLeadStage).toHaveBeenCalledWith('a', 'negociando'))
+  })
+
+  it('moves the card to its new column immediately, before the server action resolves (optimistic update)', async () => {
+    let resolveUpdate: (() => void) | undefined
+    adminUpdateLeadStage.mockImplementation(() => new Promise<void>((resolve) => { resolveUpdate = resolve }))
+    const leads = [makeLead({ id: 'a', stage: 'novo', vehicle_id: null })]
+    render(<LeadKanbanBoard leads={leads} vehicles={VEHICLES} />)
+
+    const countFor = (label: string) =>
+      within(screen.getByText(label).parentElement as HTMLElement).getByText(/^\d+$/).textContent
+
+    expect(countFor('Lead novo')).toBe('1')
+    expect(countFor('Negociando')).toBe('0')
+
+    fireEvent.click(screen.getByLabelText('Mais opções'))
+    fireEvent.click(screen.getByRole('button', { name: 'Negociando' }))
+
+    await waitFor(() => {
+      expect(countFor('Lead novo')).toBe('0')
+      expect(countFor('Negociando')).toBe('1')
+    })
+    // adminUpdateLeadStage is still pending here — the move above happened
+    // before the server action resolved, proving it's optimistic.
+    expect(adminUpdateLeadStage).toHaveBeenCalledWith('a', 'negociando')
+
+    await act(async () => {
+      resolveUpdate?.()
+    })
   })
 
   it('opens the vehicle sale form instead of moving directly when a lead with a vehicle is moved to "Vendeu"', () => {
