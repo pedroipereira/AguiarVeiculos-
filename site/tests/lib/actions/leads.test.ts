@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createLead } from '@/lib/actions/leads'
+import { createLead, updateLead, updateLeadStage, deleteLead } from '@/lib/actions/leads'
 
 describe('createLead', () => {
   it('inserts a lead row without reading it back', async () => {
@@ -42,5 +42,67 @@ describe('createLead', () => {
     await expect(
       createLead(client as any, { type: 'trade_in', name: 'João', phone: '', details: {} }),
     ).rejects.toEqual({ message: 'row-level security violation' })
+  })
+})
+
+describe('updateLead', () => {
+  it('updates the lead row with the given fields', async () => {
+    const chain: any = { update: vi.fn(() => chain), eq: vi.fn(async () => ({ error: null })) }
+    const client = { from: vi.fn(() => chain) }
+    await updateLead(client as any, 'l-1', {
+      name: 'Maria', phone: '98999999999', vehicleId: 'v-1', stage: 'negociando',
+      notes: 'Ligar amanhã', firstContactAt: '2026-09-01',
+    })
+    expect(client.from).toHaveBeenCalledWith('leads')
+    expect(chain.update).toHaveBeenCalledWith({
+      name: 'Maria', phone: '98999999999', vehicle_id: 'v-1', stage: 'negociando',
+      notes: 'Ligar amanhã', first_contact_at: '2026-09-01', store_visit_at: null,
+      scheduled_visit_date: null, scheduled_visit_time: null,
+    })
+    expect(chain.eq).toHaveBeenCalledWith('id', 'l-1')
+  })
+
+  it('writes null for vehicle, notes, and dates when omitted, and defaults stage to novo', async () => {
+    const chain: any = { update: vi.fn(() => chain), eq: vi.fn(async () => ({ error: null })) }
+    const client = { from: vi.fn(() => chain) }
+    await updateLead(client as any, 'l-1', { name: 'João', phone: '98988888888' })
+    expect(chain.update).toHaveBeenCalledWith({
+      name: 'João', phone: '98988888888', vehicle_id: null, stage: 'novo', notes: null,
+      first_contact_at: null, store_visit_at: null, scheduled_visit_date: null, scheduled_visit_time: null,
+    })
+  })
+
+  it('throws when the update fails', async () => {
+    const chain: any = { update: vi.fn(() => chain), eq: vi.fn(async () => ({ error: { message: 'row-level security violation' } })) }
+    const client = { from: vi.fn(() => chain) }
+    await expect(updateLead(client as any, 'l-1', { name: 'Ana', phone: '98977777777' })).rejects.toEqual({ message: 'row-level security violation' })
+  })
+})
+
+describe('updateLeadStage', () => {
+  it('updates only the stage column', async () => {
+    const chain: any = { update: vi.fn(() => chain), eq: vi.fn(async () => ({ error: null })) }
+    const client = { from: vi.fn(() => chain) }
+    await updateLeadStage(client as any, 'l-1', 'vendeu')
+    expect(client.from).toHaveBeenCalledWith('leads')
+    expect(chain.update).toHaveBeenCalledWith({ stage: 'vendeu' })
+    expect(chain.eq).toHaveBeenCalledWith('id', 'l-1')
+  })
+})
+
+describe('deleteLead', () => {
+  it('deletes the lead row', async () => {
+    const chain: any = { delete: vi.fn(() => chain), eq: vi.fn(async () => ({ error: null })) }
+    const client = { from: vi.fn(() => chain) }
+    await deleteLead(client as any, 'l-1')
+    expect(client.from).toHaveBeenCalledWith('leads')
+    expect(chain.delete).toHaveBeenCalled()
+    expect(chain.eq).toHaveBeenCalledWith('id', 'l-1')
+  })
+
+  it('throws when the delete fails', async () => {
+    const chain: any = { delete: vi.fn(() => chain), eq: vi.fn(async () => ({ error: { message: 'row-level security violation' } })) }
+    const client = { from: vi.fn(() => chain) }
+    await expect(deleteLead(client as any, 'l-1')).rejects.toEqual({ message: 'row-level security violation' })
   })
 })
