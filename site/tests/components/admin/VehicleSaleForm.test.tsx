@@ -61,4 +61,9 @@ describe('VehicleSaleForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
     expect(onCancel).toHaveBeenCalled()
   })
+
+  it('pre-selects the buyer when defaultBuyerLeadId is given', () => {
+    render(<VehicleSaleForm vehicleId="v-1" leads={leads} defaultBuyerLeadId="lead-1" onCancel={vi.fn()} onSaved={vi.fn()} />)
+    expect(screen.getByLabelText(/comprador/i)).toHaveValue('lead-1')
+  })
 })
