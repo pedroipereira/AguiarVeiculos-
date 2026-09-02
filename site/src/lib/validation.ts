@@ -77,6 +77,7 @@ export const manualLeadSchema = z.object({
   phone: z.string().min(1, 'Informe o telefone'),
   vehicleId: z.string().uuid().optional(),
   stage: z.enum(['novo', 'visita_marcada', 'negociando', 'ligar_de_volta', 'vendeu', 'nao_comprou']).optional(),
+  notes: z.string().optional(),
   firstContactAt: z.string().optional(),
   storeVisitAt: z.string().optional(),
   scheduledVisitDate: z.string().optional(),
