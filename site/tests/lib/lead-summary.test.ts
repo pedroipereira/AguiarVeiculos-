@@ -90,6 +90,13 @@ describe('getLeadSummaryCounts', () => {
     expect(getLeadSummaryCounts(leads, vehicles, '2026-01', NOW).soldInMonth).toBe(0)
     expect(getLeadSummaryCounts(leads, vehicles, '2026-01', NOW).active).toBe(1)
   })
+
+  it('treats an empty or malformed month as matching nothing, not everything', () => {
+    const vehicles = [makeVehicle({ sold_at: '2026-09-02' })]
+    expect(getLeadSummaryCounts([], vehicles, '', NOW).soldInMonth).toBe(0)
+    expect(getLeadSummaryCounts([], vehicles, 'garbage', NOW).soldInMonth).toBe(0)
+    expect(getLeadSummaryCounts([], vehicles, '2026-9', NOW).soldInMonth).toBe(0) // not zero-padded
+  })
 })
 
 describe('getBuyers', () => {
@@ -115,6 +122,26 @@ describe('getBuyers', () => {
     const leads = [makeLead({ id: 'a', stage: 'vendeu', vehicle_id: null })]
     const vehicles = [makeVehicle({ id: 'v-1', sold_at: '2026-09-02' })]
     expect(getBuyers(leads, vehicles, '2026-09')).toEqual([])
+  })
+
+  it('getBuyers treats an empty or malformed month as matching nothing', () => {
+    const leads = [makeLead({ id: 'a', stage: 'vendeu', vehicle_id: 'v-1' })]
+    const vehicles = [makeVehicle({ id: 'v-1', sold_at: '2026-09-02' })]
+    expect(getBuyers(leads, vehicles, '')).toEqual([])
+    expect(getBuyers(leads, vehicles, 'garbage')).toEqual([])
+  })
+
+  it('matches a buyer via vehicle.buyer_lead_id, even when the lead never reached "vendeu" through the kanban', () => {
+    const leads = [makeLead({ id: 'a', stage: 'negociando', vehicle_id: null })]
+    const vehicles = [makeVehicle({ id: 'v-1', sold_at: '2026-09-02', buyer_lead_id: 'a' })]
+    expect(getBuyers(leads, vehicles, '2026-09')).toEqual([{ lead: leads[0], vehicle: vehicles[0] }])
+  })
+
+  it('prefers vehicle.buyer_lead_id over a stale lead.vehicle_id link when both exist', () => {
+    const buyerLead = makeLead({ id: 'buyer', stage: 'negociando' })
+    const otherLead = makeLead({ id: 'other', stage: 'vendeu', vehicle_id: 'v-1' })
+    const vehicles = [makeVehicle({ id: 'v-1', sold_at: '2026-09-02', buyer_lead_id: 'buyer' })]
+    expect(getBuyers([buyerLead, otherLead], vehicles, '2026-09')).toEqual([{ lead: buyerLead, vehicle: vehicles[0] }])
   })
 })
 

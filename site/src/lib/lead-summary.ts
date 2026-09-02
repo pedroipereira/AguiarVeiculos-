@@ -22,6 +22,11 @@ export function isOverdueReturn(
   return parseScheduledVisitDateTime(lead.scheduled_visit_date, lead.scheduled_visit_time) < now
 }
 
+/** True when `soldAt` is set and falls within `month`, which must be a valid `YYYY-MM` string. */
+function matchesMonth(soldAt: string | null | undefined, month: string): boolean {
+  return /^\d{4}-\d{2}$/.test(month) && !!soldAt && soldAt.startsWith(month)
+}
+
 /**
  * Counts for the 4 summary cards. Only `soldInMonth` depends on `month` —
  * the other three always reflect the current state, never a past month
@@ -37,17 +42,26 @@ export function getLeadSummaryCounts(
     active: leads.filter((lead) => lead.stage !== 'vendeu' && lead.stage !== 'nao_comprou').length,
     negotiating: leads.filter((lead) => lead.stage === 'negociando').length,
     overdue: leads.filter((lead) => isOverdueReturn(lead, now)).length,
-    soldInMonth: vehicles.filter((vehicle) => vehicle.sold_at?.startsWith(month)).length,
+    soldInMonth: vehicles.filter((vehicle) => matchesMonth(vehicle.sold_at, month)).length,
   }
 }
 
-/** Leads that reached "vendeu" whose linked vehicle sold within `month` (YYYY-MM). */
+/**
+ * Buyers whose vehicle sold within `month` (YYYY-MM). Resolves the buyer from
+ * `vehicle.buyer_lead_id` first — the field the sale-recording action actually
+ * writes (both the kanban "Vendeu" flow and Estoque's "Marcar como vendido"
+ * flow set it) — falling back to the kanban flow's lead-side link
+ * (`lead.stage === 'vendeu' && lead.vehicle_id === vehicle.id`) for cases
+ * where `buyer_lead_id` might be unset but that link still applies.
+ */
 export function getBuyers(leads: Lead[], vehicles: Vehicle[], month: string): { lead: Lead; vehicle: Vehicle }[] {
   const buyers: { lead: Lead; vehicle: Vehicle }[] = []
-  for (const lead of leads) {
-    if (lead.stage !== 'vendeu' || !lead.vehicle_id) continue
-    const vehicle = vehicles.find((candidate) => candidate.id === lead.vehicle_id)
-    if (vehicle?.sold_at?.startsWith(month)) buyers.push({ lead, vehicle })
+  for (const vehicle of vehicles) {
+    if (!matchesMonth(vehicle.sold_at, month)) continue
+    const lead =
+      leads.find((candidate) => candidate.id === vehicle.buyer_lead_id) ??
+      leads.find((candidate) => candidate.stage === 'vendeu' && candidate.vehicle_id === vehicle.id)
+    if (lead) buyers.push({ lead, vehicle })
   }
   return buyers
 }
