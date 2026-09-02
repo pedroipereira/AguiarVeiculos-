@@ -1,13 +1,25 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import type { Lead, Vehicle } from '@/lib/types'
 import type { VehicleOption } from '@/lib/queries/vehicles'
 import { getLeadSummaryCounts, getBuyers, getCurrentMonthValue, formatMonthLabel, shiftMonth } from '@/lib/lead-summary'
 import { LeadSummaryCards } from './LeadSummaryCards'
-import { LeadKanbanBoard } from './LeadKanbanBoard'
 import { BuyersList } from './BuyersList'
 import { LeadQuickAddModal } from './LeadQuickAddModal'
+
+// @dnd-kit/accessibility generates each draggable/droppable's aria-describedby
+// id from a module-level counter that isn't reset per request — on a
+// long-running Next.js server, the second and later page loads in the same
+// process render a higher count server-side than the client (which always
+// starts fresh at 0), so React's hydration can never reconcile it. Loading
+// the board client-only sidesteps the mismatch entirely: there's no
+// server-rendered dnd-kit markup to reconcile against.
+const LeadKanbanBoard = dynamic(() => import('./LeadKanbanBoard').then((mod) => mod.LeadKanbanBoard), {
+  ssr: false,
+  loading: () => <p className="text-support-gray">Carregando quadro...</p>,
+})
 
 interface LeadsOverviewProps {
   leads: Lead[]

@@ -68,9 +68,11 @@ describe('LeadsOverview', () => {
     expect(within(soldCard).getByText('1')).toBeInTheDocument()
   })
 
-  it('shows the Funil (kanban) tab by default', () => {
+  it('shows the Funil (kanban) tab by default', async () => {
     render(<LeadsOverview leads={[makeLead()]} vehicles={[]} vehicleOptions={VEHICLE_OPTIONS} />)
-    expect(screen.getByText('Lead novo')).toBeInTheDocument()
+    // LeadKanbanBoard loads client-only (see LeadsOverview.tsx) to avoid a
+    // dnd-kit SSR hydration mismatch, so it appears asynchronously.
+    expect(await screen.findByText('Lead novo')).toBeInTheDocument()
   })
 
   it('switches to the Compradores tab and shows the buyers list', () => {
