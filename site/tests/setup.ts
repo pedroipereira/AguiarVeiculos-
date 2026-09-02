@@ -7,3 +7,13 @@ import { vi } from 'vitest'
 vi.mock('next/font/google', () => ({
   Anton: () => ({ className: 'font-anton' }),
 }))
+
+// Recharts' ResponsiveContainer (used by the Painel's charts) reads
+// ResizeObserver to measure its container; jsdom doesn't implement it.
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+// @ts-expect-error -- jsdom has no ResizeObserver; Recharts only needs the shape above.
+global.ResizeObserver = ResizeObserverStub
