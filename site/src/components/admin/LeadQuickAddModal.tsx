@@ -47,7 +47,7 @@ export function LeadQuickAddModal({
   const [storeVisitAt, setStoreVisitAt] = useState(lead?.store_visit_at ?? '')
   const [scheduledVisitDate, setScheduledVisitDate] = useState(lead?.scheduled_visit_date ?? '')
 
-  const modalTitle = title ?? (lead ? 'Editar lead' : 'Novo lead')
+  const modalTitle = title ?? (lead ? 'Editar lead' : 'Novo cliente')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()

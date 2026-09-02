@@ -51,10 +51,10 @@ describe('AdminSidebar', () => {
 
   it('opens the new-lead modal as the quick action, not a vehicle form', () => {
     render(<AdminSidebar vehicles={[]} />)
-    expect(screen.queryByText(/novo lead/i)).toBeInTheDocument()
+    expect(screen.queryByText(/novo cliente/i)).toBeInTheDocument()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /novo lead/i }))
-    expect(screen.getByRole('dialog', { name: /novo lead/i })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /novo cliente/i }))
+    expect(screen.getByRole('dialog', { name: /novo cliente/i })).toBeInTheDocument()
   })
 })

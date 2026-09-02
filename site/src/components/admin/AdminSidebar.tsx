@@ -53,7 +53,7 @@ export function AdminSidebar({ vehicles }: AdminSidebarProps) {
         onClick={() => setShowLeadModal(true)}
         className="rounded-lg bg-aguiar-red px-4 py-2.5 text-center font-bold text-white transition-colors hover:bg-red-700"
       >
-        + Novo lead
+        + Novo cliente
       </button>
 
       {showLeadModal && <LeadQuickAddModal vehicles={vehicles} onClose={() => setShowLeadModal(false)} />}
