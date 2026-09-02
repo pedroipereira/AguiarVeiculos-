@@ -1,17 +1,19 @@
-import Link from 'next/link'
-import { LogoutButton } from '@/components/admin/LogoutButton'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { getVehicleOptionsAdmin } from '@/lib/queries/vehicles'
+import { AdminSidebar } from '@/components/admin/AdminSidebar'
+import { AdminTopbar } from '@/components/admin/AdminTopbar'
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const client = await createServerSupabaseClient()
+  const [{ data }, vehicles] = await Promise.all([client.auth.getUser(), getVehicleOptionsAdmin(client)])
+
   return (
-    <div className="min-h-screen bg-card-gray text-graphite">
-      <nav className="flex items-center gap-6 bg-graphite px-6 py-4 text-white">
-        <Link href="/admin/veiculos" className="font-bold uppercase hover:text-aguiar-red">Veículos</Link>
-        <Link href="/admin/imagens" className="font-bold uppercase hover:text-aguiar-red">Imagens</Link>
-        <Link href="/admin/leads" className="font-bold uppercase hover:text-aguiar-red">Leads</Link>
-        <Link href="/admin/configuracoes" className="font-bold uppercase hover:text-aguiar-red">Configurações</Link>
-        <span className="ml-auto"><LogoutButton /></span>
-      </nav>
-      <div className="px-6 py-8">{children}</div>
+    <div className="flex min-h-screen bg-card-gray text-graphite">
+      <AdminSidebar vehicles={vehicles} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <AdminTopbar userEmail={data.user?.email ?? null} />
+        <main className="flex-1 px-6 py-8">{children}</main>
+      </div>
     </div>
   )
 }

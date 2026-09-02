@@ -1,24 +1,17 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
 import { formatPriceFromCents } from '@/lib/format'
-import type { Vehicle, Lead } from '@/lib/types'
+import type { Vehicle } from '@/lib/types'
 import { calculateEstimatedMarginCents, calculateRealizedMarginCents } from '@/lib/vehicle-costs'
 import { daysInStock, hasMarginDefined } from '@/lib/vehicle-stock'
-import { adminDeleteVehicle, adminSetVehicleFeatured, adminSetVehicleStatus } from '@/app/actions/vehicles'
-import { VehicleSaleForm } from './VehicleSaleForm'
 
 interface VehicleStockCardProps {
   vehicle: Vehicle
   coverImageUrl?: string
   totalCostCents: number
   thresholdDays: number
-  leads: Lead[]
 }
 
-export function VehicleStockCard({ vehicle, coverImageUrl, totalCostCents, thresholdDays, leads }: VehicleStockCardProps) {
-  const [showSaleForm, setShowSaleForm] = useState(false)
+export function VehicleStockCard({ vehicle, coverImageUrl, totalCostCents, thresholdDays }: VehicleStockCardProps) {
   const days = daysInStock(vehicle)
   const isStale = vehicle.status === 'available' && days >= thresholdDays
   const marginDefined = hasMarginDefined(vehicle)
@@ -27,7 +20,10 @@ export function VehicleStockCard({ vehicle, coverImageUrl, totalCostCents, thres
     : calculateEstimatedMarginCents(vehicle.price_cents, totalCostCents)
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm">
+    <Link
+      href={`/admin/veiculos/${vehicle.id}`}
+      className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
+    >
       <div className="relative aspect-[4/3] bg-support-gray/10">
         {coverImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -61,57 +57,11 @@ export function VehicleStockCard({ vehicle, coverImageUrl, totalCostCents, thres
             </p>
           </div>
         ) : (
-          <Link
-            href={`/admin/veiculos/${vehicle.id}#custos`}
-            className="rounded-lg bg-yellow-100 px-3 py-2 text-center text-sm font-bold text-yellow-800"
-          >
-            Definir margem
-          </Link>
-        )}
-
-        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-sm">
-          <Link href={`/admin/veiculos/${vehicle.id}`} className="font-bold text-graphite hover:underline">Editar</Link>
-          {vehicle.status !== 'sold' && !showSaleForm && (
-            <button type="button" onClick={() => setShowSaleForm(true)} className="font-bold text-graphite hover:underline">
-              Marcar como vendido
-            </button>
-          )}
-          {vehicle.status === 'sold' && (
-            <button type="button" onClick={() => adminSetVehicleStatus(vehicle.id, 'available')} className="font-bold text-graphite hover:underline">
-              Marcar como disponível
-            </button>
-          )}
-          {vehicle.status === 'available' && (
-            <button type="button" onClick={() => adminSetVehicleStatus(vehicle.id, 'preparing')} className="text-support-gray hover:text-graphite">
-              Marcar em preparação
-            </button>
-          )}
-          {vehicle.status === 'preparing' && (
-            <button type="button" onClick={() => adminSetVehicleStatus(vehicle.id, 'available')} className="text-support-gray hover:text-graphite">
-              Marcar disponível
-            </button>
-          )}
-          <button type="button" onClick={() => adminSetVehicleFeatured(vehicle.id, !vehicle.is_featured)} className="text-support-gray hover:text-graphite">
-            {vehicle.is_featured ? 'Remover destaque' : 'Destacar'}
-          </button>
-          <button
-            type="button"
-            onClick={() => { if (window.confirm('Excluir este veículo?')) adminDeleteVehicle(vehicle.id) }}
-            className="text-aguiar-red hover:underline"
-          >
-            Excluir
-          </button>
-        </div>
-
-        {showSaleForm && (
-          <VehicleSaleForm
-            vehicleId={vehicle.id}
-            leads={leads}
-            onCancel={() => setShowSaleForm(false)}
-            onSaved={() => setShowSaleForm(false)}
-          />
+          <span className="rounded-lg bg-yellow-100 px-3 py-2 text-center text-sm font-bold text-yellow-800">
+            Sem margem definida
+          </span>
         )}
       </div>
-    </div>
+    </Link>
   )
 }

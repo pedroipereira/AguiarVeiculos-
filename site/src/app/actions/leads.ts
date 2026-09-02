@@ -1,8 +1,17 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { assertAdmin } from '@/lib/actions/assert-admin'
 import { createLead } from '@/lib/actions/leads'
-import { financingLeadSchema, tradeInLeadSchema, type FinancingLeadValues, type TradeInLeadValues } from '@/lib/validation'
+import {
+  financingLeadSchema,
+  tradeInLeadSchema,
+  manualLeadSchema,
+  type FinancingLeadValues,
+  type TradeInLeadValues,
+  type ManualLeadValues,
+} from '@/lib/validation'
 
 export async function submitFinancingLead(input: FinancingLeadValues) {
   const values = financingLeadSchema.parse(input)
@@ -33,4 +42,23 @@ export async function submitTradeInLead(input: TradeInLeadValues) {
     phone: '',
     details: { model: values.model, year: values.year, mileageKm: values.mileageKm, observations: values.observations ?? null },
   })
+}
+
+export async function adminCreateManualLead(input: ManualLeadValues) {
+  const values = manualLeadSchema.parse(input)
+  const client = await createServerSupabaseClient()
+  await assertAdmin(client)
+  await createLead(client, {
+    type: 'manual',
+    name: values.name,
+    phone: values.phone,
+    details: {},
+    vehicleId: values.vehicleId,
+    stage: values.stage,
+    firstContactAt: values.firstContactAt,
+    storeVisitAt: values.storeVisitAt,
+    scheduledVisitDate: values.scheduledVisitDate,
+    scheduledVisitTime: values.scheduledVisitTime,
+  })
+  revalidatePath('/admin/leads')
 }

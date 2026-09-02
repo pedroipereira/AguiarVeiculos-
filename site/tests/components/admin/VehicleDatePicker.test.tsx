@@ -63,13 +63,37 @@ describe('VehicleDatePicker', () => {
       fireEvent.click(screen.getByRole('button', { name: /selecione a data/i }))
       expect(screen.getByText('Agosto 2026')).toBeInTheDocument()
 
-      // The backdrop is the fixed full-screen element rendered alongside the popover.
-      const backdrop = document.querySelector('.fixed.inset-0')
-      fireEvent.click(backdrop!)
+      fireEvent.mouseDown(document.body)
 
       expect(screen.queryByText('Agosto 2026')).not.toBeInTheDocument()
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  it('closes itself when a different picker is opened, in the same click that opens the other one', () => {
+    function TwoPickers() {
+      const [a, setA] = useState('')
+      const [b, setB] = useState('')
+      return (
+        <>
+          <VehicleDatePicker id="a" value={a} onChange={setA} />
+          <VehicleDatePicker id="b" value={b} onChange={setB} />
+        </>
+      )
+    }
+
+    render(<TwoPickers />)
+    const [triggerA, triggerB] = screen.getAllByRole('button', { name: /selecione a data/i })
+
+    fireEvent.click(triggerA)
+    expect(screen.getAllByLabelText(/mês anterior/i)).toHaveLength(1)
+
+    // A real click is mousedown-then-click; the outside-close listener relies
+    // on mousedown, so a bare fireEvent.click (which skips it) can't exercise
+    // this the way an actual user gesture would.
+    fireEvent.mouseDown(triggerB)
+    fireEvent.click(triggerB)
+    expect(screen.getAllByLabelText(/mês anterior/i)).toHaveLength(1)
   })
 })

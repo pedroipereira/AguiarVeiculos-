@@ -1,9 +1,4 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { vi } from 'vitest'
-
-vi.mock('@/app/actions/vehicles', () => ({
-  adminDeleteVehicle: vi.fn(), adminSetVehicleFeatured: vi.fn(), adminSetVehicleStatus: vi.fn(), adminMarkVehicleSold: vi.fn(),
-}))
 
 import { VehicleStockGrid } from '@/components/admin/VehicleStockGrid'
 
@@ -34,7 +29,7 @@ describe('VehicleStockGrid', () => {
   ]
 
   it('shows every vehicle under "Todos" with the correct count', () => {
-    render(<VehicleStockGrid vehicles={vehicles} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={90} leads={[]} />)
+    render(<VehicleStockGrid vehicles={vehicles} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={90} />)
     expect(screen.getByRole('button', { name: /todos \(3\)/i })).toBeInTheDocument()
     expect(screen.getByText(/fiat argo/i)).toBeInTheDocument()
     expect(screen.getByText(/volkswagen polo/i)).toBeInTheDocument()
@@ -42,7 +37,7 @@ describe('VehicleStockGrid', () => {
   })
 
   it('filters to only vehicles without a margin when "Sem margem" is clicked', () => {
-    render(<VehicleStockGrid vehicles={vehicles} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={90} leads={[]} />)
+    render(<VehicleStockGrid vehicles={vehicles} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={90} />)
     fireEvent.click(screen.getByRole('button', { name: /sem margem/i }))
     expect(screen.queryByText(/fiat argo/i)).not.toBeInTheDocument()
     expect(screen.getByText(/volkswagen polo/i)).toBeInTheDocument()
@@ -50,7 +45,7 @@ describe('VehicleStockGrid', () => {
   })
 
   it('filters to only preparing vehicles when "Em preparação" is clicked', () => {
-    render(<VehicleStockGrid vehicles={vehicles} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={90} leads={[]} />)
+    render(<VehicleStockGrid vehicles={vehicles} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={90} />)
     // Anchored regex: with the "Todos" filter active, two seed vehicles are `available`
     // and each renders VehicleStockCard's own "Marcar em preparação" status-toggle button,
     // which also satisfies an unanchored /em preparação/i match against the "Em preparação (1)"
@@ -62,12 +57,12 @@ describe('VehicleStockGrid', () => {
   })
 
   it('shows the configured threshold in the "Girar" tab label', () => {
-    render(<VehicleStockGrid vehicles={vehicles} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={120} leads={[]} />)
+    render(<VehicleStockGrid vehicles={vehicles} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={120} />)
     expect(screen.getByRole('button', { name: /girar \(\+120d\)/i })).toBeInTheDocument()
   })
 
   it('filters by free-text search across brand and model', () => {
-    render(<VehicleStockGrid vehicles={vehicles} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={90} leads={[]} />)
+    render(<VehicleStockGrid vehicles={vehicles} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={90} />)
     fireEvent.change(screen.getByLabelText(/buscar veículo/i), { target: { value: 'polo' } })
     expect(screen.getByText(/volkswagen polo/i)).toBeInTheDocument()
     expect(screen.queryByText(/fiat argo/i)).not.toBeInTheDocument()
@@ -81,7 +76,7 @@ describe('VehicleStockGrid', () => {
         coverImageUrls={{ a: 'https://example.com/a.jpg' }}
         expenseTotalsCents={{ a: 5000 }}
         thresholdDays={90}
-        leads={[]}
+       
       />,
     )
     expect(screen.getByRole('img', { name: /fiat argo/i })).toHaveAttribute('src', 'https://example.com/a.jpg')
@@ -90,7 +85,7 @@ describe('VehicleStockGrid', () => {
   })
 
   it('shows an empty state when no vehicle matches the active filter', () => {
-    render(<VehicleStockGrid vehicles={[]} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={90} leads={[]} />)
+    render(<VehicleStockGrid vehicles={[]} coverImageUrls={{}} expenseTotalsCents={{}} thresholdDays={90} />)
     expect(screen.getByText(/nenhum veículo encontrado/i)).toBeInTheDocument()
   })
 })

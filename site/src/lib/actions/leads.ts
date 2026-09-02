@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { LeadType } from '../types'
+import type { LeadType, LeadStage } from '../types'
 
 export interface CreateLeadInput {
   type: LeadType
@@ -7,6 +7,11 @@ export interface CreateLeadInput {
   phone: string
   details: Record<string, unknown>
   vehicleId?: string
+  stage?: LeadStage
+  firstContactAt?: string
+  storeVisitAt?: string
+  scheduledVisitDate?: string
+  scheduledVisitTime?: string
 }
 
 // Anonymous visitors can only INSERT into `leads` (no SELECT policy for them —
@@ -21,6 +26,11 @@ export async function createLead(client: SupabaseClient, input: CreateLeadInput)
     phone: input.phone,
     details: input.details,
     vehicle_id: input.vehicleId ?? null,
+    stage: input.stage ?? 'novo',
+    first_contact_at: input.firstContactAt ?? null,
+    store_visit_at: input.storeVisitAt ?? null,
+    scheduled_visit_date: input.scheduledVisitDate ?? null,
+    scheduled_visit_time: input.scheduledVisitTime ?? null,
   })
   if (error) throw error
 }

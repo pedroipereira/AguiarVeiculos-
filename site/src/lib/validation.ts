@@ -71,3 +71,15 @@ export const tradeInLeadSchema = z.object({
   observations: z.string().optional(),
 })
 export type TradeInLeadValues = z.infer<typeof tradeInLeadSchema>
+
+export const manualLeadSchema = z.object({
+  name: z.string().min(2, 'Informe o nome'),
+  phone: z.string().min(1, 'Informe o telefone'),
+  vehicleId: z.string().uuid().optional(),
+  stage: z.enum(['novo', 'visita_marcada', 'negociando', 'ligar_de_volta', 'vendeu', 'nao_comprou']).optional(),
+  firstContactAt: z.string().optional(),
+  storeVisitAt: z.string().optional(),
+  scheduledVisitDate: z.string().optional(),
+  scheduledVisitTime: z.string().optional(),
+})
+export type ManualLeadValues = z.infer<typeof manualLeadSchema>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { Vehicle, Lead } from '@/lib/types'
+import type { Vehicle } from '@/lib/types'
 import { countStockFilters, applyStockFilter, matchesStockSearch, type StockFilter } from '@/lib/vehicle-stock'
 import { calculateTotalCostCents } from '@/lib/vehicle-costs'
 import { VehicleStockCard } from './VehicleStockCard'
@@ -11,10 +11,9 @@ interface VehicleStockGridProps {
   coverImageUrls: Record<string, string>
   expenseTotalsCents: Record<string, number>
   thresholdDays: number
-  leads: Lead[]
 }
 
-export function VehicleStockGrid({ vehicles, coverImageUrls, expenseTotalsCents, thresholdDays, leads }: VehicleStockGridProps) {
+export function VehicleStockGrid({ vehicles, coverImageUrls, expenseTotalsCents, thresholdDays }: VehicleStockGridProps) {
   const [filter, setFilter] = useState<StockFilter>('all')
   const [search, setSearch] = useState('')
 
@@ -30,13 +29,13 @@ export function VehicleStockGrid({ vehicles, coverImageUrls, expenseTotalsCents,
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-5 flex flex-wrap gap-2">
         {tabs.map((tab) => (
           <button
             key={tab.value}
             type="button"
             onClick={() => setFilter(tab.value)}
-            className={`rounded-lg border px-4 py-2 text-sm font-bold transition-colors ${
+            className={`rounded-full border px-4 py-2 text-sm font-bold transition-colors ${
               filter === tab.value ? 'border-graphite bg-graphite text-white' : 'border-support-gray/25 text-graphite hover:border-graphite'
             }`}
           >
@@ -51,7 +50,7 @@ export function VehicleStockGrid({ vehicles, coverImageUrls, expenseTotalsCents,
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Buscar por marca, modelo, versão ou cor..."
         aria-label="Buscar veículo"
-        className="mb-4 w-full max-w-md rounded-lg border border-support-gray/25 p-2.5 text-graphite transition-colors focus:border-aguiar-red focus:outline-none"
+        className="mb-6 w-full max-w-md rounded-full border border-support-gray/25 px-4 py-2.5 text-graphite transition-colors focus:border-aguiar-red focus:outline-none"
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -64,7 +63,6 @@ export function VehicleStockGrid({ vehicles, coverImageUrls, expenseTotalsCents,
               { amount_cents: expenseTotalsCents[vehicle.id] ?? 0 },
             ])}
             thresholdDays={thresholdDays}
-            leads={leads}
           />
         ))}
       </div>

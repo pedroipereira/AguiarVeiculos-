@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Vehicle, VehiclePublic } from '../types'
+import type { Vehicle, VehiclePublic, VehicleStatus } from '../types'
 
 export type VehicleSort = 'recent' | 'price_asc' | 'price_desc' | 'mileage_asc'
 
@@ -128,6 +128,25 @@ export async function getAllVehiclesAdmin(client: SupabaseClient): Promise<Vehic
   const { data, error } = await client.from('vehicles').select('*').order('created_at', { ascending: false })
   if (error) throw error
   return data as Vehicle[]
+}
+
+export interface VehicleOption {
+  id: string
+  brand: string
+  model: string
+  version: string | null
+  status: VehicleStatus
+  price_cents: number
+}
+
+/** A lightweight vehicle list for pickers (e.g. "veículo de interesse" on the lead quick-add form). */
+export async function getVehicleOptionsAdmin(client: SupabaseClient): Promise<VehicleOption[]> {
+  const { data, error } = await client
+    .from('vehicles')
+    .select('id, brand, model, version, status, price_cents')
+    .order('brand', { ascending: true })
+  if (error) throw error
+  return data as VehicleOption[]
 }
 
 export async function getVehicleByIdAdmin(client: SupabaseClient, id: string): Promise<Vehicle | null> {

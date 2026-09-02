@@ -1,0 +1,93 @@
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { vi } from 'vitest'
+
+const { adminCreateManualLead } = vi.hoisted(() => ({ adminCreateManualLead: vi.fn() }))
+vi.mock('@/app/actions/leads', () => ({ adminCreateManualLead }))
+
+const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }))
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }))
+
+import { LeadQuickAddModal } from '@/components/admin/LeadQuickAddModal'
+
+const VEHICLES = [{ id: 'v-1', brand: 'Fiat', model: 'Argo', version: 'Drive', status: 'available' as const, price_cents: 6490000 }]
+
+describe('LeadQuickAddModal', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('shows the vehicle and its selling price in the "veículo de interesse" options', () => {
+    render(<LeadQuickAddModal vehicles={VEHICLES} onClose={vi.fn()} />)
+    expect(screen.getByRole('option', { name: 'Fiat Argo Drive - R$ 64.900' })).toBeInTheDocument()
+  })
+
+  it('creates a lead with the funnel stage and vehicle picked in the form', async () => {
+    const onClose = vi.fn()
+    render(<LeadQuickAddModal vehicles={VEHICLES} onClose={onClose} />)
+
+    fireEvent.change(screen.getByLabelText(/^nome$/i), { target: { value: 'Maria' } })
+    fireEvent.change(screen.getByLabelText(/telefone/i), { target: { value: '98999999999' } })
+    fireEvent.change(screen.getByLabelText(/veículo de interesse/i), { target: { value: 'v-1' } })
+    fireEvent.change(screen.getByLabelText(/estágio no funil/i), { target: { value: 'negociando' } })
+    fireEvent.click(screen.getByRole('button', { name: /salvar lead/i }))
+
+    await waitFor(() =>
+      expect(adminCreateManualLead).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Maria', phone: '98999999999', vehicleId: 'v-1', stage: 'negociando' }),
+      ),
+    )
+    expect(refresh).toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  it('defaults to the "novo" stage and omits optional dates when left blank', async () => {
+    render(<LeadQuickAddModal vehicles={[]} onClose={vi.fn()} />)
+
+    fireEvent.change(screen.getByLabelText(/^nome$/i), { target: { value: 'João' } })
+    fireEvent.change(screen.getByLabelText(/telefone/i), { target: { value: '98988888888' } })
+    fireEvent.click(screen.getByRole('button', { name: /salvar lead/i }))
+
+    await waitFor(() =>
+      expect(adminCreateManualLead).toHaveBeenCalledWith({
+        name: 'João', phone: '98988888888', vehicleId: undefined, stage: 'novo',
+        firstContactAt: undefined, storeVisitAt: undefined, scheduledVisitDate: undefined, scheduledVisitTime: undefined,
+      }),
+    )
+  })
+
+  it('collects the optional follow-up dates via the calendar picker, and the visit time', async () => {
+    render(<LeadQuickAddModal vehicles={[]} onClose={vi.fn()} />)
+
+    fireEvent.change(screen.getByLabelText(/^nome$/i), { target: { value: 'Ana' } })
+    fireEvent.change(screen.getByLabelText(/telefone/i), { target: { value: '98977777777' } })
+
+    const now = new Date()
+    const isoPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
+    fireEvent.click(screen.getByLabelText(/primeiro contato/i))
+    fireEvent.click(screen.getByRole('button', { name: '5' }))
+    fireEvent.click(screen.getByLabelText(/veio na loja/i))
+    fireEvent.click(screen.getByRole('button', { name: '10' }))
+    fireEvent.click(screen.getByLabelText(/visita marcada/i))
+    fireEvent.click(screen.getByRole('button', { name: '15' }))
+    fireEvent.change(screen.getByLabelText(/hora da visita/i), { target: { value: '15:30' } })
+    fireEvent.click(screen.getByRole('button', { name: /salvar lead/i }))
+
+    await waitFor(() =>
+      expect(adminCreateManualLead).toHaveBeenCalledWith(
+        expect.objectContaining({
+          firstContactAt: `${isoPrefix}-05`,
+          storeVisitAt: `${isoPrefix}-10`,
+          scheduledVisitDate: `${isoPrefix}-15`,
+          scheduledVisitTime: '15:30',
+        }),
+      ),
+    )
+  })
+
+  it('closes without saving when Cancelar is clicked', () => {
+    const onClose = vi.fn()
+    render(<LeadQuickAddModal vehicles={[]} onClose={onClose} />)
+    fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
+    expect(onClose).toHaveBeenCalled()
+    expect(adminCreateManualLead).not.toHaveBeenCalled()
+  })
+})

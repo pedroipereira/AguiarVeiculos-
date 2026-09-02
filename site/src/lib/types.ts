@@ -85,7 +85,9 @@ export interface SiteImage {
   created_at: string
 }
 
-export type LeadType = 'financing' | 'trade_in'
+export type LeadType = 'financing' | 'trade_in' | 'manual'
+
+export type LeadStage = 'novo' | 'visita_marcada' | 'negociando' | 'ligar_de_volta' | 'vendeu' | 'nao_comprou'
 
 export interface Lead {
   id: string
@@ -94,5 +96,10 @@ export interface Lead {
   phone: string
   details: Record<string, unknown> | null
   vehicle_id: string | null
+  stage: LeadStage
+  first_contact_at: string | null
+  store_visit_at: string | null
+  scheduled_visit_date: string | null
+  scheduled_visit_time: string | null
   created_at: string
 }

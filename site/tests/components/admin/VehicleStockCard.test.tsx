@@ -1,13 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { vi } from 'vitest'
-
-const { adminDeleteVehicle, adminSetVehicleFeatured, adminSetVehicleStatus } = vi.hoisted(() => ({
-  adminDeleteVehicle: vi.fn(),
-  adminSetVehicleFeatured: vi.fn(),
-  adminSetVehicleStatus: vi.fn(),
-}))
-vi.mock('@/app/actions/vehicles', () => ({ adminDeleteVehicle, adminSetVehicleFeatured, adminSetVehicleStatus, adminMarkVehicleSold: vi.fn() }))
-vi.spyOn(window, 'confirm').mockReturnValue(true)
+import { render, screen } from '@testing-library/react'
 
 import { VehicleStockCard } from '@/components/admin/VehicleStockCard'
 
@@ -26,31 +17,32 @@ function makeVehicle(overrides: Partial<Record<string, any>> = {}) {
 
 describe('VehicleStockCard', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    // VehicleStockCard calls daysInStock(vehicle) with no explicit `now`, so it
-    // falls back to `new Date()` — fake the clock rather than let this test's
-    // pass/fail depend on which real-world day it happens to run on.
     vi.useFakeTimers()
     vi.setSystemTime(NOW)
   })
 
   afterEach(() => vi.useRealTimers())
 
-  it('shows a "Definir margem" pill when acquisition cost or minimum price is missing', () => {
-    render(<VehicleStockCard vehicle={makeVehicle()} totalCostCents={0} thresholdDays={90} leads={[]} />)
-    expect(screen.getByRole('link', { name: /definir margem/i })).toHaveAttribute('href', '/admin/veiculos/v-1#custos')
+  it('links to the vehicle summary page', () => {
+    render(<VehicleStockCard vehicle={makeVehicle()} totalCostCents={0} thresholdDays={90} />)
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/admin/veiculos/v-1')
+  })
+
+  it('shows a "Sem margem definida" notice when acquisition cost or minimum price is missing', () => {
+    render(<VehicleStockCard vehicle={makeVehicle()} totalCostCents={0} thresholdDays={90} />)
+    expect(screen.getByText(/sem margem definida/i)).toBeInTheDocument()
   })
 
   it('shows the minimum-price band with custo/lucro once a margin is defined', () => {
     const vehicle = makeVehicle({ acquisition_cost_cents: 4568600, min_sale_price_cents: 5549000 })
-    render(<VehicleStockCard vehicle={vehicle} totalCostCents={4568600} thresholdDays={90} leads={[]} />)
+    render(<VehicleStockCard vehicle={vehicle} totalCostCents={4568600} thresholdDays={90} />)
     expect(screen.getByText(/mínimo à vista r\$ 55.490/i)).toBeInTheDocument()
     expect(screen.getByText(/custo r\$ 45.686/i)).toBeInTheDocument()
     expect(screen.getByText(/lucro r\$ 19.214/i)).toBeInTheDocument()
   })
 
   it('shows the days-in-stock badge, computed from acquired_at', () => {
-    render(<VehicleStockCard vehicle={makeVehicle({ acquired_at: '2026-08-01' })} totalCostCents={0} thresholdDays={90} leads={[]} />)
+    render(<VehicleStockCard vehicle={makeVehicle({ acquired_at: '2026-08-01' })} totalCostCents={0} thresholdDays={90} />)
     expect(screen.getByText('31 dias')).toBeInTheDocument()
   })
 
@@ -60,7 +52,6 @@ describe('VehicleStockCard', () => {
         vehicle={makeVehicle({ status: 'available', acquired_at: '2020-01-01' })}
         totalCostCents={0}
         thresholdDays={90}
-        leads={[]}
       />,
     )
     expect(screen.getByText(/\d+ dias/)).toHaveClass('bg-aguiar-red')
@@ -68,55 +59,12 @@ describe('VehicleStockCard', () => {
 
   it('keeps the days badge neutral for preparing or sold vehicles even at a high day count', () => {
     const { unmount } = render(
-      <VehicleStockCard
-        vehicle={makeVehicle({ status: 'preparing', acquired_at: '2020-01-01' })}
-        totalCostCents={0}
-        thresholdDays={90}
-        leads={[]}
-      />,
+      <VehicleStockCard vehicle={makeVehicle({ status: 'preparing', acquired_at: '2020-01-01' })} totalCostCents={0} thresholdDays={90} />,
     )
     expect(screen.getByText(/\d+ dias/)).toHaveClass('bg-graphite')
     unmount()
 
-    render(
-      <VehicleStockCard
-        vehicle={makeVehicle({ status: 'sold', acquired_at: '2020-01-01' })}
-        totalCostCents={0}
-        thresholdDays={90}
-        leads={[]}
-      />,
-    )
+    render(<VehicleStockCard vehicle={makeVehicle({ status: 'sold', acquired_at: '2020-01-01' })} totalCostCents={0} thresholdDays={90} />)
     expect(screen.getByText(/\d+ dias/)).toHaveClass('bg-graphite')
-  })
-
-  it('deletes the vehicle on confirm', () => {
-    render(<VehicleStockCard vehicle={makeVehicle()} totalCostCents={0} thresholdDays={90} leads={[]} />)
-    fireEvent.click(screen.getByRole('button', { name: /excluir/i }))
-    expect(adminDeleteVehicle).toHaveBeenCalledWith('v-1')
-  })
-
-  it('toggles destaque', () => {
-    render(<VehicleStockCard vehicle={makeVehicle()} totalCostCents={0} thresholdDays={90} leads={[]} />)
-    fireEvent.click(screen.getByRole('button', { name: /destacar/i }))
-    expect(adminSetVehicleFeatured).toHaveBeenCalledWith('v-1', true)
-  })
-
-  it('moves an available vehicle to preparing and back', () => {
-    render(<VehicleStockCard vehicle={makeVehicle({ status: 'available' })} totalCostCents={0} thresholdDays={90} leads={[]} />)
-    fireEvent.click(screen.getByRole('button', { name: /marcar em preparação/i }))
-    expect(adminSetVehicleStatus).toHaveBeenCalledWith('v-1', 'preparing')
-  })
-
-  it('shows the sale form when "Marcar como vendido" is clicked, and hides the trigger', () => {
-    render(<VehicleStockCard vehicle={makeVehicle()} totalCostCents={0} thresholdDays={90} leads={[]} />)
-    fireEvent.click(screen.getByRole('button', { name: /marcar como vendido/i }))
-    expect(screen.getByLabelText(/preço de venda/i)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /marcar como vendido/i })).not.toBeInTheDocument()
-  })
-
-  it('offers "Marcar como disponível" (not the sale form) for an already-sold vehicle', () => {
-    render(<VehicleStockCard vehicle={makeVehicle({ status: 'sold', sale_price_cents: 6200000 })} totalCostCents={0} thresholdDays={90} leads={[]} />)
-    expect(screen.getByRole('button', { name: /marcar como disponível/i })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /marcar como vendido/i })).not.toBeInTheDocument()
   })
 })
