@@ -115,3 +115,24 @@ export function getSalesPanelMetrics(
 
   return { count: sold.length, revenueCents, profitCents }
 }
+
+export interface StoreSnapshot {
+  investedCents: number
+  listValueCents: number
+  expectedProfitCents: number
+}
+
+export function getStoreSnapshot(vehicles: Vehicle[], expenseTotals: Record<string, number>): StoreSnapshot {
+  const inStock = vehicles.filter((vehicle) => vehicle.status === 'available' || vehicle.status === 'preparing')
+
+  let investedCents = 0
+  let listValueCents = 0
+  for (const vehicle of inStock) {
+    investedCents += calculateTotalCostCents(vehicle.acquisition_cost_cents, [
+      { amount_cents: expenseTotals[vehicle.id] ?? 0 },
+    ])
+    listValueCents += vehicle.price_cents
+  }
+
+  return { investedCents, listValueCents, expectedProfitCents: listValueCents - investedCents }
+}

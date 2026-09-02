@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateGoalProgress, resolveDateRange } from '@/lib/dashboard'
+import { calculateGoalProgress, resolveDateRange, getStoreSnapshot } from '@/lib/dashboard'
 
 describe('calculateGoalProgress', () => {
   it('returns null when no goal is set', () => {
@@ -122,5 +122,30 @@ describe('getSalesPanelMetrics', () => {
     const vehicles = [makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-10', sale_price_cents: 5000000 })]
     const inverted = { start: '2026-09-20', end: '2026-09-10' }
     expect(getSalesPanelMetrics(vehicles, {}, inverted)).toEqual({ count: 0, revenueCents: 0, profitCents: 0 })
+  })
+})
+
+describe('getStoreSnapshot', () => {
+  it('includes only available and preparing vehicles, excluding sold', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'available', price_cents: 5000000, acquisition_cost_cents: 3000000 }),
+      makeVehicle({ id: 'b', status: 'preparing', price_cents: 6000000, acquisition_cost_cents: 4000000 }),
+      makeVehicle({ id: 'c', status: 'sold', price_cents: 7000000, acquisition_cost_cents: 5000000 }),
+    ]
+    const snapshot = getStoreSnapshot(vehicles, {})
+    expect(snapshot.listValueCents).toBe(11000000)
+    expect(snapshot.investedCents).toBe(7000000)
+  })
+
+  it('computes expected profit as list value minus invested', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'available', price_cents: 5000000, acquisition_cost_cents: 3000000 }),
+    ]
+    expect(getStoreSnapshot(vehicles, { a: 200000 }).expectedProfitCents).toBe(1800000)
+  })
+
+  it('treats a missing acquisition cost as zero invested for that vehicle', () => {
+    const vehicles = [makeVehicle({ id: 'a', status: 'available', price_cents: 5000000, acquisition_cost_cents: null })]
+    expect(getStoreSnapshot(vehicles, {}).investedCents).toBe(0)
   })
 })
