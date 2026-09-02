@@ -15,5 +15,4 @@ class ResizeObserverStub {
   unobserve() {}
   disconnect() {}
 }
-// @ts-expect-error -- jsdom has no ResizeObserver; Recharts only needs the shape above.
 global.ResizeObserver = ResizeObserverStub
