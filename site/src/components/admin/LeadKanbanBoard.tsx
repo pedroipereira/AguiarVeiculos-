@@ -4,7 +4,7 @@ import { useOptimistic, useState, useTransition } from 'react'
 import { DndContext, PointerSensor, useSensor, useSensors, useDroppable, type DragEndEvent } from '@dnd-kit/core'
 import type { Lead, LeadStage } from '@/lib/types'
 import type { VehicleOption } from '@/lib/queries/vehicles'
-import { LEAD_STAGES, LEAD_STAGE_LABELS, groupLeadsByStage, requiresSaleCompletion } from '@/lib/lead-kanban'
+import { LEAD_STAGES, LEAD_STAGE_LABELS, LEAD_STAGE_ACCENTS, groupLeadsByStage, requiresSaleCompletion } from '@/lib/lead-kanban'
 import { adminUpdateLeadStage } from '@/app/actions/leads'
 import { LeadCard } from './LeadCard'
 import { VehicleSaleForm } from './VehicleSaleForm'
@@ -23,14 +23,15 @@ interface LeadKanbanColumnProps {
 
 function LeadKanbanColumn({ stage, leads, vehicles, onMoveToStage }: LeadKanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: stage })
+  const accent = LEAD_STAGE_ACCENTS[stage]
 
   return (
     <div
       ref={setNodeRef}
       className={`flex w-56 shrink-0 flex-col gap-3 rounded-xl p-3 ${isOver ? 'bg-card-gray' : 'bg-card-gray/50'}`}
     >
-      <div className="flex items-center justify-between px-1">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-graphite">{LEAD_STAGE_LABELS[stage]}</h2>
+      <div className={`flex items-center justify-between rounded-lg px-2 py-1.5 ${accent.headerBg}`}>
+        <h2 className={`text-sm font-bold uppercase tracking-wide ${accent.headerText}`}>{LEAD_STAGE_LABELS[stage]}</h2>
         <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-support-gray">{leads.length}</span>
       </div>
       <div className="flex flex-col gap-3">

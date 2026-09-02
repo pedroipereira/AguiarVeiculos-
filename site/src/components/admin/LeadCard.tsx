@@ -5,7 +5,7 @@ import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import type { Lead, LeadStage } from '@/lib/types'
 import type { VehicleOption } from '@/lib/queries/vehicles'
-import { LEAD_STAGES, LEAD_STAGE_LABELS, buildWhatsAppLink, formatIsoDate } from '@/lib/lead-kanban'
+import { LEAD_STAGES, LEAD_STAGE_LABELS, LEAD_STAGE_ACCENTS, buildWhatsAppLink, formatIsoDate } from '@/lib/lead-kanban'
 import { formatPriceFromCents } from '@/lib/format'
 import { adminDeleteLead } from '@/app/actions/leads'
 import { LeadQuickAddModal } from './LeadQuickAddModal'
@@ -42,6 +42,7 @@ export function LeadCard({ lead, vehicles, onMoveToStage }: LeadCardProps) {
   }, [menuOpen])
 
   const vehicle = vehicles.find((option) => option.id === lead.vehicle_id)
+  const accent = LEAD_STAGE_ACCENTS[lead.stage]
   const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined
 
   return (
@@ -50,7 +51,7 @@ export function LeadCard({ lead, vehicles, onMoveToStage }: LeadCardProps) {
       style={style}
       {...listeners}
       {...attributes}
-      className={`flex flex-col gap-2 rounded-xl bg-white p-4 shadow-sm ${isDragging ? 'opacity-50' : ''}`}
+      className={`flex flex-col gap-2 rounded-xl border-l-4 bg-white p-4 shadow-sm ${accent.cardBorder} ${isDragging ? 'opacity-50' : ''}`}
     >
       <div className="flex items-start justify-between gap-2">
         <p className="font-bold">{lead.name}</p>

@@ -156,4 +156,12 @@ describe('LeadKanbanBoard', () => {
 
     expect(adminDeleteLead).toHaveBeenCalledWith('a')
   })
+
+  it('applies the stage accent color to each column header', () => {
+    const leads = [makeLead({ id: 'a', stage: 'vendeu', vehicle_id: null })]
+    render(<LeadKanbanBoard leads={leads} vehicles={VEHICLES} />)
+    const heading = screen.getByText('Vendeu')
+    expect(heading).toHaveClass('text-green-700')
+    expect(heading.parentElement).toHaveClass('bg-green-50')
+  })
 })

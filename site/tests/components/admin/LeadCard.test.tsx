@@ -101,4 +101,9 @@ describe('LeadCard', () => {
     fireEvent.mouseDown(screen.getByText('Mover para'))
     expect(screen.getByText('Mover para')).toBeInTheDocument()
   })
+
+  it('shows a colored left border matching the stage accent', () => {
+    const { container } = renderCard(makeLead({ stage: 'vendeu' }))
+    expect(container.firstChild).toHaveClass('border-green-600')
+  })
 })
