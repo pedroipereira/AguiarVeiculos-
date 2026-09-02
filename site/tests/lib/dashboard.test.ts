@@ -67,3 +67,60 @@ describe('resolveDateRange', () => {
     })
   })
 })
+
+import { getSalesPanelMetrics } from '@/lib/dashboard'
+import type { Vehicle } from '@/lib/types'
+
+function makeVehicle(overrides: Partial<Vehicle> = {}): Vehicle {
+  return {
+    id: 'v-1', slug: 'v-1', brand: 'Fiat', model: 'Argo', version: 'Drive',
+    year_model: 2024, year_fabrication: 2024, mileage_km: 10000, price_cents: 8000000,
+    fuel_type: null, transmission: null, color: null, description: null, engine: null,
+    fuel_tank_liters: null, seating_capacity: null, body_type: null, doors: null,
+    horsepower: null, is_featured: false, status: 'available',
+    created_at: '2026-01-01T00:00:00.000Z', updated_at: '2026-01-01T00:00:00.000Z',
+    plate: null, acquired_at: null, acquisition_cost_cents: null, min_sale_price_cents: null,
+    sale_price_cents: null, sold_at: null, buyer_lead_id: null,
+    fipe_brand_code: null, fipe_model_code: null, fipe_year_code: null,
+    fipe_value_cents: null, fipe_fetched_at: null, optionals: [],
+    ...overrides,
+  }
+}
+
+describe('getSalesPanelMetrics', () => {
+  const range = { start: '2026-09-01', end: '2026-09-30' }
+
+  it('counts only vehicles sold within the range', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-15', sale_price_cents: 5000000 }),
+      makeVehicle({ id: 'b', status: 'sold', sold_at: '2026-08-31', sale_price_cents: 4000000 }),
+      makeVehicle({ id: 'c', status: 'available', sold_at: null }),
+    ]
+    expect(getSalesPanelMetrics(vehicles, {}, range).count).toBe(1)
+  })
+
+  it('sums sale_price_cents as revenue', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-01', sale_price_cents: 5000000 }),
+      makeVehicle({ id: 'b', status: 'sold', sold_at: '2026-09-30', sale_price_cents: 3000000 }),
+    ]
+    expect(getSalesPanelMetrics(vehicles, {}, range).revenueCents).toBe(8000000)
+  })
+
+  it('sums realized margin (sale price minus acquisition cost minus expenses) as profit', () => {
+    const vehicles = [
+      makeVehicle({
+        id: 'a', status: 'sold', sold_at: '2026-09-10',
+        sale_price_cents: 5000000, acquisition_cost_cents: 3000000,
+      }),
+    ]
+    // profit = 5,000,000 - 3,000,000 - 200,000 (expenses) = 1,800,000
+    expect(getSalesPanelMetrics(vehicles, { a: 200000 }, range).profitCents).toBe(1800000)
+  })
+
+  it('returns zeros for an empty (inverted custom) range', () => {
+    const vehicles = [makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-10', sale_price_cents: 5000000 })]
+    const inverted = { start: '2026-09-20', end: '2026-09-10' }
+    expect(getSalesPanelMetrics(vehicles, {}, inverted)).toEqual({ count: 0, revenueCents: 0, profitCents: 0 })
+  })
+})

@@ -82,3 +82,36 @@ export function resolveDateRange(preset: DateRangePreset, now: Date, custom?: Da
     }
   }
 }
+
+import type { Vehicle } from './types'
+import { calculateTotalCostCents, calculateRealizedMarginCents } from './vehicle-costs'
+
+export interface SalesPanelMetrics {
+  count: number
+  revenueCents: number
+  profitCents: number
+}
+
+function isWithinRange(dateValue: string | null, range: DateRange): boolean {
+  return dateValue != null && dateValue >= range.start && dateValue <= range.end
+}
+
+export function getSalesPanelMetrics(
+  vehicles: Vehicle[],
+  expenseTotals: Record<string, number>,
+  range: DateRange,
+): SalesPanelMetrics {
+  const sold = vehicles.filter((vehicle) => isWithinRange(vehicle.sold_at, range))
+
+  let revenueCents = 0
+  let profitCents = 0
+  for (const vehicle of sold) {
+    revenueCents += vehicle.sale_price_cents ?? 0
+    const totalCostCents = calculateTotalCostCents(vehicle.acquisition_cost_cents, [
+      { amount_cents: expenseTotals[vehicle.id] ?? 0 },
+    ])
+    profitCents += calculateRealizedMarginCents(vehicle.sale_price_cents, totalCostCents) ?? 0
+  }
+
+  return { count: sold.length, revenueCents, profitCents }
+}
