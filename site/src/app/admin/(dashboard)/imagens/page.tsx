@@ -1,20 +1,23 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getSiteImageUrls, getSiteImages } from '@/lib/queries/site-images'
+import { getSiteSetting } from '@/lib/queries/site-settings'
 import { getPublicImageUrl } from '@/lib/storage'
 import { getAllTestimonialsAdmin } from '@/lib/queries/testimonials'
 import { SiteSingleImageManager } from '@/components/admin/SiteSingleImageManager'
 import { SiteImagesSlotManager } from '@/components/admin/SiteImagesSlotManager'
 import { TestimonialForm } from '@/components/admin/TestimonialForm'
 import { TestimonialTable } from '@/components/admin/TestimonialTable'
+import { LocationVideoForm } from '@/components/admin/LocationVideoForm'
 
 export default async function AdminImagensPage() {
   const client = await createServerSupabaseClient()
 
-  const [heroImages, sobreImages, galeriaImages, testimonials] = await Promise.all([
+  const [heroImages, sobreImages, galeriaImages, testimonials, locationVideoUrl] = await Promise.all([
     getSiteImageUrls(client, 'hero'),
     getSiteImageUrls(client, 'sobre'),
     getSiteImages(client, 'galeria'),
     getAllTestimonialsAdmin(client),
+    getSiteSetting(client, 'location_video_url'),
   ])
 
   const galeriaEntries = galeriaImages.map((image) => ({
@@ -55,6 +58,8 @@ export default async function AdminImagensPage() {
         <TestimonialForm />
         <TestimonialTable testimonials={testimonials} />
       </section>
+
+      <LocationVideoForm locationVideoUrl={locationVideoUrl} />
     </div>
   )
 }

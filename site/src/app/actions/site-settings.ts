@@ -9,6 +9,8 @@ export async function adminSetSiteSetting(key: string, value: string) {
   const client = await createServerSupabaseClient()
   await assertAdmin(client)
   await setSiteSetting(client, key, value)
-  revalidatePath('/admin/configuracoes')
+  revalidatePath('/admin')
+  revalidatePath('/admin/imagens')
+  revalidatePath('/admin/veiculos')
   revalidatePath('/')
 }
