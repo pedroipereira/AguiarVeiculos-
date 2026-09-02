@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 
-const { adminCreateManualLead } = vi.hoisted(() => ({ adminCreateManualLead: vi.fn() }))
-vi.mock('@/app/actions/leads', () => ({ adminCreateManualLead }))
+const { adminCreateManualLead, adminUpdateLead } = vi.hoisted(() => ({ adminCreateManualLead: vi.fn(), adminUpdateLead: vi.fn() }))
+vi.mock('@/app/actions/leads', () => ({ adminCreateManualLead, adminUpdateLead }))
 
 const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }))
@@ -87,6 +87,42 @@ describe('LeadQuickAddModal', () => {
     const onClose = vi.fn()
     render(<LeadQuickAddModal vehicles={[]} onClose={onClose} />)
     fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
+    expect(onClose).toHaveBeenCalled()
+    expect(adminCreateManualLead).not.toHaveBeenCalled()
+  })
+
+  it('collects observações text on create', async () => {
+    render(<LeadQuickAddModal vehicles={[]} onClose={vi.fn()} />)
+    fireEvent.change(screen.getByLabelText(/^nome$/i), { target: { value: 'Pedro' } })
+    fireEvent.change(screen.getByLabelText(/telefone/i), { target: { value: '98911112222' } })
+    fireEvent.change(screen.getByLabelText(/observações/i), { target: { value: 'Quer um SUV' } })
+    fireEvent.click(screen.getByRole('button', { name: /salvar lead/i }))
+
+    await waitFor(() =>
+      expect(adminCreateManualLead).toHaveBeenCalledWith(expect.objectContaining({ notes: 'Quer um SUV' })),
+    )
+  })
+
+  it('pre-fills the form and calls adminUpdateLead when a lead is provided (edit mode)', async () => {
+    const lead = {
+      id: 'l-1', type: 'manual', name: 'Carlos', phone: '98977776666', details: null,
+      vehicle_id: 'v-1', stage: 'negociando', first_contact_at: '2026-09-01', store_visit_at: null,
+      scheduled_visit_date: null, scheduled_visit_time: null, notes: 'Já visitou a loja',
+      created_at: '2026-08-01T10:00:00.000Z',
+    } as any
+    const onClose = vi.fn()
+    render(<LeadQuickAddModal vehicles={VEHICLES} lead={lead} onClose={onClose} />)
+
+    expect(screen.getByText('Editar lead')).toBeInTheDocument()
+    expect(screen.getByLabelText(/^nome$/i)).toHaveValue('Carlos')
+    expect(screen.getByLabelText(/telefone/i)).toHaveValue('98977776666')
+    expect(screen.getByLabelText(/observações/i)).toHaveValue('Já visitou a loja')
+
+    fireEvent.click(screen.getByRole('button', { name: /salvar lead/i }))
+
+    await waitFor(() =>
+      expect(adminUpdateLead).toHaveBeenCalledWith('l-1', expect.objectContaining({ name: 'Carlos', notes: 'Já visitou a loja' })),
+    )
     expect(onClose).toHaveBeenCalled()
     expect(adminCreateManualLead).not.toHaveBeenCalled()
   })
