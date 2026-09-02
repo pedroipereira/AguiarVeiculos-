@@ -190,3 +190,42 @@ describe('getFunnelData', () => {
     expect(getFunnelData([])).toHaveLength(5)
   })
 })
+
+import { getSalesTimeSeries } from '@/lib/dashboard'
+
+describe('getSalesTimeSeries', () => {
+  const NOW = new Date(2026, 8, 25) // September 25th 2026
+
+  it('buckets sold vehicles per day, oldest first, keeping empty days at zero', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-23' }),
+      makeVehicle({ id: 'b', status: 'sold', sold_at: '2026-09-25' }),
+    ]
+    const series = getSalesTimeSeries(vehicles, 'day', 3, NOW)
+    expect(series).toEqual([
+      { bucketLabel: '23/09', count: 1 },
+      { bucketLabel: '24/09', count: 0 },
+      { bucketLabel: '25/09', count: 1 },
+    ])
+  })
+
+  it('buckets sold vehicles per month, oldest first', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-07-10' }),
+      makeVehicle({ id: 'b', status: 'sold', sold_at: '2026-09-05' }),
+      makeVehicle({ id: 'c', status: 'sold', sold_at: '2026-09-20' }),
+    ]
+    const series = getSalesTimeSeries(vehicles, 'month', 3, NOW)
+    expect(series).toEqual([
+      { bucketLabel: 'Jul', count: 1 },
+      { bucketLabel: 'Ago', count: 0 },
+      { bucketLabel: 'Set', count: 2 },
+    ])
+  })
+
+  it('ignores vehicles with no sold_at', () => {
+    const vehicles = [makeVehicle({ id: 'a', status: 'available', sold_at: null })]
+    const series = getSalesTimeSeries(vehicles, 'day', 1, NOW)
+    expect(series).toEqual([{ bucketLabel: '25/09', count: 0 }])
+  })
+})

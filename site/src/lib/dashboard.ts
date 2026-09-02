@@ -155,3 +155,60 @@ export function getFunnelData(leads: Lead[]): FunnelStageCount[] {
     count: leads.filter((lead) => lead.stage === stage).length,
   }))
 }
+
+export type TimeSeriesGranularity = 'day' | 'week' | 'month'
+
+export interface SalesTimeSeriesPoint {
+  bucketLabel: string
+  count: number
+}
+
+const MONTH_SHORT_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+function resolveBucket(
+  granularity: TimeSeriesGranularity,
+  now: Date,
+  offsetFromNow: number,
+): { start: string; end: string; label: string } {
+  if (granularity === 'day') {
+    const date = addDays(now, -offsetFromNow)
+    const iso = formatDateLocal(date)
+    return { start: iso, end: iso, label: `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}` }
+  }
+
+  if (granularity === 'week') {
+    const anchor = addDays(now, -offsetFromNow * 7)
+    const dayOfWeek = anchor.getDay()
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+    const monday = addDays(anchor, mondayOffset)
+    const sunday = addDays(monday, 6)
+    return {
+      start: formatDateLocal(monday),
+      end: formatDateLocal(sunday),
+      label: `${String(monday.getDate()).padStart(2, '0')}/${String(monday.getMonth() + 1).padStart(2, '0')}`,
+    }
+  }
+
+  const monthDate = new Date(now.getFullYear(), now.getMonth() - offsetFromNow, 1)
+  const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)
+  return {
+    start: formatDateLocal(monthDate),
+    end: formatDateLocal(monthEnd),
+    label: MONTH_SHORT_LABELS[monthDate.getMonth()],
+  }
+}
+
+export function getSalesTimeSeries(
+  vehicles: Vehicle[],
+  granularity: TimeSeriesGranularity,
+  buckets: number,
+  now: Date,
+): SalesTimeSeriesPoint[] {
+  const points: SalesTimeSeriesPoint[] = []
+  for (let offsetFromNow = buckets - 1; offsetFromNow >= 0; offsetFromNow--) {
+    const { start, end, label } = resolveBucket(granularity, now, offsetFromNow)
+    const count = vehicles.filter((vehicle) => isWithinRange(vehicle.sold_at, { start, end })).length
+    points.push({ bucketLabel: label, count })
+  }
+  return points
+}
