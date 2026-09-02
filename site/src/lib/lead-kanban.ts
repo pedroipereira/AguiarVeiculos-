@@ -43,3 +43,24 @@ export function formatIsoDate(value: string): string {
   const [year, month, day] = value.split('-')
   return `${day}/${month}/${year}`
 }
+
+export interface LeadStageAccent {
+  headerBg: string
+  headerText: string
+  cardBorder: string
+}
+
+/**
+ * Per-stage accent colors for the kanban — every value reuses a color
+ * already established elsewhere in the app (Estoque's "Sem margem"
+ * yellow, its "Lucro" green, the brand red) rather than introducing a new
+ * palette.
+ */
+export const LEAD_STAGE_ACCENTS: Record<LeadStage, LeadStageAccent> = {
+  novo: { headerBg: 'bg-support-gray/10', headerText: 'text-graphite', cardBorder: 'border-support-gray/40' },
+  visita_marcada: { headerBg: 'bg-support-gray/10', headerText: 'text-graphite', cardBorder: 'border-support-gray/40' },
+  negociando: { headerBg: 'bg-yellow-100', headerText: 'text-yellow-800', cardBorder: 'border-yellow-500' },
+  ligar_de_volta: { headerBg: 'bg-support-gray/10', headerText: 'text-graphite', cardBorder: 'border-support-gray/40' },
+  vendeu: { headerBg: 'bg-green-50', headerText: 'text-green-700', cardBorder: 'border-green-600' },
+  nao_comprou: { headerBg: 'bg-aguiar-red/10', headerText: 'text-aguiar-red', cardBorder: 'border-aguiar-red' },
+}

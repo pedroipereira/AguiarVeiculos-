@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  LEAD_STAGES, LEAD_STAGE_LABELS, groupLeadsByStage, requiresSaleCompletion, buildWhatsAppLink, formatIsoDate,
+  LEAD_STAGES, LEAD_STAGE_LABELS, LEAD_STAGE_ACCENTS, groupLeadsByStage, requiresSaleCompletion, buildWhatsAppLink, formatIsoDate,
 } from '@/lib/lead-kanban'
 import type { Lead } from '@/lib/types'
 
@@ -66,5 +66,26 @@ describe('buildWhatsAppLink', () => {
 describe('formatIsoDate', () => {
   it('reformats an ISO date to dd/mm/yyyy without going through Date (no timezone shift)', () => {
     expect(formatIsoDate('2026-09-01')).toBe('01/09/2026')
+  })
+})
+
+describe('LEAD_STAGE_ACCENTS', () => {
+  it('has a complete accent (header background, header text, card border) for every stage', () => {
+    for (const stage of LEAD_STAGES) {
+      const accent = LEAD_STAGE_ACCENTS[stage]
+      expect(accent).toBeDefined()
+      expect(accent.headerBg).toMatch(/^bg-/)
+      expect(accent.headerText).toMatch(/^text-/)
+      expect(accent.cardBorder).toMatch(/^border-/)
+    }
+  })
+
+  it('gives "vendeu" the same green already used for profit/success elsewhere in the app', () => {
+    expect(LEAD_STAGE_ACCENTS.vendeu.headerBg).toBe('bg-green-50')
+    expect(LEAD_STAGE_ACCENTS.vendeu.headerText).toBe('text-green-700')
+  })
+
+  it('gives "nao_comprou" the brand red', () => {
+    expect(LEAD_STAGE_ACCENTS.nao_comprou.headerText).toBe('text-aguiar-red')
   })
 })
