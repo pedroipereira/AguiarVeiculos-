@@ -24,6 +24,8 @@ export const COMMERCIAL_DATES: CommercialDateRule[] = [
   { type: 'nth-weekday', month: 5, weekday: 0, occurrence: 2, label: 'Dia das Mães' },
   { type: 'easter-relative', offsetDays: 60, label: 'Corpus Christi' },
   { type: 'fixed', month: 6, day: 12, label: 'Dia dos Namorados' },
+  { type: 'fixed', month: 6, day: 18, label: 'Aniversário da loja' },
+  { type: 'fixed', month: 6, day: 28, label: 'Aniversário de Presidente Dutra' },
   { type: 'fixed', month: 7, day: 25, label: 'Dia do Motorista' },
   { type: 'nth-weekday', month: 8, weekday: 0, occurrence: 2, label: 'Dia dos Pais' },
   { type: 'fixed', month: 9, day: 7, label: 'Independência do Brasil' },

@@ -53,6 +53,12 @@ describe('resolveCommercialDatesForYear', () => {
     expect(resolveCommercialDatesForYear(2027).find((d) => d.label === 'Corpus Christi')?.date).toBe('2027-05-27')
   })
 
+  it('includes the store\'s anniversary (18/06) and Presidente Dutra\'s anniversary (28/06)', () => {
+    const dates2026 = resolveCommercialDatesForYear(2026)
+    expect(dates2026.find((d) => d.label === 'Aniversário da loja')?.date).toBe('2026-06-18')
+    expect(dates2026.find((d) => d.label === 'Aniversário de Presidente Dutra')?.date).toBe('2026-06-28')
+  })
+
   it('includes the fixed-date national holidays', () => {
     const dates2026 = resolveCommercialDatesForYear(2026)
     expect(dates2026.find((d) => d.label === 'Tiradentes')?.date).toBe('2026-04-21')
