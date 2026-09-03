@@ -91,22 +91,22 @@ export async function Contato({ client, tone }: { client: SupabaseClient; tone?:
             </div>
             <div className="flex flex-col gap-8 border-t border-white/10 pt-6">
               {INFO.map((item) => (
-                <div key={item.label} className={`flex items-start gap-3 ${item.href ? 'group' : ''}`}>
+                <div key={item.label} className={`flex min-w-0 items-start gap-3 ${item.href ? 'group' : ''}`}>
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-aguiar-red/10 text-aguiar-red">
                     {item.icon}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs font-bold uppercase tracking-widest text-support-gray">{item.label}</p>
                     {item.href ? (
                       <a
                         href={item.href}
                         {...(item.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                        className="font-bold transition-colors group-hover:text-aguiar-red"
+                        className="break-words font-bold transition-colors group-hover:text-aguiar-red"
                       >
                         {item.value}
                       </a>
                     ) : (
-                      <p className="font-bold">{item.value}</p>
+                      <p className="break-words font-bold">{item.value}</p>
                     )}
                   </div>
                 </div>

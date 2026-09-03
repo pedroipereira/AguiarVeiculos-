@@ -169,7 +169,7 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
               {highlights.map((spec) => (
                 <div
                   key={spec.label}
-                  className={`flex items-center gap-3 rounded-2xl bg-support-gray/5 p-3.5 transition-colors hover:bg-support-gray/10 ${
+                  className={`flex min-w-0 items-center gap-3 rounded-2xl bg-support-gray/5 p-3.5 transition-colors hover:bg-support-gray/10 ${
                     spec.fullWidth ? 'col-span-2' : ''
                   }`}
                 >
@@ -184,9 +184,9 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
                       {spec.icon}
                     </div>
                   )}
-                  <div>
-                    <p className="text-xs uppercase tracking-widest text-support-gray">{spec.label}</p>
-                    <p className="font-bold">{spec.value}</p>
+                  <div className="min-w-0">
+                    <p className="truncate text-xs uppercase tracking-widest text-support-gray">{spec.label}</p>
+                    <p className="break-words font-bold">{spec.value}</p>
                   </div>
                 </div>
               ))}

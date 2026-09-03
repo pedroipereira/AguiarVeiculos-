@@ -51,35 +51,37 @@ export function VehicleSearchSort({
     <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-support-gray/15 bg-white p-4 shadow-sm">
       <VehicleInstantSearch vehicles={allVehicles} imageUrls={allVehicleImageUrls} brands={brandNames} />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={onToggleMobileFilters}
-          aria-expanded={mobileFiltersOpen}
-          aria-controls="mobile-filters-panel"
-          className="flex shrink-0 items-center gap-1.5 rounded-full border border-support-gray/20 px-3.5 py-2 text-sm font-bold text-graphite transition-colors hover:border-aguiar-red hover:text-aguiar-red lg:hidden"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="h-4 w-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M7 12h10M10 18h4" />
-          </svg>
-          Filtros
-          {activeFilterCount > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-aguiar-red px-1 text-xs text-white">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={onToggleMobileFilters}
+            aria-expanded={mobileFiltersOpen}
+            aria-controls="mobile-filters-panel"
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-support-gray/20 px-3.5 py-2 text-sm font-bold text-graphite transition-colors hover:border-aguiar-red hover:text-aguiar-red lg:hidden"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="h-4 w-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M7 12h10M10 18h4" />
+            </svg>
+            Filtros
+            {activeFilterCount > 0 && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-aguiar-red px-1 text-xs text-white">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
 
-        <p className="whitespace-nowrap text-sm text-support-gray">
-          {resultCount} {resultCount === 1 ? 'veículo' : 'veículos'}
-        </p>
+          <p className="whitespace-nowrap text-sm text-support-gray">
+            {resultCount} {resultCount === 1 ? 'veículo' : 'veículos'}
+          </p>
+        </div>
 
-        <div className="relative ml-auto">
+        <div className="relative lg:ml-auto">
           <select
             aria-label="Ordenar por"
             value={searchParams.get('sort') ?? 'recent'}
             onChange={(e) => updateParam('sort', e.target.value)}
-            className="appearance-none rounded-full border border-support-gray/20 py-2.5 pl-4 pr-9 text-sm font-bold text-graphite transition-colors focus:border-aguiar-red focus:outline-none"
+            className="w-full appearance-none rounded-full border border-support-gray/20 py-2.5 pl-4 pr-9 text-sm font-bold text-graphite transition-colors focus:border-aguiar-red focus:outline-none lg:w-auto"
           >
             {SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
