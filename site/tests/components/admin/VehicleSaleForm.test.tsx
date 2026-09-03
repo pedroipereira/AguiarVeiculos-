@@ -100,4 +100,11 @@ describe('VehicleSaleForm', () => {
     expect(screen.getByRole('button', { name: /confirmar venda/i })).toHaveClass('flex-1')
     expect(screen.getByRole('button', { name: /cancelar/i })).toHaveClass('flex-1')
   })
+
+  it('gives the buyer select the same height as the price input and date picker', () => {
+    render(<VehicleSaleForm vehicleId="v-1" leads={leads} onCancel={vi.fn()} onSaved={vi.fn()} />)
+    expect(screen.getByLabelText(/preço de venda/i)).toHaveClass('h-11')
+    expect(screen.getByLabelText(/data da venda/i)).toHaveClass('h-11')
+    expect(screen.getByLabelText(/comprador/i)).toHaveClass('h-11')
+  })
 })

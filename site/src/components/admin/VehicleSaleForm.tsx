@@ -14,7 +14,7 @@ interface VehicleSaleFormProps {
 }
 
 const inputClass =
-  'rounded-lg border border-support-gray/25 p-2 text-sm text-graphite transition-colors focus:border-aguiar-red focus:outline-none'
+  'h-11 rounded-lg border border-support-gray/25 p-2.5 text-sm text-graphite transition-colors focus:border-aguiar-red focus:outline-none'
 
 export function VehicleSaleForm({ vehicleId, leads, defaultBuyerLeadId, onCancel, onSaved }: VehicleSaleFormProps) {
   const [error, setError] = useState<string | null>(null)

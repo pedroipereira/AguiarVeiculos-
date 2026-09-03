@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { formatPriceFromCents } from '@/lib/format'
 import type { Vehicle, Lead } from '@/lib/types'
 import { calculateEstimatedMarginCents, calculateRealizedMarginCents } from '@/lib/vehicle-costs'
@@ -19,6 +20,7 @@ interface VehicleSummaryPanelProps {
 }
 
 export function VehicleSummaryPanel({ vehicle, imageUrls, totalCostCents, thresholdDays, leads }: VehicleSummaryPanelProps) {
+  const router = useRouter()
   const [showSaleForm, setShowSaleForm] = useState(false)
   const [showLeadModal, setShowLeadModal] = useState(false)
   const days = daysInStock(vehicle)
@@ -161,7 +163,7 @@ export function VehicleSummaryPanel({ vehicle, imageUrls, totalCostCents, thresh
                 vehicleId={vehicle.id}
                 leads={leads}
                 onCancel={() => setShowSaleForm(false)}
-                onSaved={() => setShowSaleForm(false)}
+                onSaved={() => router.push('/admin/veiculos')}
               />
             )}
 

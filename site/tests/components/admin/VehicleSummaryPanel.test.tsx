@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 
 const { adminDeleteVehicle, adminSetVehicleFeatured, adminSetVehicleStatus } = vi.hoisted(() => ({
@@ -6,9 +6,11 @@ const { adminDeleteVehicle, adminSetVehicleFeatured, adminSetVehicleStatus } = v
   adminSetVehicleFeatured: vi.fn(),
   adminSetVehicleStatus: vi.fn(),
 }))
-vi.mock('@/app/actions/vehicles', () => ({ adminDeleteVehicle, adminSetVehicleFeatured, adminSetVehicleStatus, adminMarkVehicleSold: vi.fn() }))
+const { adminMarkVehicleSold } = vi.hoisted(() => ({ adminMarkVehicleSold: vi.fn() }))
+vi.mock('@/app/actions/vehicles', () => ({ adminDeleteVehicle, adminSetVehicleFeatured, adminSetVehicleStatus, adminMarkVehicleSold }))
 vi.mock('@/app/actions/leads', () => ({ adminCreateManualLead: vi.fn() }))
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
+const { push, refresh } = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }))
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh }) }))
 vi.spyOn(window, 'confirm').mockReturnValue(true)
 
 import { VehicleSummaryPanel } from '@/components/admin/VehicleSummaryPanel'
@@ -72,6 +74,24 @@ describe('VehicleSummaryPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: /marcar como vendido/i }))
     expect(screen.getByLabelText(/preço de venda/i)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /marcar como vendido/i })).not.toBeInTheDocument()
+  })
+
+  it('navigates back to Estoque once the sale form is saved', async () => {
+    adminMarkVehicleSold.mockResolvedValue(undefined)
+    render(<VehicleSummaryPanel vehicle={makeVehicle()} imageUrls={[]} totalCostCents={0} thresholdDays={90} leads={[]} />)
+    fireEvent.click(screen.getByRole('button', { name: /marcar como vendido/i }))
+
+    fireEvent.change(screen.getByLabelText(/preço de venda/i), { target: { value: '62000' } })
+    fireEvent.click(screen.getByLabelText(/data da venda/i))
+    fireEvent.click(screen.getByRole('button', { name: '15' }))
+
+    // waitFor polls with real timers — the outer beforeEach's fake clock
+    // (needed for the days-in-stock badge elsewhere) must not still be
+    // active during the async submit below, or it hangs.
+    vi.useRealTimers()
+    fireEvent.click(screen.getByRole('button', { name: /confirmar venda/i }))
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/admin/veiculos'))
   })
 
   it('offers "Marcar como disponível" (not the sale form) for an already-sold vehicle', () => {

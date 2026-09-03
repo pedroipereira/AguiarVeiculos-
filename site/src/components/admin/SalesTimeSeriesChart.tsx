@@ -48,7 +48,11 @@ export function SalesTimeSeriesChart({ vehicles, now = new Date() }: SalesTimeSe
         <BarChart data={data} barCategoryGap="35%">
           <XAxis dataKey="bucketLabel" tick={{ fontSize: 12 }} />
           <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-          <Tooltip />
+          {/* Recharts' default hover cursor is a gray rectangle spanning the
+              whole category width, not just the (now much thinner) bar —
+              reads as a smudge on the chart. Hide it; the tooltip box
+              itself still shows on hover. */}
+          <Tooltip cursor={false} />
           <Bar dataKey="count" fill="#D32027" radius={[4, 4, 0, 0]} maxBarSize={28} />
         </BarChart>
       </ResponsiveContainer>
