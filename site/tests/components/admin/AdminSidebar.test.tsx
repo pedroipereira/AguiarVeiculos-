@@ -17,11 +17,13 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('link', { name: /agenda/i })).toHaveAttribute('href', '/admin/agenda')
     expect(screen.getByRole('link', { name: /^site$/i })).toHaveAttribute('href', '/admin/imagens')
 
-    for (const label of ['Metas', 'Relatórios']) {
+    expect(screen.queryByText('Metas')).not.toBeInTheDocument()
+
+    for (const label of ['Relatórios']) {
       expect(screen.queryByRole('link', { name: new RegExp(label, 'i') })).not.toBeInTheDocument()
       expect(screen.getByText(label)).toBeInTheDocument()
     }
-    expect(screen.getAllByText(/em breve/i)).toHaveLength(2)
+    expect(screen.getAllByText(/em breve/i)).toHaveLength(1)
   })
 
   it('highlights the nav item matching the current route', () => {

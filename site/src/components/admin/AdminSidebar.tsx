@@ -11,7 +11,6 @@ import {
   EstoqueIcon,
   LeadsIcon,
   AgendaIcon,
-  MetasIcon,
   RelatoriosIcon,
   SiteIcon,
 } from './icons'
@@ -27,7 +26,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Estoque', href: '/admin/veiculos', Icon: EstoqueIcon },
   { label: 'Clientes', href: '/admin/leads', Icon: LeadsIcon },
   { label: 'Agenda', href: '/admin/agenda', Icon: AgendaIcon },
-  { label: 'Metas', Icon: MetasIcon },
   { label: 'Relatórios', Icon: RelatoriosIcon },
   { label: 'Site', href: '/admin/imagens', Icon: SiteIcon },
 ]

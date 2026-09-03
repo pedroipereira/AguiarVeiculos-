@@ -59,16 +59,6 @@ export function AgendaIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
-export function MetasIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <IconBase {...props}>
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="12" cy="12" r="4.3" />
-      <circle cx="12" cy="12" r="0.6" fill="currentColor" />
-    </IconBase>
-  )
-}
-
 export function RelatoriosIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <IconBase {...props}>
