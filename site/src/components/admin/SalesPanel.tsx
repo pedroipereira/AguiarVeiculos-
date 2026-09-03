@@ -114,6 +114,7 @@ export function SalesPanel({ vehicles, expenseTotals, goal, soldCount, now = new
         <div className="flex flex-col gap-1 rounded-xl bg-white p-6 shadow-sm">
           <p className="text-sm text-support-gray">Vendas</p>
           <p className={`${anton.className} text-2xl text-graphite`}>{metrics.count}</p>
+          <p className="text-xs text-support-gray">Período: {periodLabel}</p>
         </div>
       </div>
     </div>

@@ -47,16 +47,18 @@ export default async function AdminPainelPage() {
 
       <SalesPanel vehicles={vehicles} expenseTotals={expenseTotals} goal={goal} soldCount={soldInCurrentMonth} />
 
-      <div>
-        <h2 className="text-xl font-bold">Sua loja agora</h2>
-        <p className="text-sm text-support-gray">Foto do momento · não muda com o período</p>
-      </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <StoreSnapshotCard vehicles={vehicles} expenseTotals={expenseTotals} />
-        <LeadFunnelChart leads={leads} />
+      <div className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-xl font-bold">Sua loja agora</h2>
+          <p className="text-sm text-support-gray">Foto do momento · não muda com o período</p>
+        </div>
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+          <StoreSnapshotCard vehicles={vehicles} expenseTotals={expenseTotals} />
+          <LeadFunnelChart leads={leads} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <StockTurnoverCard
           avgDays={avgDays}
           availableCount={availableAged.length}

@@ -42,6 +42,7 @@ describe('SalesPanel', () => {
     render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={20} soldCount={12} now={NOW} />)
     expect(screen.getByText('margem 40% · 1 venda no período')).toBeInTheDocument()
     expect(screen.getByText('Ticket médio R$ 50.000 por venda')).toBeInTheDocument()
+    expect(screen.getByText('Período: Mês')).toBeInTheDocument()
   })
 
   it('switches period when a preset button is clicked', () => {

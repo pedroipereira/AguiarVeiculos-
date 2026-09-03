@@ -41,7 +41,7 @@ export function AdminSidebar({ vehicles }: AdminSidebarProps) {
   const [showLeadModal, setShowLeadModal] = useState(false)
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col gap-6 border-r border-support-gray/15 bg-white p-4">
+    <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col gap-6 overflow-y-auto border-r border-support-gray/15 bg-white p-4">
       <Link href="/admin/veiculos" className="flex items-center gap-2 px-2 py-1">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/images/logo-av.png" alt="Aguiar Veículos" className="h-8 w-8 object-contain" />
