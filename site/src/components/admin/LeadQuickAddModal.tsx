@@ -45,6 +45,7 @@ export function LeadQuickAddModal({
   const [scheduledVisitDate, setScheduledVisitDate] = useState(lead?.scheduled_visit_date ?? '')
   const [stage, setStage] = useState<LeadStage>(lead?.stage ?? defaultStage)
   const [callbackAt, setCallbackAt] = useState(lead?.callback_at ?? '')
+  const [callbackTime, setCallbackTime] = useState(lead?.callback_time ?? '')
 
   const modalTitle = title ?? (lead ? 'Editar lead' : 'Novo cliente')
 
@@ -64,7 +65,7 @@ export function LeadQuickAddModal({
       scheduledVisitDate: scheduledVisitDate || undefined,
       scheduledVisitTime: String(formData.get('scheduledVisitTime') || '') || undefined,
       callbackAt: callbackAt || undefined,
-      callbackTime: String(formData.get('callbackTime') || '') || undefined,
+      callbackTime: callbackTime || undefined,
     }
 
     setSaving(true)
@@ -167,7 +168,7 @@ export function LeadQuickAddModal({
                 </div>
                 <div className="flex flex-col gap-1">
                   <label htmlFor="lead-callback-time" className={labelClass}>Hora do retorno</label>
-                  <input id="lead-callback-time" name="callbackTime" type="time" defaultValue={lead?.callback_time ?? ''} className={inputClass} />
+                  <input id="lead-callback-time" type="time" value={callbackTime} onChange={(event) => setCallbackTime(event.target.value)} className={inputClass} />
                 </div>
               </div>
             )}

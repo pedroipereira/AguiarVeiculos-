@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { resolveCommercialDatesForYear, COMMERCIAL_DATES } from '@/lib/commercial-dates'
+import type { CommercialDateRule } from '@/lib/commercial-dates'
 
 describe('resolveCommercialDatesForYear', () => {
   it('resolves a fixed-date rule (Natal, 25/12) the same way every year', () => {
@@ -26,8 +27,16 @@ describe('resolveCommercialDatesForYear', () => {
   })
 
   it('resolves every entry to an ISO date whose month/day matches the rule', () => {
-    for (const entry of resolveCommercialDatesForYear(2026)) {
-      expect(entry.date).toMatch(/^2026-\d{2}-\d{2}$/)
+    for (const rule of COMMERCIAL_DATES) {
+      const [resolved] = resolveCommercialDatesForYear(2026, [rule])
+      const [, month, day] = resolved.date.split('-').map(Number)
+      expect(month).toBe(rule.month)
+      if (rule.type === 'fixed') expect(day).toBe(rule.day)
     }
+  })
+
+  it('filters out an nth-weekday rule whose occurrence does not exist in a given month/year', () => {
+    const rules: CommercialDateRule[] = [{ type: 'nth-weekday', month: 2, weekday: 0, occurrence: 5, label: 'Impossível' }]
+    expect(resolveCommercialDatesForYear(2026, rules)).toEqual([])
   })
 })

@@ -28,7 +28,7 @@ function pad(value: number): string {
   return String(value).padStart(2, '0')
 }
 
-function resolveRule(rule: CommercialDateRule, year: number): string {
+function resolveRule(rule: CommercialDateRule, year: number): string | null {
   if (rule.type === 'fixed') {
     return `${year}-${pad(rule.month)}-${pad(rule.day)}`
   }
@@ -39,6 +39,8 @@ function resolveRule(rule: CommercialDateRule, year: number): string {
     const firstOfMonth = new Date(year, monthIndex, 1)
     const firstWeekdayOffset = (rule.weekday - firstOfMonth.getDay() + 7) % 7
     const day = 1 + firstWeekdayOffset + (rule.occurrence - 1) * 7
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
+    if (day > daysInMonth) return null // e.g. a "5th Sunday" that doesn't exist that month/year
     return `${year}-${pad(rule.month)}-${pad(day)}`
   }
 
@@ -49,6 +51,11 @@ function resolveRule(rule: CommercialDateRule, year: number): string {
   return `${year}-${pad(rule.month)}-${pad(day)}`
 }
 
-export function resolveCommercialDatesForYear(year: number): { date: string; label: string }[] {
-  return COMMERCIAL_DATES.map((rule) => ({ date: resolveRule(rule, year), label: rule.label }))
+export function resolveCommercialDatesForYear(
+  year: number,
+  rules: CommercialDateRule[] = COMMERCIAL_DATES,
+): { date: string; label: string }[] {
+  return rules
+    .map((rule) => ({ date: resolveRule(rule, year), label: rule.label }))
+    .filter((entry): entry is { date: string; label: string } => entry.date !== null)
 }

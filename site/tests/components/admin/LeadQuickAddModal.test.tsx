@@ -158,6 +158,27 @@ describe('LeadQuickAddModal', () => {
     expect(adminCreateManualLead).not.toHaveBeenCalled()
   })
 
+  it('keeps callback date and time when saving from a stage other than ligar_de_volta after they were set', async () => {
+    const lead = {
+      id: 'l-1', type: 'manual', name: 'Rita', phone: '98955555555', details: null,
+      vehicle_id: null, stage: 'ligar_de_volta', first_contact_at: null, store_visit_at: null,
+      scheduled_visit_date: null, scheduled_visit_time: null,
+      callback_at: '2026-09-20', callback_time: '09:00',
+      notes: null, created_at: '2026-08-01T10:00:00.000Z',
+    } as any
+    render(<LeadQuickAddModal vehicles={[]} lead={lead} onClose={vi.fn()} />)
+
+    fireEvent.change(screen.getByLabelText(/estágio no funil/i), { target: { value: 'negociando' } })
+    fireEvent.click(screen.getByRole('button', { name: /salvar lead/i }))
+
+    await waitFor(() =>
+      expect(adminUpdateLead).toHaveBeenCalledWith('l-1', expect.objectContaining({
+        callbackAt: '2026-09-20',
+        callbackTime: '09:00',
+      })),
+    )
+  })
+
   it('disables the "Comprou" option when editing a vehicle-linked lead that is not already vendeu', () => {
     const lead = {
       id: 'l-1', type: 'manual', name: 'Carlos', phone: '98977776666', details: null,
