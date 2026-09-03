@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { Vehicle } from '@/lib/types'
+import type { Vehicle, Lead } from '@/lib/types'
 import { resolveDateRange, getSalesPanelMetrics, type DateRangePreset } from '@/lib/dashboard'
 import { formatPriceFromCents } from '@/lib/format'
 import { anton } from '@/lib/fonts'
@@ -13,6 +13,8 @@ interface SalesPanelProps {
   expenseTotals: Record<string, number>
   goal: number | null
   soldCount: number
+  leads: Lead[]
+  thresholdDays: number
   now?: Date
 }
 
@@ -24,7 +26,7 @@ const PRESETS: { value: Exclude<DateRangePreset, 'custom'>; label: string }[] = 
   { value: 'year', label: 'Ano' },
 ]
 
-export function SalesPanel({ vehicles, expenseTotals, goal, soldCount, now = new Date() }: SalesPanelProps) {
+export function SalesPanel({ vehicles, expenseTotals, goal, soldCount, leads, thresholdDays, now = new Date() }: SalesPanelProps) {
   const [preset, setPreset] = useState<DateRangePreset>('month')
   const [customStart, setCustomStart] = useState('')
   const [customEnd, setCustomEnd] = useState('')
@@ -37,7 +39,7 @@ export function SalesPanel({ vehicles, expenseTotals, goal, soldCount, now = new
   const periodLabel = preset === 'custom' ? 'Personalizado' : PRESETS.find((option) => option.value === preset)!.label
 
   function handleExportPdf() {
-    const doc = buildPainelPdf({ goal, soldCount, periodLabel, metrics, vehicles, expenseTotals })
+    const doc = buildPainelPdf({ goal, soldCount, periodLabel, metrics, vehicles, expenseTotals, leads, thresholdDays, now })
     doc.save(`painel-aguiar-veiculos-${new Date().toISOString().slice(0, 10)}.pdf`)
   }
 

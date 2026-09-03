@@ -45,7 +45,14 @@ export default async function AdminPainelPage() {
 
       <GoalProgressBanner soldCount={soldInCurrentMonth} goal={goal} />
 
-      <SalesPanel vehicles={vehicles} expenseTotals={expenseTotals} goal={goal} soldCount={soldInCurrentMonth} />
+      <SalesPanel
+        vehicles={vehicles}
+        expenseTotals={expenseTotals}
+        goal={goal}
+        soldCount={soldInCurrentMonth}
+        leads={leads}
+        thresholdDays={thresholdDays}
+      />
 
       <div className="flex flex-col gap-3">
         <div>

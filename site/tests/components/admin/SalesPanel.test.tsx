@@ -30,7 +30,7 @@ describe('SalesPanel', () => {
     const vehicles = [
       makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-10', sale_price_cents: 5000000, acquisition_cost_cents: 3000000 }),
     ]
-    render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={20} soldCount={12} now={NOW} />)
+    render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={20} soldCount={12} leads={[]} thresholdDays={90} now={NOW} />)
     expect(screen.getByText('Vendas')).toBeInTheDocument()
     expect(screen.getByText('1')).toBeInTheDocument()
   })
@@ -39,7 +39,7 @@ describe('SalesPanel', () => {
     const vehicles = [
       makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-10', sale_price_cents: 5000000, acquisition_cost_cents: 3000000 }),
     ]
-    render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={20} soldCount={12} now={NOW} />)
+    render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={20} soldCount={12} leads={[]} thresholdDays={90} now={NOW} />)
     expect(screen.getByText('margem 40% · 1 venda no período')).toBeInTheDocument()
     expect(screen.getByText('Ticket médio R$ 50.000 por venda')).toBeInTheDocument()
     expect(screen.getByText('Período: Mês')).toBeInTheDocument()
@@ -50,14 +50,14 @@ describe('SalesPanel', () => {
       makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-25', sale_price_cents: 5000000 }),
       makeVehicle({ id: 'b', status: 'sold', sold_at: '2026-09-01', sale_price_cents: 4000000 }),
     ]
-    render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={20} soldCount={12} now={NOW} />)
+    render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={20} soldCount={12} leads={[]} thresholdDays={90} now={NOW} />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Hoje' }))
     expect(screen.getByText('1')).toBeInTheDocument()
   })
 
   it('reveals two date pickers when "Personalizado" is selected', () => {
-    render(<SalesPanel vehicles={[]} expenseTotals={{}} goal={null} soldCount={0} now={NOW} />)
+    render(<SalesPanel vehicles={[]} expenseTotals={{}} goal={null} soldCount={0} leads={[]} thresholdDays={90} now={NOW} />)
     fireEvent.click(screen.getByRole('button', { name: 'Personalizado' }))
     expect(screen.getByLabelText('De')).toBeInTheDocument()
     expect(screen.getByLabelText('até')).toBeInTheDocument()
@@ -73,7 +73,7 @@ describe('SalesPanel', () => {
         makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-10', sale_price_cents: 5000000 }),
         makeVehicle({ id: 'b', status: 'sold', sold_at: '2026-09-20', sale_price_cents: 4000000 }),
       ]
-      render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={null} soldCount={0} now={NOW} />)
+      render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={null} soldCount={0} leads={[]} thresholdDays={90} now={NOW} />)
       fireEvent.click(screen.getByRole('button', { name: 'Personalizado' }))
 
       fireEvent.click(screen.getByLabelText('De'))
@@ -91,7 +91,7 @@ describe('SalesPanel', () => {
     const vehicles = [
       makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-10', sale_price_cents: 5000000, acquisition_cost_cents: 3000000 }),
     ]
-    render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={20} soldCount={12} now={NOW} />)
+    render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={20} soldCount={12} leads={[]} thresholdDays={90} now={NOW} />)
 
     fireEvent.click(screen.getByRole('button', { name: /exportar pdf/i }))
 
@@ -102,6 +102,9 @@ describe('SalesPanel', () => {
       metrics: { count: 1, revenueCents: 5000000, profitCents: 2000000, marginPercent: 40, averageSaleCents: 5000000 },
       vehicles,
       expenseTotals: {},
+      leads: [],
+      thresholdDays: 90,
+      now: NOW,
     })
     expect(save).toHaveBeenCalled()
   })
