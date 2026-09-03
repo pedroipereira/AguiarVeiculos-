@@ -16,6 +16,7 @@ describe('createLead', () => {
       details: { downPayment: '5000' }, vehicle_id: null,
       stage: 'novo', notes: null, first_contact_at: null, store_visit_at: null,
       scheduled_visit_date: null, scheduled_visit_time: null,
+      callback_at: null, callback_time: null,
     })
   })
 
@@ -31,6 +32,7 @@ describe('createLead', () => {
       details: {}, vehicle_id: null,
       stage: 'visita_marcada', notes: null, first_contact_at: null, store_visit_at: null,
       scheduled_visit_date: '2026-09-10', scheduled_visit_time: '14:00',
+      callback_at: null, callback_time: null,
     })
   })
 
@@ -46,6 +48,7 @@ describe('createLead', () => {
       details: {}, vehicle_id: null,
       stage: 'novo', notes: 'Ligar segunda-feira', first_contact_at: null, store_visit_at: null,
       scheduled_visit_date: null, scheduled_visit_time: null,
+      callback_at: null, callback_time: null,
     })
   })
 
@@ -60,6 +63,23 @@ describe('createLead', () => {
       details: {}, vehicle_id: null,
       stage: 'novo', notes: null, first_contact_at: null, store_visit_at: null,
       scheduled_visit_date: null, scheduled_visit_time: null,
+      callback_at: null, callback_time: null,
+    })
+  })
+
+  it('includes callback_at and callback_time when provided', async () => {
+    const chain: any = { insert: vi.fn(async () => ({ error: null })) }
+    const client = { from: vi.fn(() => chain) }
+    await createLead(client as any, {
+      type: 'manual', name: 'Rita', phone: '98955555555', details: {},
+      stage: 'ligar_de_volta', callbackAt: '2026-09-20', callbackTime: '09:00',
+    })
+    expect(chain.insert).toHaveBeenCalledWith({
+      type: 'manual', name: 'Rita', phone: '98955555555',
+      details: {}, vehicle_id: null,
+      stage: 'ligar_de_volta', notes: null, first_contact_at: null, store_visit_at: null,
+      scheduled_visit_date: null, scheduled_visit_time: null,
+      callback_at: '2026-09-20', callback_time: '09:00',
     })
   })
 
@@ -87,6 +107,7 @@ describe('updateLead', () => {
       name: 'Maria', phone: '98999999999', vehicle_id: 'v-1', stage: 'negociando',
       notes: 'Ligar amanhã', first_contact_at: '2026-09-01', store_visit_at: null,
       scheduled_visit_date: null, scheduled_visit_time: null,
+      callback_at: null, callback_time: null,
     })
     expect(chain.eq).toHaveBeenCalledWith('id', 'l-1')
   })
@@ -98,6 +119,7 @@ describe('updateLead', () => {
     expect(chain.update).toHaveBeenCalledWith({
       name: 'João', phone: '98988888888', vehicle_id: null, stage: 'novo', notes: null,
       first_contact_at: null, store_visit_at: null, scheduled_visit_date: null, scheduled_visit_time: null,
+      callback_at: null, callback_time: null,
     })
   })
 
@@ -152,6 +174,18 @@ describe('updateLead', () => {
     expect(select).not.toHaveBeenCalled()
     expect(single).not.toHaveBeenCalled()
     expect(chain.update).toHaveBeenCalledWith(expect.objectContaining({ stage: 'vendeu', vehicle_id: null }))
+  })
+
+  it('includes callback_at and callback_time when provided', async () => {
+    const chain: any = { update: vi.fn(() => chain), eq: vi.fn(async () => ({ error: null })) }
+    const client = { from: vi.fn(() => chain) }
+    await updateLead(client as any, 'l-1', {
+      name: 'Rita', phone: '98955555555', stage: 'ligar_de_volta',
+      callbackAt: '2026-09-20', callbackTime: '09:00',
+    })
+    expect(chain.update).toHaveBeenCalledWith(
+      expect.objectContaining({ callback_at: '2026-09-20', callback_time: '09:00' }),
+    )
   })
 })
 

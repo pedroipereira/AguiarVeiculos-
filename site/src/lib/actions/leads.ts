@@ -13,6 +13,8 @@ export interface CreateLeadInput {
   storeVisitAt?: string
   scheduledVisitDate?: string
   scheduledVisitTime?: string
+  callbackAt?: string
+  callbackTime?: string
 }
 
 // Anonymous visitors can only INSERT into `leads` (no SELECT policy for them —
@@ -33,6 +35,8 @@ export async function createLead(client: SupabaseClient, input: CreateLeadInput)
     store_visit_at: input.storeVisitAt ?? null,
     scheduled_visit_date: input.scheduledVisitDate ?? null,
     scheduled_visit_time: input.scheduledVisitTime ?? null,
+    callback_at: input.callbackAt ?? null,
+    callback_time: input.callbackTime ?? null,
   })
   if (error) throw error
 }
@@ -47,6 +51,8 @@ export interface UpdateLeadInput {
   storeVisitAt?: string
   scheduledVisitDate?: string
   scheduledVisitTime?: string
+  callbackAt?: string
+  callbackTime?: string
 }
 
 export async function updateLead(client: SupabaseClient, id: string, input: UpdateLeadInput): Promise<void> {
@@ -71,6 +77,8 @@ export async function updateLead(client: SupabaseClient, id: string, input: Upda
       store_visit_at: input.storeVisitAt ?? null,
       scheduled_visit_date: input.scheduledVisitDate ?? null,
       scheduled_visit_time: input.scheduledVisitTime ?? null,
+      callback_at: input.callbackAt ?? null,
+      callback_time: input.callbackTime ?? null,
     })
     .eq('id', id)
   if (error) throw error
