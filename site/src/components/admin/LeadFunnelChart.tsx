@@ -9,15 +9,16 @@ interface LeadFunnelChartProps {
 }
 
 // Solid hex fills for the funnel's SVG segments — Recharts needs literal
-// colors, not Tailwind classes. Same blue/orange/yellow/pink/green already
-// used by LEAD_STAGE_ACCENTS for the kanban, minus "não comprou" (not part
-// of the funnel).
+// colors, not Tailwind classes. Same blue/orange/yellow/pink/green family
+// as LEAD_STAGE_ACCENTS for the kanban (minus "não comprou", not part of
+// the funnel), one shade lighter (400 instead of 500/600) so the funnel
+// reads softer against the white card than the kanban's bolder borders do.
 const FUNNEL_STAGE_COLORS: Record<FunnelStage, string> = {
-  novo: '#3b82f6',
-  visita_marcada: '#f97316',
-  negociando: '#eab308',
-  ligar_de_volta: '#ec4899',
-  vendeu: '#16a34a',
+  novo: '#60a5fa',
+  visita_marcada: '#fb923c',
+  negociando: '#facc15',
+  ligar_de_volta: '#f472b6',
+  vendeu: '#4ade80',
 }
 
 export function LeadFunnelChart({ leads }: LeadFunnelChartProps) {
@@ -35,10 +36,13 @@ export function LeadFunnelChart({ leads }: LeadFunnelChartProps) {
         <p className="text-sm text-support-gray">Nenhum cliente no funil ainda.</p>
       ) : (
         <ResponsiveContainer width="100%" height={280}>
-          <FunnelChart>
+          {/* Generous right margin so the stage-name labels (up to "Ligar de
+              volta") never clip past the SVG viewport — Recharts' default
+              chart margin only leaves 5px. */}
+          <FunnelChart margin={{ top: 8, right: 96, bottom: 8, left: 8 }}>
             <Tooltip />
             <Funnel dataKey="count" data={data} isAnimationActive={false}>
-              <LabelList dataKey="label" position="right" fill="#111111" stroke="none" />
+              <LabelList dataKey="label" position="right" fill="#6E6E6E" stroke="none" fontSize={13} />
               {data.map((entry) => (
                 <Cell key={entry.stage} fill={FUNNEL_STAGE_COLORS[entry.stage]} />
               ))}

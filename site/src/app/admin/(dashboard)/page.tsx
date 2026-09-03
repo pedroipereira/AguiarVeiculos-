@@ -45,7 +45,7 @@ export default async function AdminPainelPage() {
 
       <GoalProgressBanner soldCount={soldInCurrentMonth} goal={goal} />
 
-      <SalesPanel vehicles={vehicles} expenseTotals={expenseTotals} />
+      <SalesPanel vehicles={vehicles} expenseTotals={expenseTotals} goal={goal} soldCount={soldInCurrentMonth} />
 
       <StoreSnapshotCard vehicles={vehicles} expenseTotals={expenseTotals} />
 

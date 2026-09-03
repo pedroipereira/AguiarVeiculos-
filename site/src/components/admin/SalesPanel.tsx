@@ -5,10 +5,14 @@ import type { Vehicle } from '@/lib/types'
 import { resolveDateRange, getSalesPanelMetrics, type DateRangePreset } from '@/lib/dashboard'
 import { formatPriceFromCents } from '@/lib/format'
 import { anton } from '@/lib/fonts'
+import { VehicleDatePicker } from './VehicleDatePicker'
+import { buildPainelPdf } from '@/lib/painel-pdf'
 
 interface SalesPanelProps {
   vehicles: Vehicle[]
   expenseTotals: Record<string, number>
+  goal: number | null
+  soldCount: number
   now?: Date
 }
 
@@ -20,7 +24,7 @@ const PRESETS: { value: Exclude<DateRangePreset, 'custom'>; label: string }[] = 
   { value: 'year', label: 'Ano' },
 ]
 
-export function SalesPanel({ vehicles, expenseTotals, now = new Date() }: SalesPanelProps) {
+export function SalesPanel({ vehicles, expenseTotals, goal, soldCount, now = new Date() }: SalesPanelProps) {
   const [preset, setPreset] = useState<DateRangePreset>('month')
   const [customStart, setCustomStart] = useState('')
   const [customEnd, setCustomEnd] = useState('')
@@ -30,12 +34,27 @@ export function SalesPanel({ vehicles, expenseTotals, now = new Date() }: SalesP
       ? resolveDateRange('custom', now, { start: customStart, end: customEnd })
       : resolveDateRange(preset, now)
   const metrics = getSalesPanelMetrics(vehicles, expenseTotals, range)
+  const periodLabel = preset === 'custom' ? 'Personalizado' : PRESETS.find((option) => option.value === preset)!.label
+
+  function handleExportPdf() {
+    const doc = buildPainelPdf({ goal, soldCount, periodLabel, metrics, vehicles, expenseTotals })
+    doc.save(`painel-aguiar-veiculos-${new Date().toISOString().slice(0, 10)}.pdf`)
+  }
 
   return (
     <section className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-sm">
-      <div>
-        <h2 className="text-xl font-bold">Painel de vendas</h2>
-        <p className="text-sm text-support-gray">Acompanhe as vendas do período</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold">Painel de vendas</h2>
+          <p className="text-sm text-support-gray">Acompanhe as vendas do período</p>
+        </div>
+        <button
+          type="button"
+          onClick={handleExportPdf}
+          className="rounded-full border border-support-gray/25 px-6 py-2.5 text-sm font-bold uppercase tracking-wide text-graphite transition-colors hover:border-graphite"
+        >
+          Gerar PDF
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -67,23 +86,15 @@ export function SalesPanel({ vehicles, expenseTotals, now = new Date() }: SalesP
           <label htmlFor="customStart" className="text-sm text-support-gray">
             De
           </label>
-          <input
-            id="customStart"
-            type="date"
-            value={customStart}
-            onChange={(event) => setCustomStart(event.target.value)}
-            className="rounded-lg border border-support-gray/25 p-1.5 text-sm text-graphite"
-          />
+          <div className="w-40">
+            <VehicleDatePicker id="customStart" value={customStart} onChange={setCustomStart} />
+          </div>
           <label htmlFor="customEnd" className="text-sm text-support-gray">
             até
           </label>
-          <input
-            id="customEnd"
-            type="date"
-            value={customEnd}
-            onChange={(event) => setCustomEnd(event.target.value)}
-            className="rounded-lg border border-support-gray/25 p-1.5 text-sm text-graphite"
-          />
+          <div className="w-40">
+            <VehicleDatePicker id="customEnd" value={customEnd} onChange={setCustomEnd} />
+          </div>
         </div>
       )}
 

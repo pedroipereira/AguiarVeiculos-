@@ -40,14 +40,14 @@ export function GoalProgressBanner({ soldCount, goal, now = new Date() }: GoalPr
         <div>
           <p className="text-sm uppercase tracking-wide text-white/70">Meta de {monthLabel}</p>
           {progress ? (
-            <p className={`${anton.className} text-3xl`}>
+            <p className={`${anton.className} text-2xl`}>
               {soldCount} de {goal} vendas
             </p>
           ) : (
             <p className="text-lg font-bold">Nenhuma meta definida para este mês</p>
           )}
         </div>
-        {progress && <p className={`${anton.className} text-4xl text-aguiar-red`}>{progress.percent}%</p>}
+        {progress && <p className={`${anton.className} text-2xl text-aguiar-red`}>{progress.percent}%</p>}
       </div>
 
       {progress && (
