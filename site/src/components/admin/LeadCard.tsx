@@ -44,6 +44,10 @@ export function LeadCard({ lead, vehicles, onMoveToStage }: LeadCardProps) {
   const vehicle = vehicles.find((option) => option.id === lead.vehicle_id)
   const accent = LEAD_STAGE_ACCENTS[lead.stage]
   const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined
+  // callback_at/callback_time are never cleared when a lead leaves "ligar de
+  // volta" — gate on the current stage, not just the field being set, same
+  // reasoning as agenda.ts's retorno stage gate.
+  const callbackAt = lead.stage === 'ligar_de_volta' ? lead.callback_at : null
 
   return (
     <div
@@ -100,7 +104,7 @@ export function LeadCard({ lead, vehicles, onMoveToStage }: LeadCardProps) {
 
       {lead.notes && <p className="text-sm text-support-gray">{lead.notes}</p>}
 
-      {(lead.first_contact_at || lead.store_visit_at || lead.scheduled_visit_date) && (
+      {(lead.first_contact_at || lead.store_visit_at || lead.scheduled_visit_date || callbackAt) && (
         <div className="flex flex-col gap-0.5 text-xs text-support-gray">
           {lead.first_contact_at && <span>Primeiro contato: {formatIsoDate(lead.first_contact_at)}</span>}
           {lead.store_visit_at && <span>Veio na loja: {formatIsoDate(lead.store_visit_at)}</span>}
@@ -108,6 +112,12 @@ export function LeadCard({ lead, vehicles, onMoveToStage }: LeadCardProps) {
             <span>
               Visita marcada: {formatIsoDate(lead.scheduled_visit_date)}
               {lead.scheduled_visit_time ? ` às ${lead.scheduled_visit_time.slice(0, 5)}` : ''}
+            </span>
+          )}
+          {callbackAt && (
+            <span>
+              Retorno marcado: {formatIsoDate(callbackAt)}
+              {lead.callback_time ? ` às ${lead.callback_time.slice(0, 5)}` : ''}
             </span>
           )}
         </div>

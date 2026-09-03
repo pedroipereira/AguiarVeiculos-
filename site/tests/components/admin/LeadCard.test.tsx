@@ -45,6 +45,18 @@ describe('LeadCard', () => {
     expect(screen.getByText(/Primeiro contato: 01\/09\/2026/)).toBeInTheDocument()
   })
 
+  it('shows the callback date/time when the lead is in ligar_de_volta', () => {
+    renderCard(makeLead({ stage: 'ligar_de_volta', callback_at: '2026-09-20', callback_time: '09:00' }))
+    expect(screen.getByText(/Retorno marcado: 20\/09\/2026 às 09:00/)).toBeInTheDocument()
+  })
+
+  it('does not show a stale callback date once the lead has moved past ligar_de_volta', () => {
+    // callback_at/callback_time are never cleared when a lead leaves the
+    // stage — same reasoning as agenda.ts's stage gate for retorno events.
+    renderCard(makeLead({ stage: 'negociando', callback_at: '2026-09-20', callback_time: '09:00' }))
+    expect(screen.queryByText(/Retorno marcado/)).not.toBeInTheDocument()
+  })
+
   it('links the WhatsApp button to the lead\'s number', () => {
     renderCard(makeLead())
     expect(screen.getByRole('link', { name: /whatsapp/i })).toHaveAttribute('href', 'https://wa.me/5598999999999')
