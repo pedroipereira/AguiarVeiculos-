@@ -42,10 +42,10 @@ export function SalesPanel({ vehicles, expenseTotals, goal, soldCount, now = new
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-sm">
+    <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold">Painel de vendas</h2>
+          <h2 className="text-xl font-bold">Visão de vendas</h2>
           <p className="text-sm text-support-gray">Acompanhe as vendas do período</p>
         </div>
         <button
@@ -53,7 +53,7 @@ export function SalesPanel({ vehicles, expenseTotals, goal, soldCount, now = new
           onClick={handleExportPdf}
           className="rounded-full border border-support-gray/25 px-6 py-2.5 text-sm font-bold uppercase tracking-wide text-graphite transition-colors hover:border-graphite"
         >
-          Gerar PDF
+          Exportar PDF
         </button>
       </div>
 
@@ -99,19 +99,23 @@ export function SalesPanel({ vehicles, expenseTotals, goal, soldCount, now = new
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div>
+        <div className="flex flex-col gap-1 rounded-xl bg-white p-6 shadow-sm">
           <p className="text-sm text-support-gray">Lucro</p>
           <p className={`${anton.className} text-2xl text-graphite`}>{formatPriceFromCents(metrics.profitCents)}</p>
+          <p className="text-xs text-support-gray">
+            margem {metrics.marginPercent}% · {metrics.count} {metrics.count === 1 ? 'venda' : 'vendas'} no período
+          </p>
         </div>
-        <div>
+        <div className="flex flex-col gap-1 rounded-xl bg-white p-6 shadow-sm">
           <p className="text-sm text-support-gray">Faturamento</p>
           <p className={`${anton.className} text-2xl text-graphite`}>{formatPriceFromCents(metrics.revenueCents)}</p>
+          <p className="text-xs text-support-gray">Ticket médio {formatPriceFromCents(metrics.averageSaleCents)} por venda</p>
         </div>
-        <div>
+        <div className="flex flex-col gap-1 rounded-xl bg-white p-6 shadow-sm">
           <p className="text-sm text-support-gray">Vendas</p>
           <p className={`${anton.className} text-2xl text-graphite`}>{metrics.count}</p>
         </div>
       </div>
-    </section>
+    </div>
   )
 }

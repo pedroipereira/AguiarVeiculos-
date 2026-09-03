@@ -147,7 +147,33 @@ describe('getSalesPanelMetrics', () => {
   it('returns zeros for an empty (inverted custom) range', () => {
     const vehicles = [makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-10', sale_price_cents: 5000000 })]
     const inverted = { start: '2026-09-20', end: '2026-09-10' }
-    expect(getSalesPanelMetrics(vehicles, {}, inverted)).toEqual({ count: 0, revenueCents: 0, profitCents: 0 })
+    expect(getSalesPanelMetrics(vehicles, {}, inverted)).toEqual({
+      count: 0, revenueCents: 0, profitCents: 0, marginPercent: 0, averageSaleCents: 0,
+    })
+  })
+
+  it('computes margin percent as profit over revenue', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-10', sale_price_cents: 5000000, acquisition_cost_cents: 4050000 }),
+    ]
+    // profit = 5,000,000 - 4,050,000 = 950,000; margin = 950,000 / 5,000,000 = 19%
+    expect(getSalesPanelMetrics(vehicles, {}, range).marginPercent).toBe(19)
+  })
+
+  it('returns a zero margin percent when there is no revenue', () => {
+    expect(getSalesPanelMetrics([], {}, range).marginPercent).toBe(0)
+  })
+
+  it('computes the average sale price across every sale in the range', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-01', sale_price_cents: 5000000 }),
+      makeVehicle({ id: 'b', status: 'sold', sold_at: '2026-09-15', sale_price_cents: 3000000 }),
+    ]
+    expect(getSalesPanelMetrics(vehicles, {}, range).averageSaleCents).toBe(4000000)
+  })
+
+  it('returns a zero average sale price when nothing sold in the range', () => {
+    expect(getSalesPanelMetrics([], {}, range).averageSaleCents).toBe(0)
   })
 })
 

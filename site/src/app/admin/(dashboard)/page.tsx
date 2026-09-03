@@ -47,30 +47,35 @@ export default async function AdminPainelPage() {
 
       <SalesPanel vehicles={vehicles} expenseTotals={expenseTotals} goal={goal} soldCount={soldInCurrentMonth} />
 
-      <StoreSnapshotCard vehicles={vehicles} expenseTotals={expenseTotals} />
+      <div>
+        <h2 className="text-xl font-bold">Sua loja agora</h2>
+        <p className="text-sm text-support-gray">Foto do momento · não muda com o período</p>
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <StoreSnapshotCard vehicles={vehicles} expenseTotals={expenseTotals} />
+        <LeadFunnelChart leads={leads} />
+      </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <LeadFunnelChart leads={leads} />
         <StockTurnoverCard
           avgDays={avgDays}
           availableCount={availableAged.length}
           staleCount={staleCount}
           thresholdDays={thresholdDays}
         />
+        <StockAgingList
+          vehicles={availableAged.slice(0, 6).map(({ vehicle, days }) => ({
+            id: vehicle.id,
+            brand: vehicle.brand,
+            model: vehicle.model,
+            version: vehicle.version,
+            year_model: vehicle.year_model,
+            mileage_km: vehicle.mileage_km,
+            price_cents: vehicle.price_cents,
+            days,
+          }))}
+        />
       </div>
-
-      <StockAgingList
-        vehicles={availableAged.slice(0, 6).map(({ vehicle, days }) => ({
-          id: vehicle.id,
-          brand: vehicle.brand,
-          model: vehicle.model,
-          version: vehicle.version,
-          year_model: vehicle.year_model,
-          mileage_km: vehicle.mileage_km,
-          price_cents: vehicle.price_cents,
-          days,
-        }))}
-      />
 
       <SalesTimeSeriesChart vehicles={vehicles} />
     </div>

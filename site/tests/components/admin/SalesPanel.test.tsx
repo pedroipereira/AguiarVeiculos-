@@ -35,6 +35,15 @@ describe('SalesPanel', () => {
     expect(screen.getByText('1')).toBeInTheDocument()
   })
 
+  it('shows margin and sale count under Lucro, and the average ticket under Faturamento', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-10', sale_price_cents: 5000000, acquisition_cost_cents: 3000000 }),
+    ]
+    render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={20} soldCount={12} now={NOW} />)
+    expect(screen.getByText('margem 40% · 1 venda no período')).toBeInTheDocument()
+    expect(screen.getByText('Ticket médio R$ 50.000 por venda')).toBeInTheDocument()
+  })
+
   it('switches period when a preset button is clicked', () => {
     const vehicles = [
       makeVehicle({ id: 'a', status: 'sold', sold_at: '2026-09-25', sale_price_cents: 5000000 }),
@@ -83,13 +92,13 @@ describe('SalesPanel', () => {
     ]
     render(<SalesPanel vehicles={vehicles} expenseTotals={{}} goal={20} soldCount={12} now={NOW} />)
 
-    fireEvent.click(screen.getByRole('button', { name: /gerar pdf/i }))
+    fireEvent.click(screen.getByRole('button', { name: /exportar pdf/i }))
 
     expect(buildPainelPdf).toHaveBeenCalledWith({
       goal: 20,
       soldCount: 12,
       periodLabel: 'Mês',
-      metrics: { count: 1, revenueCents: 5000000, profitCents: 2000000 },
+      metrics: { count: 1, revenueCents: 5000000, profitCents: 2000000, marginPercent: 40, averageSaleCents: 5000000 },
       vehicles,
       expenseTotals: {},
     })

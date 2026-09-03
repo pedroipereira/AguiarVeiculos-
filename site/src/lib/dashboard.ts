@@ -97,6 +97,10 @@ export interface SalesPanelMetrics {
   count: number
   revenueCents: number
   profitCents: number
+  /** profitCents / revenueCents as a whole-number percent, 0 when there's no revenue to divide by. */
+  marginPercent: number
+  /** revenueCents / count, rounded to the nearest cent, 0 when there were no sales in the range. */
+  averageSaleCents: number
 }
 
 function isWithinRange(dateValue: string | null, range: DateRange): boolean {
@@ -120,7 +124,13 @@ export function getSalesPanelMetrics(
     profitCents += calculateRealizedMarginCents(vehicle.sale_price_cents, totalCostCents) ?? 0
   }
 
-  return { count: sold.length, revenueCents, profitCents }
+  return {
+    count: sold.length,
+    revenueCents,
+    profitCents,
+    marginPercent: revenueCents > 0 ? Math.round((profitCents / revenueCents) * 100) : 0,
+    averageSaleCents: sold.length > 0 ? Math.round(revenueCents / sold.length) : 0,
+  }
 }
 
 export interface StoreSnapshot {
