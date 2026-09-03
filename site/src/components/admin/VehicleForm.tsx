@@ -25,6 +25,10 @@ interface VehicleFormProps {
 const inputClass =
   'h-11 rounded-lg border border-support-gray/25 p-2.5 text-graphite transition-colors focus:border-aguiar-red focus:outline-none'
 const labelClass = 'text-sm font-bold'
+// "Dados do carro" only: reserves 2 lines of height for every label in that
+// grid, so a wrapping one (e.g. "Tanque de combustível (litros)") doesn't
+// push its own input down relative to single-line siblings in the same row.
+const carDataLabelClass = `${labelClass} min-h-10`
 
 export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = [] }: VehicleFormProps) {
   const router = useRouter()
@@ -301,38 +305,38 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
           <h2 className="text-lg font-bold">Dados do carro</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="brand" className={labelClass}>Marca</label>
+              <label htmlFor="brand" className={carDataLabelClass}>Marca</label>
               <input id="brand" name="brand" value={brand} onChange={(e) => setBrand(e.target.value)} required placeholder="Ex.: Fiat" className={inputClass} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="model" className={labelClass}>Modelo</label>
+              <label htmlFor="model" className={carDataLabelClass}>Modelo</label>
               <input id="model" name="model" value={model} onChange={(e) => setModel(e.target.value)} required placeholder="Ex.: HB20" className={inputClass} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="version" className={labelClass}>Versão</label>
+              <label htmlFor="version" className={carDataLabelClass}>Versão</label>
               <input id="version" name="version" defaultValue={vehicle?.version ?? ''} placeholder="Ex.: Comfort" className={inputClass} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="yearModel" className={labelClass}>Ano do modelo</label>
+              <label htmlFor="yearModel" className={carDataLabelClass}>Ano do modelo</label>
               <input id="yearModel" name="yearModel" type="number" value={yearModel} onChange={(e) => setYearModel(e.target.value)} required placeholder="Ex.: 2024" className={inputClass} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="yearFabrication" className={labelClass}>Ano de fabricação</label>
+              <label htmlFor="yearFabrication" className={carDataLabelClass}>Ano de fabricação</label>
               <input id="yearFabrication" name="yearFabrication" type="number" value={yearFabrication} onChange={(e) => setYearFabrication(e.target.value)} required placeholder="Ex.: 2023" className={inputClass} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="mileageKm" className={labelClass}>Quilometragem</label>
+              <label htmlFor="mileageKm" className={carDataLabelClass}>Quilometragem</label>
               <input id="mileageKm" name="mileageKm" type="number" defaultValue={vehicle?.mileage_km} required placeholder="Ex.: 12000" className={inputClass} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="color" className={labelClass}>Cor</label>
+              <label htmlFor="color" className={carDataLabelClass}>Cor</label>
               <input id="color" name="color" value={color} onChange={(e) => setColor(e.target.value)} placeholder="Ex.: Branco" className={inputClass} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="transmission" className={labelClass}>Câmbio</label>
+              <label htmlFor="transmission" className={carDataLabelClass}>Câmbio</label>
               <select id="transmission" name="transmission" value={transmission} onChange={(e) => setTransmission(e.target.value)} className={inputClass}>
                 <option value="">Selecione</option>
                 {withCurrentValue(TRANSMISSION_OPTIONS, vehicle?.transmission).map((option) => (
@@ -342,7 +346,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="fuelType" className={labelClass}>Combustível</label>
+              <label htmlFor="fuelType" className={carDataLabelClass}>Combustível</label>
               <select id="fuelType" name="fuelType" value={fuelType} onChange={(e) => setFuelType(e.target.value)} className={inputClass}>
                 <option value="">Selecione</option>
                 {withCurrentValue(FUEL_TYPE_OPTIONS, vehicle?.fuel_type).map((option) => (
@@ -351,30 +355,30 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="engine" className={labelClass}>Motor</label>
+              <label htmlFor="engine" className={carDataLabelClass}>Motor</label>
               <input id="engine" name="engine" value={engine} onChange={(e) => setEngine(e.target.value)} placeholder="Ex.: 1.6" className={inputClass} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="fuelTankLiters" className={labelClass}>Tanque de combustível (litros)</label>
+              <label htmlFor="fuelTankLiters" className={carDataLabelClass}>Tanque de combustível (litros)</label>
               <input id="fuelTankLiters" name="fuelTankLiters" type="number" defaultValue={vehicle?.fuel_tank_liters ?? ''} placeholder="Ex.: 55" className={inputClass} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="seatingCapacity" className={labelClass}>Quantidade de pessoas</label>
+              <label htmlFor="seatingCapacity" className={carDataLabelClass}>Quantidade de pessoas</label>
               <input id="seatingCapacity" name="seatingCapacity" type="number" value={seatingCapacity} onChange={(e) => setSeatingCapacity(e.target.value)} placeholder="Ex.: 5" className={inputClass} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="bodyType" className={labelClass}>Tipo de carroceria</label>
+              <label htmlFor="bodyType" className={carDataLabelClass}>Tipo de carroceria</label>
               <input id="bodyType" name="bodyType" value={bodyType} onChange={(e) => setBodyType(e.target.value)} placeholder="Ex.: Hatch" className={inputClass} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="doors" className={labelClass}>Portas</label>
+              <label htmlFor="doors" className={carDataLabelClass}>Portas</label>
               <input id="doors" name="doors" type="number" defaultValue={vehicle?.doors ?? ''} placeholder="Ex.: 4" className={inputClass} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="horsepower" className={labelClass}>Potência (cv)</label>
+              <label htmlFor="horsepower" className={carDataLabelClass}>Potência (cv)</label>
               <input id="horsepower" name="horsepower" type="number" value={horsepower} onChange={(e) => setHorsepower(e.target.value)} placeholder="Ex.: 116" className={inputClass} />
             </div>
           </div>
