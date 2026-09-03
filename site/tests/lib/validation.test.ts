@@ -173,4 +173,13 @@ describe('manualLeadSchema', () => {
   it('rejects a name shorter than 2 characters', () => {
     expect(manualLeadSchema.safeParse({ name: 'J', phone: '98988888888' }).success).toBe(false)
   })
+
+  it('accepts callbackAt and callbackTime', () => {
+    const result = manualLeadSchema.parse({
+      name: 'Rita', phone: '98955555555', stage: 'ligar_de_volta',
+      callbackAt: '2026-09-20', callbackTime: '09:00',
+    })
+    expect(result.callbackAt).toBe('2026-09-20')
+    expect(result.callbackTime).toBe('09:00')
+  })
 })
