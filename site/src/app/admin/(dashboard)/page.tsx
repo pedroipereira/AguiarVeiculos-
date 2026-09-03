@@ -73,7 +73,7 @@ export default async function AdminPainelPage() {
           thresholdDays={thresholdDays}
         />
         <StockAgingList
-          vehicles={availableAged.slice(0, 5).map(({ vehicle, days }) => ({
+          vehicles={availableAged.slice(0, 4).map(({ vehicle, days }) => ({
             id: vehicle.id,
             brand: vehicle.brand,
             model: vehicle.model,
