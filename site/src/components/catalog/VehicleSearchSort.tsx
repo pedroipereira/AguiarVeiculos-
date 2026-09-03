@@ -51,7 +51,7 @@ export function VehicleSearchSort({
     <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-support-gray/15 bg-white p-4 shadow-sm">
       <VehicleInstantSearch vehicles={allVehicles} imageUrls={allVehicleImageUrls} brands={brandNames} />
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={onToggleMobileFilters}
