@@ -31,3 +31,11 @@ export async function adminReplaceSiteImage(slot: SiteImageSlot, storagePath: st
   revalidatePath('/')
   return result
 }
+
+export async function adminReorderSiteImages(orderedIds: string[]) {
+  const client = await createServerSupabaseClient()
+  await assertAdmin(client)
+  await siteImageActions.reorderSiteImages(client, orderedIds)
+  revalidatePath('/admin/imagens')
+  revalidatePath('/')
+}

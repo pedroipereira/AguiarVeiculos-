@@ -30,3 +30,11 @@ export async function adminSetTestimonialPublished(id: string, isPublished: bool
   revalidatePath('/admin/depoimentos')
   revalidatePath('/')
 }
+
+export async function adminReorderTestimonials(orderedIds: string[]) {
+  const client = await createServerSupabaseClient()
+  await assertAdmin(client)
+  await testimonialActions.reorderTestimonials(client, orderedIds)
+  revalidatePath('/admin/depoimentos')
+  revalidatePath('/')
+}

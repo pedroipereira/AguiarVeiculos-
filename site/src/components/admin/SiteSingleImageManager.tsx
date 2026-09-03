@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ChangeEvent } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 import { uploadSiteImage, validateImageFile, getPublicImageUrl } from '@/lib/storage'
 import { adminReplaceSiteImage } from '@/app/actions/site-images'
@@ -15,36 +15,28 @@ interface SiteSingleImageManagerProps {
 
 export function SiteSingleImageManager({ slot, title, description, initialImageUrl }: SiteSingleImageManagerProps) {
   const [imageUrl, setImageUrl] = useState(initialImageUrl)
-  const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [imageError, setImageError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  function handleFileSelected(event: ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelected(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null
+    event.target.value = '' // allow re-picking the same file later
     setImageError(null)
-    if (!file) {
-      setPendingFile(null)
-      return
-    }
+    if (!file) return
+
     const problem = validateImageFile(file)
     if (problem) {
       setImageError(problem)
-      setPendingFile(null)
       return
     }
-    setPendingFile(file)
-  }
 
-  async function handleSave() {
-    if (!pendingFile) return
     setUploading(true)
-    setImageError(null)
     try {
       const client = createBrowserSupabaseClient()
-      const path = await uploadSiteImage(client, pendingFile)
+      const path = await uploadSiteImage(client, file)
       await adminReplaceSiteImage(slot, path)
       setImageUrl(getPublicImageUrl(client, 'site-images', path))
-      setPendingFile(null)
     } catch {
       setImageError('Não foi possível enviar a foto. Tente novamente.')
     } finally {
@@ -59,31 +51,37 @@ export function SiteSingleImageManager({ slot, title, description, initialImageU
         <p className="text-sm text-support-gray">{description}</p>
       </div>
 
-      {imageUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={imageUrl} alt={title} className="h-40 w-full max-w-xs rounded-lg object-cover" />
-      )}
+      <div className="group relative aspect-video w-full max-w-md overflow-hidden rounded-xl bg-card-gray">
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt={title} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-sm text-support-gray">Nenhuma foto ainda</div>
+        )}
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={`site-image-${slot}`} className="text-sm font-bold">Foto</label>
-        <input
-          id={`site-image-${slot}`}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={handleFileSelected}
-          className="rounded-lg border border-support-gray/25 p-2.5 text-sm text-graphite"
-        />
-        {imageError && <p className="text-sm text-aguiar-red">{imageError}</p>}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className={`absolute inset-0 flex items-center justify-center bg-graphite/60 text-sm font-bold uppercase tracking-wide text-white transition-opacity disabled:cursor-not-allowed ${
+            imageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
+          }`}
+        >
+          {uploading ? 'Enviando...' : imageUrl ? 'Trocar foto' : 'Adicionar foto'}
+        </button>
       </div>
 
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={!pendingFile || uploading}
-        className="self-start rounded-full bg-aguiar-red px-6 py-2.5 text-sm font-bold uppercase tracking-wide text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {uploading ? 'Enviando...' : imageUrl ? 'Trocar foto' : 'Adicionar foto'}
-      </button>
+      <label htmlFor={`site-image-${slot}`} className="sr-only">Foto</label>
+      <input
+        ref={fileInputRef}
+        id={`site-image-${slot}`}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handleFileSelected}
+        className="sr-only"
+      />
+
+      {imageError && <p className="text-sm text-aguiar-red">{imageError}</p>}
     </section>
   )
 }

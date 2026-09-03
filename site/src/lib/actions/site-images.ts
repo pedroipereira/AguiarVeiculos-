@@ -26,6 +26,15 @@ export async function deleteSiteImage(client: SupabaseClient, id: string): Promi
   if (error) throw error
 }
 
+/** Persists a new display order: each id's index in `orderedIds` becomes its `display_order`. */
+export async function reorderSiteImages(client: SupabaseClient, orderedIds: string[]): Promise<void> {
+  const results = await Promise.all(
+    orderedIds.map((id, index) => client.from('site_images').update({ display_order: index }).eq('id', id)),
+  )
+  const failed = results.find((result) => result.error)
+  if (failed?.error) throw failed.error
+}
+
 /** For single-photo slots (hero, sobre): drops whatever was there and stores just this one. */
 export async function replaceSiteImage(
   client: SupabaseClient,

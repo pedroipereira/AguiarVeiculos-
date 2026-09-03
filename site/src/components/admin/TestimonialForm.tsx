@@ -39,7 +39,6 @@ export function TestimonialForm({ testimonial }: { testimonial?: Testimonial }) 
       id: testimonial?.id,
       imageUrl,
       caption: String(formData.get('caption')),
-      displayOrder: Number(formData.get('displayOrder') || 0),
     })
     router.push('/admin/depoimentos')
   }
@@ -51,8 +50,6 @@ export function TestimonialForm({ testimonial }: { testimonial?: Testimonial }) 
       {imageError && <p className="text-aguiar-red">{imageError}</p>}
       <label htmlFor="caption">Legenda</label>
       <textarea id="caption" name="caption" defaultValue={testimonial?.caption} required className="rounded border p-2 text-graphite" />
-      <label htmlFor="displayOrder">Ordem</label>
-      <input id="displayOrder" name="displayOrder" type="number" defaultValue={testimonial?.display_order ?? 0} className="rounded border p-2 text-graphite" />
       <Button type="submit">Salvar depoimento</Button>
     </form>
   )

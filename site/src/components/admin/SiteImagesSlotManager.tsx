@@ -1,9 +1,13 @@
 'use client'
 
 import { useState, type ChangeEvent } from 'react'
+import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 import { uploadSiteImage, validateImageFile, getPublicImageUrl } from '@/lib/storage'
-import { adminAddSiteImage, adminDeleteSiteImage } from '@/app/actions/site-images'
+import { adminAddSiteImage, adminDeleteSiteImage, adminReorderSiteImages } from '@/app/actions/site-images'
+import { reorderById } from '@/lib/reorder'
 import type { SiteImageSlot } from '@/lib/types'
 
 interface SiteImageEntry {
@@ -18,11 +22,38 @@ interface SiteImagesSlotManagerProps {
   initialImages: SiteImageEntry[]
 }
 
+function SortableImageCard({ image, title, onDelete }: { image: SiteImageEntry; title: string; onDelete: (id: string) => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: image.id })
+  const style = { transform: CSS.Transform.toString(transform), transition }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      aria-label={`Arrastar para reordenar: ${title}`}
+      className={`group relative aspect-square cursor-grab touch-none overflow-hidden rounded-xl bg-card-gray ${isDragging ? 'opacity-50' : ''}`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={image.url} alt={title} className="h-full w-full object-cover" />
+      <button
+        type="button"
+        onClick={(event) => { event.stopPropagation(); onDelete(image.id) }}
+        className="absolute right-2 top-2 rounded-full bg-graphite/70 px-2.5 py-1 text-xs font-bold text-white opacity-0 transition-opacity group-hover:opacity-100"
+      >
+        Excluir
+      </button>
+    </div>
+  )
+}
+
 export function SiteImagesSlotManager({ slot, title, description, initialImages }: SiteImagesSlotManagerProps) {
   const [images, setImages] = useState<SiteImageEntry[]>(initialImages)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [imageError, setImageError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   function handleFileSelected(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null
@@ -63,6 +94,16 @@ export function SiteImagesSlotManager({ slot, title, description, initialImages 
     await adminDeleteSiteImage(id)
   }
 
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over) return
+    setImages((current) => {
+      const reordered = reorderById(current, String(active.id), String(over.id))
+      if (reordered !== current) adminReorderSiteImages(reordered.map((image) => image.id))
+      return reordered
+    })
+  }
+
   return (
     <section className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-sm">
       <div>
@@ -92,21 +133,18 @@ export function SiteImagesSlotManager({ slot, title, description, initialImages 
       </button>
 
       {images.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {images.map((image) => (
-            <div key={image.id} className="flex flex-col items-center gap-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={image.url} alt={title} className="h-32 w-full rounded-lg object-cover" />
-              <button
-                type="button"
-                onClick={() => handleDelete(image.id)}
-                className="text-sm font-bold text-aguiar-red hover:underline"
-              >
-                Excluir
-              </button>
-            </div>
-          ))}
-        </div>
+        <>
+          <p className="text-xs text-support-gray">Arraste as fotos para reordenar.</p>
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+            <SortableContext items={images.map((image) => image.id)} strategy={rectSortingStrategy}>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                {images.map((image) => (
+                  <SortableImageCard key={image.id} image={image} title={title} onDelete={handleDelete} />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </>
       )}
     </section>
   )

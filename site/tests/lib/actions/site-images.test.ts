@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { addSiteImage, deleteSiteImage, replaceSiteImage } from '@/lib/actions/site-images'
+import { addSiteImage, deleteSiteImage, replaceSiteImage, reorderSiteImages } from '@/lib/actions/site-images'
 
 function makeClient(count = 0) {
   const chain: any = {
@@ -49,5 +49,37 @@ describe('replaceSiteImage', () => {
     expect(chain.eq).toHaveBeenCalledWith('slot', 'hero')
     expect(chain.insert).toHaveBeenCalledWith({ slot: 'hero', storage_path: 'new-hero.jpg', display_order: 0 })
     expect(result).toEqual({ id: 'img-new' })
+  })
+})
+
+describe('reorderSiteImages', () => {
+  it('writes display_order as each id\'s index in the given order', async () => {
+    const updateCalls: { payload: unknown; id: string }[] = []
+    const client = {
+      from: vi.fn(() => ({
+        update: (payload: unknown) => ({
+          eq: async (_column: string, id: string) => {
+            updateCalls.push({ payload, id })
+            return { error: null }
+          },
+        }),
+      })),
+    }
+    await reorderSiteImages(client as any, ['c', 'a', 'b'])
+    expect(client.from).toHaveBeenCalledWith('site_images')
+    expect(updateCalls).toEqual([
+      { payload: { display_order: 0 }, id: 'c' },
+      { payload: { display_order: 1 }, id: 'a' },
+      { payload: { display_order: 2 }, id: 'b' },
+    ])
+  })
+
+  it('throws if any update fails', async () => {
+    const client = {
+      from: vi.fn(() => ({
+        update: () => ({ eq: async () => ({ error: { message: 'boom' } }) }),
+      })),
+    }
+    await expect(reorderSiteImages(client as any, ['a'])).rejects.toEqual({ message: 'boom' })
   })
 })

@@ -56,7 +56,7 @@ export default async function AdminImagensPage() {
           <p className="text-sm text-support-gray">Fotos e legendas exibidas na seção de depoimentos da Home.</p>
         </div>
         <TestimonialForm />
-        <TestimonialTable testimonials={testimonials} />
+        <TestimonialTable initialTestimonials={testimonials} />
       </section>
 
       <LocationVideoForm locationVideoUrl={locationVideoUrl} />
