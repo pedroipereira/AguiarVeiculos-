@@ -12,6 +12,22 @@ function makeLead(overrides: Partial<Lead> = {}): Lead {
   }
 }
 
+// Each row is <p label /><div track><div fill/></div></div><p count />.
+function getRow(label: string): HTMLElement {
+  return screen.getByText(label).parentElement as HTMLElement
+}
+
+function getRowCount(label: string): string | null {
+  const row = getRow(label)
+  return (row.lastElementChild as HTMLElement).textContent
+}
+
+function getFillWidthPercent(label: string): number {
+  const track = getRow(label).children[1] as HTMLElement
+  const fill = track.firstElementChild as HTMLElement | null
+  return fill ? parseFloat(fill.style.width) : 0
+}
+
 describe('LeadFunnelChart', () => {
   it('shows an empty state when there are no leads in the funnel', () => {
     render(<LeadFunnelChart leads={[]} />)
@@ -25,11 +41,11 @@ describe('LeadFunnelChart', () => {
       makeLead({ id: '3', stage: 'negociando' }),
     ]
     render(<LeadFunnelChart leads={leads} />)
-    expect(screen.getByText('Lead novo · 2')).toBeInTheDocument()
-    expect(screen.getByText('Visita marcada · 0')).toBeInTheDocument()
-    expect(screen.getByText('Negociando · 1')).toBeInTheDocument()
-    expect(screen.getByText('Ligar de volta · 0')).toBeInTheDocument()
-    expect(screen.getByText('Vendeu · 0')).toBeInTheDocument()
+    expect(getRowCount('Lead novo')).toBe('2')
+    expect(getRowCount('Visita marcada')).toBe('0')
+    expect(getRowCount('Negociando')).toBe('1')
+    expect(getRowCount('Ligar de volta')).toBe('0')
+    expect(getRowCount('Vendeu')).toBe('0')
   })
 
   it('gives a stage with more leads a wider bar, even when a later stage outnumbers an earlier one', () => {
@@ -46,18 +62,12 @@ describe('LeadFunnelChart', () => {
     ]
     render(<LeadFunnelChart leads={leads} />)
 
-    const negociandoBar = screen.getByText('Negociando · 1').previousElementSibling as HTMLElement
-    const ligarBar = screen.getByText('Ligar de volta · 3').previousElementSibling as HTMLElement
-
-    const negociandoWidth = parseFloat(negociandoBar.style.width)
-    const ligarWidth = parseFloat(ligarBar.style.width)
-    expect(ligarWidth).toBeGreaterThan(negociandoWidth)
+    expect(getFillWidthPercent('Ligar de volta')).toBeGreaterThan(getFillWidthPercent('Negociando'))
   })
 
-  it('renders no bar for a stage with zero leads', () => {
+  it('renders an empty track with no fill for a stage with zero leads', () => {
     const leads = [makeLead({ id: '1', stage: 'novo' })]
     render(<LeadFunnelChart leads={leads} />)
-    const vendeuRow = screen.getByText('Vendeu · 0').parentElement as HTMLElement
-    expect(vendeuRow.querySelector('div[style]')).toBeNull()
+    expect(getFillWidthPercent('Vendeu')).toBe(0)
   })
 })

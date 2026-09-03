@@ -17,17 +17,6 @@ const STAGE_COLORS: Record<Exclude<LeadStage, 'nao_comprou'>, string> = {
   vendeu: '#4ade80',
 }
 
-const SEGMENT_HEIGHT = 40
-// Each segment's own trapezoid tapers by this fixed ratio, independent of
-// every other segment's count. Recharts' Funnel chains adjacent segments'
-// widths together assuming values decrease monotonically top-to-bottom —
-// real lead counts per stage don't (e.g. "Ligar de volta" can outnumber
-// "Negociando"), and feeding that data through Recharts' Funnel produced
-// self-intersecting trapezoids (a bowtie/diamond shape) wherever a count
-// rose between adjacent stages. Drawing each stage as its own independent
-// shape sidesteps that entirely — there is no shared edge to invert.
-const TAPER_CLIP_PATH = 'polygon(0% 0%, 100% 0%, 92% 100%, 8% 100%)'
-
 export function LeadFunnelChart({ leads }: LeadFunnelChartProps) {
   const data = getFunnelData(leads)
   const total = data.reduce((sum, entry) => sum + entry.count, 0)
@@ -43,24 +32,24 @@ export function LeadFunnelChart({ leads }: LeadFunnelChartProps) {
       {total === 0 ? (
         <p className="text-sm text-support-gray">Nenhum cliente no funil ainda.</p>
       ) : (
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col gap-3">
           {data.map((entry) => {
-            const widthPercent = entry.count === 0 ? 0 : Math.max(8, (entry.count / maxCount) * 92)
+            // Every row is the same fixed height regardless of count — a
+            // 0-count stage still shows its track, so rows never collapse
+            // and leave uneven blank space between the tall/short ones.
+            const fillPercent = (entry.count / maxCount) * 100
             return (
-              <div key={entry.stage} className="flex w-full flex-col items-center gap-1">
-                {widthPercent > 0 && (
-                  <div
-                    style={{
-                      width: `${widthPercent}%`,
-                      height: SEGMENT_HEIGHT,
-                      backgroundColor: STAGE_COLORS[entry.stage],
-                      clipPath: TAPER_CLIP_PATH,
-                    }}
-                  />
-                )}
-                <p className="text-xs font-bold text-graphite">
-                  {entry.label} · {entry.count}
-                </p>
+              <div key={entry.stage} className="flex items-center gap-3">
+                <p className="w-32 shrink-0 text-sm text-support-gray">{entry.label}</p>
+                <div className="h-8 flex-1 overflow-hidden rounded-md bg-card-gray">
+                  {fillPercent > 0 && (
+                    <div
+                      className="h-full rounded-md"
+                      style={{ width: `${fillPercent}%`, backgroundColor: STAGE_COLORS[entry.stage] }}
+                    />
+                  )}
+                </div>
+                <p className="w-6 shrink-0 text-right text-sm font-bold text-graphite">{entry.count}</p>
               </div>
             )
           })}
