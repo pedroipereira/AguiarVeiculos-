@@ -49,7 +49,7 @@ const argo = {
   id: '1', slug: 'fiat-argo-2023', brand: 'Fiat', model: 'Argo', version: 'Drive 1.0',
   year_model: 2023, year_fabrication: 2023, mileage_km: 32000, price_cents: 6490000,
   fuel_type: 'Flex', transmission: 'Manual', color: 'Prata', description: 'Ótimo estado',
-  status: 'available',
+  status: 'available', optionals: [],
 }
 
 describe('/estoque/[slug] page', () => {
@@ -70,6 +70,20 @@ describe('/estoque/[slug] page', () => {
       expect.stringContaining('wa.me'),
     )
     expect(document.body.textContent).not.toContain('DEF4G56')
+  })
+
+  it('shows the "Equipamentos e opcionais" section when the vehicle has optionals marked', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: { ...argo, optionals: ['Ar condicionado', 'Outros'] }, error: null })
+    render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    expect(screen.getByText('Equipamentos e opcionais')).toBeInTheDocument()
+    expect(screen.getByText('Ar condicionado')).toBeInTheDocument()
+    expect(screen.getByText('Outros')).toBeInTheDocument()
+  })
+
+  it('omits the "Equipamentos e opcionais" section when the vehicle has no optionals marked', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
+    render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    expect(screen.queryByText('Equipamentos e opcionais')).not.toBeInTheDocument()
   })
 
   it('renders the highlight grid, ficha técnica, and description with the vehicle data', async () => {

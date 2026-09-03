@@ -48,9 +48,9 @@ export function VehicleStockGrid({ vehicles, coverImageUrls, expenseTotalsCents,
         type="search"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Buscar por marca, modelo, versão ou cor..."
+        placeholder="Buscar por marca, modelo, ano, versão ou cor..."
         aria-label="Buscar veículo"
-        className="mb-6 w-full max-w-md rounded-full border border-support-gray/25 px-4 py-2.5 text-graphite transition-colors focus:border-aguiar-red focus:outline-none"
+        className="mb-6 w-full rounded-xl border border-support-gray/25 bg-white px-5 py-4 text-graphite shadow-sm transition-colors focus:border-aguiar-red focus:outline-none"
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -41,6 +41,7 @@ export interface VehiclePublic {
   status: VehicleStatus
   created_at: string
   updated_at: string
+  optionals: string[]
 }
 
 export interface Vehicle extends VehiclePublic {

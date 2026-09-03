@@ -70,12 +70,16 @@ describe('countStockFilters / applyStockFilter', () => {
 })
 
 describe('matchesStockSearch', () => {
-  const vehicle = makeVehicle({ brand: 'Fiat', model: 'Argo', version: 'Drive 1.0', color: 'Branco' })
+  const vehicle = makeVehicle({ brand: 'Fiat', model: 'Argo', version: 'Drive 1.0', color: 'Branco', year_model: 2023 })
 
   it('matches brand, model, version, or color case-insensitively', () => {
     expect(matchesStockSearch(vehicle, 'fiat')).toBe(true)
     expect(matchesStockSearch(vehicle, 'ARGO')).toBe(true)
     expect(matchesStockSearch(vehicle, 'branco')).toBe(true)
+  })
+
+  it('matches the model year', () => {
+    expect(matchesStockSearch(vehicle, '2023')).toBe(true)
   })
 
   it('returns true for an empty or blank query', () => {
@@ -85,6 +89,7 @@ describe('matchesStockSearch', () => {
 
   it('returns false when nothing matches', () => {
     expect(matchesStockSearch(vehicle, 'volkswagen')).toBe(false)
+    expect(matchesStockSearch(vehicle, '2024')).toBe(false)
   })
 })
 

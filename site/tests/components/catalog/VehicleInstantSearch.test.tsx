@@ -9,7 +9,7 @@ function makeVehicle(overrides: Partial<VehiclePublic>): VehiclePublic {
     fuel_type: 'Flex', transmission: 'Manual', color: 'Prata', description: null,
     engine: null, fuel_tank_liters: null, seating_capacity: null, body_type: null,
     doors: null, horsepower: null, is_featured: false, status: 'available',
-    created_at: '', updated_at: '',
+    created_at: '', updated_at: '', optionals: [],
     ...overrides,
   }
 }

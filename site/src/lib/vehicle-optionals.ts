@@ -12,6 +12,7 @@ export const VEHICLE_OPTIONALS = [
   'Volante multifuncional', 'Keyless Entry/Start', 'Computador de bordo',
   'Start/Stop automático', 'Carregador wireless', 'Apple CarPlay/Android Auto',
   'Kit multimídia original', '4x4/AWD/Tração integral', 'Blindagem', 'GNV instalado',
+  'Outros',
 ] as const
 
 export type VehicleOptional = (typeof VEHICLE_OPTIONALS)[number]

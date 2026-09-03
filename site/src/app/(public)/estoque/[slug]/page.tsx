@@ -9,6 +9,7 @@ import { resolveColorHex } from '@/lib/colors'
 import { buildWhatsAppUrl, buildVehicleInterestMessage } from '@/lib/whatsapp'
 import { VehicleGallery } from '@/components/catalog/VehicleGallery'
 import { VehicleCard } from '@/components/catalog/VehicleCard'
+import { VehicleOptionalsList } from '@/components/catalog/VehicleOptionalsList'
 
 interface VehicleDetailPageProps {
   params: Promise<{ slug: string }>
@@ -212,6 +213,15 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
               </div>
             ))}
           </div>
+
+          {vehicle.optionals.length > 0 && (
+            <div className="mt-10">
+              <h2 className="text-2xl font-bold">Equipamentos e opcionais</h2>
+              <div className="mt-4">
+                <VehicleOptionalsList optionals={vehicle.optionals} />
+              </div>
+            </div>
+          )}
 
           {vehicle.description && (
             <div className="mt-10">

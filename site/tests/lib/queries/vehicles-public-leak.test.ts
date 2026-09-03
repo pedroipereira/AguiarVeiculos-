@@ -2,6 +2,10 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'fs'
 import { join } from 'path'
 
+// `optionals` (equipment list) is deliberately NOT in this list — migration
+// 0010 added it to the public view on purpose (it isn't financial/internal
+// data; it was only ever excluded by riding along with migration 0005's
+// blanket comment on a batch of genuinely sensitive columns).
 const SENSITIVE_COLUMNS = [
   'plate',
   'acquired_at',
@@ -15,7 +19,6 @@ const SENSITIVE_COLUMNS = [
   'fipe_year_code',
   'fipe_value_cents',
   'fipe_fetched_at',
-  'optionals',
 ]
 
 function readLatestVehiclesPublicViewDefinition(): string {
@@ -33,7 +36,7 @@ function readLatestVehiclesPublicViewDefinition(): string {
 }
 
 describe('vehicles_public view — financial/internal data guard', () => {
-  it('never selects any cost, sale, FIPE, acquisition-date, optionals, or plate column', () => {
+  it('never selects any cost, sale, FIPE, acquisition-date, or plate column', () => {
     const viewDefinition = readLatestVehiclesPublicViewDefinition()
     for (const column of SENSITIVE_COLUMNS) {
       expect(viewDefinition).not.toContain(column)

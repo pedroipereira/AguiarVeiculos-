@@ -12,6 +12,10 @@ describe('VEHICLE_OPTIONALS', () => {
     expect(VEHICLE_OPTIONALS).toContain('Teto solar')
     expect(VEHICLE_OPTIONALS).toContain('Blindagem')
   })
+
+  it('includes a catch-all "Outros" entry, always selectable alongside the fixed catalog above', () => {
+    expect(VEHICLE_OPTIONALS).toContain('Outros')
+  })
 })
 
 describe('isValidOptional', () => {

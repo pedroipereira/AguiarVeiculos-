@@ -4,7 +4,7 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24
 const DEFAULT_TURNOVER_THRESHOLD_DAYS = 90
 
 type StockVehicle = Pick<Vehicle, 'status' | 'acquisition_cost_cents' | 'min_sale_price_cents' | 'acquired_at' | 'created_at'>
-type SearchableVehicle = Pick<Vehicle, 'brand' | 'model' | 'version' | 'color'>
+type SearchableVehicle = Pick<Vehicle, 'brand' | 'model' | 'version' | 'color' | 'year_model'>
 
 export function daysInStock(vehicle: Pick<Vehicle, 'acquired_at' | 'created_at'>, now: Date = new Date()): number {
   const referenceDate = new Date(vehicle.acquired_at ?? vehicle.created_at)
@@ -67,7 +67,7 @@ export function applyStockFilter<T extends StockVehicle>(
 export function matchesStockSearch(vehicle: SearchableVehicle, query: string): boolean {
   const trimmed = query.trim().toLowerCase()
   if (!trimmed) return true
-  const haystack = [vehicle.brand, vehicle.model, vehicle.version, vehicle.color]
+  const haystack = [vehicle.brand, vehicle.model, vehicle.version, vehicle.color, String(vehicle.year_model)]
     .filter(Boolean)
     .join(' ')
     .toLowerCase()
