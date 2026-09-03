@@ -49,7 +49,38 @@ describe('LeadQuickAddModal', () => {
       expect(adminCreateManualLead).toHaveBeenCalledWith({
         name: 'João', phone: '98988888888', vehicleId: undefined, stage: 'novo',
         firstContactAt: undefined, storeVisitAt: undefined, scheduledVisitDate: undefined, scheduledVisitTime: undefined,
+        callbackAt: undefined, callbackTime: undefined,
       }),
+    )
+  })
+
+  it('shows the retorno date/time only when the stage is "Ligar de volta", and includes them in the payload', async () => {
+    render(<LeadQuickAddModal vehicles={[]} onClose={vi.fn()} />)
+
+    expect(screen.queryByLabelText(/data de retorno/i)).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText(/^nome$/i), { target: { value: 'Rita' } })
+    fireEvent.change(screen.getByLabelText(/telefone/i), { target: { value: '98955555555' } })
+    fireEvent.change(screen.getByLabelText(/estágio no funil/i), { target: { value: 'ligar_de_volta' } })
+
+    expect(screen.getByLabelText(/data de retorno/i)).toBeInTheDocument()
+
+    const now = new Date()
+    const isoPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
+    fireEvent.click(screen.getByLabelText(/data de retorno/i))
+    fireEvent.click(screen.getByRole('button', { name: '20' }))
+    fireEvent.change(screen.getByLabelText(/hora do retorno/i), { target: { value: '09:00' } })
+    fireEvent.click(screen.getByRole('button', { name: /salvar lead/i }))
+
+    await waitFor(() =>
+      expect(adminCreateManualLead).toHaveBeenCalledWith(
+        expect.objectContaining({
+          stage: 'ligar_de_volta',
+          callbackAt: `${isoPrefix}-20`,
+          callbackTime: '09:00',
+        }),
+      ),
     )
   })
 
