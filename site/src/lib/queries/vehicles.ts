@@ -111,6 +111,17 @@ export async function getVehicleFacets(client: SupabaseClient): Promise<VehicleF
   }
 }
 
+/** Lightweight slug + updated_at list for sitemap.ts — no need for the full row per vehicle. */
+export async function getSitemapVehicles(client: SupabaseClient): Promise<{ slug: string; updated_at: string }[]> {
+  const { data, error } = await client
+    .from('vehicles_public')
+    .select('slug, updated_at')
+    .eq('status', 'available')
+    .order('updated_at', { ascending: false })
+  if (error) throw error
+  return data as { slug: string; updated_at: string }[]
+}
+
 export async function getVehicleBySlug(client: SupabaseClient, slug: string): Promise<VehiclePublic | null> {
   // A sold vehicle must fall through to the friendly 404 (spec §Erros), so it is
   // excluded here rather than rendered as a still-for-sale detail page.

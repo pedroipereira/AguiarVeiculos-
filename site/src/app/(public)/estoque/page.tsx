@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getAvailableVehicles, getVehicleFacets } from '@/lib/queries/vehicles'
@@ -5,6 +6,13 @@ import { getPrimaryImageUrlsByVehicleIds } from '@/lib/queries/vehicle-images'
 import { parseVehicleFiltersFromSearchParams } from '@/lib/filter-vehicles'
 import { VehicleCatalogControls } from '@/components/catalog/VehicleCatalogControls'
 import { VehicleCard } from '@/components/catalog/VehicleCard'
+
+export const metadata: Metadata = {
+  title: 'Estoque de veículos',
+  description:
+    'Veja todos os carros, motos e utilitários disponíveis na Aguiar Veículos em Presidente Dutra - MA. Filtre por marca, preço, ano e mais.',
+  alternates: { canonical: '/estoque' },
+}
 
 interface EstoquePageProps {
   searchParams: Promise<Record<string, string | undefined>>

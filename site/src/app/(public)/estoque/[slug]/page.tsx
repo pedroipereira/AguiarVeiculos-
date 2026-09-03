@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
@@ -7,12 +8,44 @@ import { getPublicImageUrl } from '@/lib/storage'
 import { formatPriceFromCents } from '@/lib/format'
 import { resolveColorHex } from '@/lib/colors'
 import { buildWhatsAppUrl, buildVehicleInterestMessage } from '@/lib/whatsapp'
+import { buildVehicleTitle, buildVehicleDescription, buildVehicleJsonLd } from '@/lib/seo'
 import { VehicleGallery } from '@/components/catalog/VehicleGallery'
 import { VehicleCard } from '@/components/catalog/VehicleCard'
 import { VehicleOptionalsList } from '@/components/catalog/VehicleOptionalsList'
+import { JsonLd } from '@/components/seo/JsonLd'
 
 interface VehicleDetailPageProps {
   params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: VehicleDetailPageProps): Promise<Metadata> {
+  const { slug } = await params
+  const client = await createServerSupabaseClient()
+  const vehicle = await getVehicleBySlug(client, slug)
+  if (!vehicle) return {}
+
+  const imageUrls = await getPrimaryImageUrlsByVehicleIds(client, [vehicle.id])
+  const imageUrl = imageUrls[vehicle.id]
+  const title = buildVehicleTitle(vehicle)
+  const description = buildVehicleDescription(vehicle)
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/estoque/${vehicle.slug}` },
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      images: imageUrl ? [{ url: imageUrl, width: 1200, height: 900, alt: title }] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
+  }
 }
 
 /** Groups a flat list into rows of `size`, padding the last row with nulls. */
@@ -113,6 +146,7 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
 
   return (
     <main className="bg-white px-6 pb-16 pt-32 text-graphite">
+      <JsonLd data={buildVehicleJsonLd(vehicle, imageUrls[0])} />
       <div className="mx-auto max-w-[1156px]">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.2fr_1fr]">
           <VehicleGallery images={imageUrls} label={label} />

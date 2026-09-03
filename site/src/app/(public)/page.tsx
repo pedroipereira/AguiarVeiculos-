@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getSiteImageUrls } from '@/lib/queries/site-images'
 import { Hero } from '@/components/home/Hero'
@@ -7,6 +8,13 @@ import { QuinzeAnos } from '@/components/home/QuinzeAnos'
 import { Galeria } from '@/components/home/Galeria'
 import { FinanciamentoTeaser } from '@/components/home/FinanciamentoTeaser'
 import { Contato } from '@/components/home/Contato'
+
+export const metadata: Metadata = {
+  title: 'Carros novos e seminovos em Presidente Dutra - MA',
+  description:
+    'Mais de 15 anos de mercado, estoque próprio à pronta entrega, financiamento facilitado e troca do seu usado. Confira o estoque da Aguiar Veículos.',
+  alternates: { canonical: '/' },
+}
 
 export default async function Home() {
   const client = await createServerSupabaseClient()

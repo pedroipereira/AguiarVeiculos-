@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getFeaturedVehicles, getAvailableVehicles, getVehicleBySlug, getVehicleFacets, getRelatedVehicles } from '@/lib/queries/vehicles'
+import {
+  getFeaturedVehicles, getAvailableVehicles, getVehicleBySlug, getVehicleFacets, getRelatedVehicles, getSitemapVehicles,
+} from '@/lib/queries/vehicles'
 
 function makeFakeClient(rows: any[]) {
   const chain: any = {
@@ -25,6 +27,17 @@ describe('getFeaturedVehicles', () => {
     const result = await getFeaturedVehicles(client as any, 6)
     expect(client.from).toHaveBeenCalledWith('vehicles_public')
     expect(result).toEqual([{ id: '1', slug: 'a', is_featured: true }])
+  })
+})
+
+describe('getSitemapVehicles', () => {
+  it('queries vehicles_public for slug and updated_at, restricted to available vehicles', async () => {
+    const client = makeFakeClient([{ slug: 'a', updated_at: '2026-09-01T00:00:00.000Z' }])
+    const result = await getSitemapVehicles(client as any)
+    expect(client.from).toHaveBeenCalledWith('vehicles_public')
+    expect(client.chain.select).toHaveBeenCalledWith('slug, updated_at')
+    expect(client.chain.eq).toHaveBeenCalledWith('status', 'available')
+    expect(result).toEqual([{ slug: 'a', updated_at: '2026-09-01T00:00:00.000Z' }])
   })
 })
 

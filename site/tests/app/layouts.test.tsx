@@ -12,4 +12,11 @@ describe('(public) layout', () => {
     expect(screen.getAllByText(/Presidente Dutra/i).length).toBeGreaterThan(0)
     expect(screen.getByText('conteúdo público')).toBeInTheDocument()
   })
+
+  it('includes the sitewide AutomotiveBusiness JSON-LD', () => {
+    const { container } = render(<PublicLayout><main /></PublicLayout>)
+    const script = container.querySelector('script[type="application/ld+json"]')
+    expect(script).not.toBeNull()
+    expect(JSON.parse(script!.innerHTML)['@type']).toBe('AutomotiveBusiness')
+  })
 })

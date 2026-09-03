@@ -43,7 +43,7 @@ vi.mock('@/lib/supabase/server', () => ({
   })),
 }))
 
-import VehicleDetailPage from '@/app/(public)/estoque/[slug]/page'
+import VehicleDetailPage, { generateMetadata } from '@/app/(public)/estoque/[slug]/page'
 
 const argo = {
   id: '1', slug: 'fiat-argo-2023', brand: 'Fiat', model: 'Argo', version: 'Drive 1.0',
@@ -211,5 +211,45 @@ describe('/estoque/[slug] page', () => {
     maybeSingle.mockResolvedValueOnce({ data: null, error: null })
     await expect(VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) })).rejects.toThrow('NEXT_NOT_FOUND')
     expect(vehicleEq).toHaveBeenCalledWith('status', 'available')
+  })
+
+  it('includes a Vehicle JSON-LD block describing the car', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
+    const { container } = render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    const script = container.querySelector('script[type="application/ld+json"]')
+    expect(script).not.toBeNull()
+    const jsonLd = JSON.parse(script!.innerHTML)
+    expect(jsonLd['@type']).toBe('Vehicle')
+    expect(jsonLd.brand).toBe('Fiat')
+    expect(jsonLd.offers.price).toBe('64900.00')
+  })
+})
+
+describe('generateMetadata', () => {
+  beforeEach(() => {
+    imageRows.current = []
+  })
+
+  it('builds a title, description, and canonical URL from the vehicle', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) })
+    expect(metadata.title).toBe('Fiat Argo Drive 1.0 2023')
+    expect(metadata.description).toContain('R$ 64.900')
+    expect(metadata.alternates?.canonical).toBe('/estoque/fiat-argo-2023')
+  })
+
+  it('uses the vehicle\'s primary photo as the Open Graph and Twitter image', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
+    imageRows.current = [{ id: 'i1', vehicle_id: '1', storage_path: 'argo-1.jpg', display_order: 0 }]
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) })
+    const ogImages = metadata.openGraph?.images as { url: string }[]
+    expect(ogImages[0].url).toBe('https://cdn.test/argo-1.jpg')
+    expect(metadata.twitter?.images).toEqual(['https://cdn.test/argo-1.jpg'])
+  })
+
+  it('returns empty metadata when the vehicle is not found, instead of throwing', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: null, error: null })
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'nao-existe' }) })
+    expect(metadata).toEqual({})
   })
 })
