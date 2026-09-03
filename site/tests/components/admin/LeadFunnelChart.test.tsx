@@ -18,10 +18,46 @@ describe('LeadFunnelChart', () => {
     expect(screen.getByText('Nenhum cliente no funil ainda.')).toBeInTheDocument()
   })
 
-  it('renders the chart without throwing when there are leads', () => {
-    const leads = [makeLead({ id: '1', stage: 'novo' }), makeLead({ id: '2', stage: 'negociando' })]
+  it('shows every funnel stage with its label and count, in funnel order', () => {
+    const leads = [
+      makeLead({ id: '1', stage: 'novo' }),
+      makeLead({ id: '2', stage: 'novo' }),
+      makeLead({ id: '3', stage: 'negociando' }),
+    ]
     render(<LeadFunnelChart leads={leads} />)
-    expect(screen.getByText('Funil')).toBeInTheDocument()
-    expect(screen.queryByText('Nenhum cliente no funil ainda.')).not.toBeInTheDocument()
+    expect(screen.getByText('Lead novo · 2')).toBeInTheDocument()
+    expect(screen.getByText('Visita marcada · 0')).toBeInTheDocument()
+    expect(screen.getByText('Negociando · 1')).toBeInTheDocument()
+    expect(screen.getByText('Ligar de volta · 0')).toBeInTheDocument()
+    expect(screen.getByText('Vendeu · 0')).toBeInTheDocument()
+  })
+
+  it('gives a stage with more leads a wider bar, even when a later stage outnumbers an earlier one', () => {
+    // "Ligar de volta" (3) outnumbering "Negociando" (1) is exactly the
+    // non-monotonic case that broke Recharts' Funnel (it assumes values
+    // decrease top-to-bottom and produces crossed/inverted geometry
+    // otherwise). Each bar here is sized from its own count only, so this
+    // must render as two correctly-proportioned, independent bars.
+    const leads = [
+      makeLead({ id: '1', stage: 'negociando' }),
+      makeLead({ id: '2', stage: 'ligar_de_volta' }),
+      makeLead({ id: '3', stage: 'ligar_de_volta' }),
+      makeLead({ id: '4', stage: 'ligar_de_volta' }),
+    ]
+    render(<LeadFunnelChart leads={leads} />)
+
+    const negociandoBar = screen.getByText('Negociando · 1').previousElementSibling as HTMLElement
+    const ligarBar = screen.getByText('Ligar de volta · 3').previousElementSibling as HTMLElement
+
+    const negociandoWidth = parseFloat(negociandoBar.style.width)
+    const ligarWidth = parseFloat(ligarBar.style.width)
+    expect(ligarWidth).toBeGreaterThan(negociandoWidth)
+  })
+
+  it('renders no bar for a stage with zero leads', () => {
+    const leads = [makeLead({ id: '1', stage: 'novo' })]
+    render(<LeadFunnelChart leads={leads} />)
+    const vendeuRow = screen.getByText('Vendeu · 0').parentElement as HTMLElement
+    expect(vendeuRow.querySelector('div[style]')).toBeNull()
   })
 })
