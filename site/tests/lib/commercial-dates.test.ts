@@ -35,6 +35,15 @@ describe('resolveCommercialDatesForYear', () => {
     }
   })
 
+  it('includes Ano Novo (01/01) and the 2ª parcela do 13º salário (20/12)', () => {
+    expect(resolveCommercialDatesForYear(2026).find((d) => d.label === 'Ano Novo')).toEqual({
+      date: '2026-01-01', label: 'Ano Novo',
+    })
+    expect(resolveCommercialDatesForYear(2026).find((d) => d.label === '2ª parcela do 13º salário')).toEqual({
+      date: '2026-12-20', label: '2ª parcela do 13º salário',
+    })
+  })
+
   it('filters out an nth-weekday rule whose occurrence does not exist in a given month/year', () => {
     const rules: CommercialDateRule[] = [{ type: 'nth-weekday', month: 2, weekday: 0, occurrence: 5, label: 'Impossível' }]
     expect(resolveCommercialDatesForYear(2026, rules)).toEqual([])

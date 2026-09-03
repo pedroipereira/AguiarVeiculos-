@@ -13,6 +13,7 @@ export type CommercialDateRule =
  * diretamente e viram uma mudança de código aqui, sem migration nem tela.
  */
 export const COMMERCIAL_DATES: CommercialDateRule[] = [
+  { type: 'fixed', month: 1, day: 1, label: 'Ano Novo' },
   { type: 'fixed', month: 3, day: 15, label: 'Dia do Consumidor' },
   { type: 'nth-weekday', month: 5, weekday: 0, occurrence: 2, label: 'Dia das Mães' },
   { type: 'fixed', month: 6, day: 12, label: 'Dia dos Namorados' },
@@ -21,6 +22,9 @@ export const COMMERCIAL_DATES: CommercialDateRule[] = [
   { type: 'fixed', month: 9, day: 15, label: 'Dia do Cliente' },
   { type: 'fixed', month: 11, day: 8, label: 'Dia Mundial do Automóvel' },
   { type: 'last-weekday', month: 11, weekday: 5, label: 'Black Friday' },
+  // 2ª parcela do 13º salário (prazo legal: 20/12) — quando o dinheiro cheio
+  // costuma estar na mão do cliente, maior janela de compra de carro do ano.
+  { type: 'fixed', month: 12, day: 20, label: '2ª parcela do 13º salário' },
   { type: 'fixed', month: 12, day: 25, label: 'Natal' },
 ]
 
