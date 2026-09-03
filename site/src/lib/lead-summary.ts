@@ -7,9 +7,17 @@ export interface LeadSummaryCounts {
   soldInMonth: number
 }
 
-/** True when a lead is sitting in "ligar de volta" — a callback still owed to them. */
-export function isOverdueReturn(lead: Pick<Lead, 'stage'>): boolean {
-  return lead.stage === 'ligar_de_volta'
+/**
+ * True when a lead is sitting in "ligar de volta" AND its callback is due:
+ * `callback_at` in the past, or not set at all (a callback never scheduled
+ * is at least as overdue as one with a past date). Matches the definition
+ * `src/lib/agenda.ts`'s `getAgendaStats` uses for the same metric.
+ */
+export function isOverdueReturn(lead: Pick<Lead, 'stage' | 'callback_at'>, now: Date = new Date()): boolean {
+  if (lead.stage !== 'ligar_de_volta') return false
+  if (!lead.callback_at) return true
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  return lead.callback_at < today
 }
 
 /** True when `soldAt` is set and falls within `month`, which must be a valid `YYYY-MM` string. */
@@ -22,11 +30,11 @@ function matchesMonth(soldAt: string | null | undefined, month: string): boolean
  * the other three always reflect the current state, never a past month
  * (there is no stage-change history to reconstruct "who was active in May").
  */
-export function getLeadSummaryCounts(leads: Lead[], vehicles: Vehicle[], month: string): LeadSummaryCounts {
+export function getLeadSummaryCounts(leads: Lead[], vehicles: Vehicle[], month: string, now: Date = new Date()): LeadSummaryCounts {
   return {
     active: leads.filter((lead) => lead.stage !== 'vendeu' && lead.stage !== 'nao_comprou').length,
     negotiating: leads.filter((lead) => lead.stage === 'negociando').length,
-    overdue: leads.filter((lead) => isOverdueReturn(lead)).length,
+    overdue: leads.filter((lead) => isOverdueReturn(lead, now)).length,
     soldInMonth: vehicles.filter((vehicle) => matchesMonth(vehicle.sold_at, month)).length,
   }
 }

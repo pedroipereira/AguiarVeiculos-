@@ -28,16 +28,33 @@ function makeVehicle(overrides: Partial<Vehicle> = {}): Vehicle {
 }
 
 describe('isOverdueReturn', () => {
-  it('is true for a lead sitting in "ligar de volta"', () => {
-    expect(isOverdueReturn(makeLead({ stage: 'ligar_de_volta' }))).toBe(true)
+  const NOW = new Date(2026, 8, 25) // Friday, September 25th 2026
+
+  it('is true for a lead in "ligar de volta" with no callback_at set', () => {
+    expect(isOverdueReturn(makeLead({ stage: 'ligar_de_volta', callback_at: null }), NOW)).toBe(true)
   })
 
-  it('is false for any other stage', () => {
-    expect(isOverdueReturn(makeLead({ stage: 'novo' }))).toBe(false)
-    expect(isOverdueReturn(makeLead({ stage: 'visita_marcada' }))).toBe(false)
-    expect(isOverdueReturn(makeLead({ stage: 'negociando' }))).toBe(false)
-    expect(isOverdueReturn(makeLead({ stage: 'vendeu' }))).toBe(false)
-    expect(isOverdueReturn(makeLead({ stage: 'nao_comprou' }))).toBe(false)
+  it('is true when callback_at is in the past', () => {
+    expect(isOverdueReturn(makeLead({ stage: 'ligar_de_volta', callback_at: '2026-09-20' }), NOW)).toBe(true)
+  })
+
+  it('is false when callback_at is today or in the future', () => {
+    expect(isOverdueReturn(makeLead({ stage: 'ligar_de_volta', callback_at: '2026-09-25' }), NOW)).toBe(false)
+    expect(isOverdueReturn(makeLead({ stage: 'ligar_de_volta', callback_at: '2026-09-30' }), NOW)).toBe(false)
+  })
+
+  it('is false for any other stage, regardless of callback_at', () => {
+    expect(isOverdueReturn(makeLead({ stage: 'novo' }), NOW)).toBe(false)
+    expect(isOverdueReturn(makeLead({ stage: 'visita_marcada' }), NOW)).toBe(false)
+    expect(isOverdueReturn(makeLead({ stage: 'negociando', callback_at: '2026-01-01' }), NOW)).toBe(false)
+    expect(isOverdueReturn(makeLead({ stage: 'vendeu' }), NOW)).toBe(false)
+    expect(isOverdueReturn(makeLead({ stage: 'nao_comprou' }), NOW)).toBe(false)
+  })
+
+  it('defaults now to the real current date when omitted', () => {
+    // Just confirms the call is valid with no second argument — behavior
+    // with a real "now" isn't asserted here to avoid a flaky test.
+    expect(typeof isOverdueReturn(makeLead({ stage: 'ligar_de_volta' }))).toBe('boolean')
   })
 })
 
@@ -74,6 +91,16 @@ describe('getLeadSummaryCounts', () => {
     expect(getLeadSummaryCounts([], vehicles, '').soldInMonth).toBe(0)
     expect(getLeadSummaryCounts([], vehicles, 'garbage').soldInMonth).toBe(0)
     expect(getLeadSummaryCounts([], vehicles, '2026-9').soldInMonth).toBe(0) // not zero-padded
+  })
+
+  it('overdue respects callback_at when set, not just the stage', () => {
+    const NOW = new Date(2026, 8, 25)
+    const leads = [
+      makeLead({ id: 'a', stage: 'ligar_de_volta', callback_at: null }), // no date, overdue
+      makeLead({ id: 'b', stage: 'ligar_de_volta', callback_at: '2026-09-20' }), // past, overdue
+      makeLead({ id: 'c', stage: 'ligar_de_volta', callback_at: '2026-09-30' }), // future, not overdue
+    ]
+    expect(getLeadSummaryCounts(leads, [], '2026-09', NOW).overdue).toBe(2)
   })
 })
 
