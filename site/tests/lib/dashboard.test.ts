@@ -1,5 +1,31 @@
 import { describe, it, expect } from 'vitest'
-import { calculateGoalProgress, resolveDateRange, getStoreSnapshot } from '@/lib/dashboard'
+import { calculateGoalProgress, parseMonthlySalesGoal, resolveDateRange, getStoreSnapshot } from '@/lib/dashboard'
+
+describe('parseMonthlySalesGoal', () => {
+  it('returns null for null input', () => {
+    expect(parseMonthlySalesGoal(null)).toBeNull()
+  })
+
+  it('returns null for an empty string', () => {
+    expect(parseMonthlySalesGoal('')).toBeNull()
+  })
+
+  it('parses a valid positive numeric string', () => {
+    expect(parseMonthlySalesGoal('20')).toBe(20)
+  })
+
+  it('returns null for "0"', () => {
+    expect(parseMonthlySalesGoal('0')).toBeNull()
+  })
+
+  it('returns null for a negative numeric string', () => {
+    expect(parseMonthlySalesGoal('-5')).toBeNull()
+  })
+
+  it('returns null for a non-numeric string', () => {
+    expect(parseMonthlySalesGoal('abc')).toBeNull()
+  })
+})
 
 describe('calculateGoalProgress', () => {
   it('returns null when no goal is set', () => {

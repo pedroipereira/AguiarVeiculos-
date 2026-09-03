@@ -22,6 +22,8 @@ describe('GoalProgressBanner', () => {
   it('shows an empty state when no goal is set', () => {
     render(<GoalProgressBanner soldCount={12} goal={null} now={NOW} />)
     expect(screen.getByText('Nenhuma meta definida para este mês')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /definir meta/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^editar meta$/i })).not.toBeInTheDocument()
   })
 
   it('saves a new goal and refreshes the page', async () => {

@@ -29,7 +29,11 @@ export function StoreSnapshotCard({ vehicles, expenseTotals }: StoreSnapshotCard
         </div>
         <div>
           <p className="text-sm text-support-gray">Lucro esperado</p>
-          <p className={`${anton.className} text-2xl text-green-700`}>{formatPriceFromCents(snapshot.expectedProfitCents)}</p>
+          <p
+            className={`${anton.className} text-2xl ${snapshot.expectedProfitCents < 0 ? 'text-aguiar-red' : 'text-green-700'}`}
+          >
+            {formatPriceFromCents(snapshot.expectedProfitCents)}
+          </p>
         </div>
       </div>
     </section>

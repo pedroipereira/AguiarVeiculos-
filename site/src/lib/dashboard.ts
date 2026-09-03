@@ -29,6 +29,13 @@ export function calculateGoalProgress(soldCount: number, goal: number | null, no
   }
 }
 
+/** Parses the `monthly_sales_goal` site_settings value; null/invalid/non-positive means "no goal set". */
+export function parseMonthlySalesGoal(raw: string | null): number | null {
+  if (raw == null || raw === '') return null
+  const parsed = Number(raw)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+}
+
 /** Formats a Date using its local calendar fields — never toISOString(), which
  *  shifts to UTC and can roll the date back a day in timezones behind UTC. */
 function formatDateLocal(date: Date): string {
@@ -138,12 +145,16 @@ export function getStoreSnapshot(vehicles: Vehicle[], expenseTotals: Record<stri
 }
 
 import type { Lead, LeadStage } from './types'
-import { LEAD_STAGE_LABELS } from './lead-kanban'
+import { LEAD_STAGE_LABELS, LEAD_STAGES } from './lead-kanban'
 
-export const FUNNEL_STAGES: LeadStage[] = ['novo', 'visita_marcada', 'negociando', 'ligar_de_volta', 'vendeu']
+export type FunnelStage = Exclude<LeadStage, 'nao_comprou'>
+
+export const FUNNEL_STAGES: FunnelStage[] = LEAD_STAGES.filter(
+  (stage): stage is FunnelStage => stage !== 'nao_comprou',
+)
 
 export interface FunnelStageCount {
-  stage: LeadStage
+  stage: FunnelStage
   label: string
   count: number
 }

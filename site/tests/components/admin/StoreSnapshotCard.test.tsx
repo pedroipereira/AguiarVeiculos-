@@ -31,4 +31,14 @@ describe('StoreSnapshotCard', () => {
     expect(screen.getByText('R$ 80.000')).toBeInTheDocument()
     expect(screen.getByText('R$ 30.000')).toBeInTheDocument()
   })
+
+  it('shows expected profit in red when the stock is upside down', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'available', price_cents: 5000000, acquisition_cost_cents: 8000000 }),
+    ]
+    render(<StoreSnapshotCard vehicles={vehicles} expenseTotals={{}} />)
+    const profitValue = screen.getByText('-R$ 30.000')
+    expect(profitValue).toBeInTheDocument()
+    expect(profitValue.className).toContain('text-aguiar-red')
+  })
 })

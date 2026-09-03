@@ -4,6 +4,7 @@ import { getAllLeadsAdmin } from '@/lib/queries/leads'
 import { getSiteSetting } from '@/lib/queries/site-settings'
 import { getVehicleExpenseTotals } from '@/lib/queries/vehicle-expenses'
 import { parseTurnoverThreshold, daysInStock } from '@/lib/vehicle-stock'
+import { parseMonthlySalesGoal } from '@/lib/dashboard'
 import { getLeadSummaryCounts, getCurrentMonthValue } from '@/lib/lead-summary'
 import { StockTurnoverCard } from '@/components/admin/StockTurnoverCard'
 import { StockAgingList } from '@/components/admin/StockAgingList'
@@ -24,7 +25,7 @@ export default async function AdminPainelPage() {
   const expenseTotals = await getVehicleExpenseTotals(client, vehicles.map((vehicle) => vehicle.id))
 
   const thresholdDays = parseTurnoverThreshold(thresholdSetting)
-  const goal = goalSetting != null && goalSetting !== '' ? Number(goalSetting) : null
+  const goal = parseMonthlySalesGoal(goalSetting)
   const soldInCurrentMonth = getLeadSummaryCounts(leads, vehicles, getCurrentMonthValue()).soldInMonth
 
   const availableAged = vehicles

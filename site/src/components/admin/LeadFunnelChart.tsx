@@ -1,8 +1,8 @@
 'use client'
 
 import { FunnelChart, Funnel, Cell, LabelList, Tooltip, ResponsiveContainer } from 'recharts'
-import type { Lead, LeadStage } from '@/lib/types'
-import { getFunnelData } from '@/lib/dashboard'
+import type { Lead } from '@/lib/types'
+import { getFunnelData, type FunnelStage } from '@/lib/dashboard'
 
 interface LeadFunnelChartProps {
   leads: Lead[]
@@ -12,7 +12,7 @@ interface LeadFunnelChartProps {
 // colors, not Tailwind classes. Same blue/orange/yellow/pink/green already
 // used by LEAD_STAGE_ACCENTS for the kanban, minus "não comprou" (not part
 // of the funnel).
-const FUNNEL_STAGE_COLORS: Record<Exclude<LeadStage, 'nao_comprou'>, string> = {
+const FUNNEL_STAGE_COLORS: Record<FunnelStage, string> = {
   novo: '#3b82f6',
   visita_marcada: '#f97316',
   negociando: '#eab308',
@@ -40,7 +40,7 @@ export function LeadFunnelChart({ leads }: LeadFunnelChartProps) {
             <Funnel dataKey="count" data={data} isAnimationActive={false}>
               <LabelList dataKey="label" position="right" fill="#111111" stroke="none" />
               {data.map((entry) => (
-                <Cell key={entry.stage} fill={FUNNEL_STAGE_COLORS[entry.stage as Exclude<LeadStage, 'nao_comprou'>]} />
+                <Cell key={entry.stage} fill={FUNNEL_STAGE_COLORS[entry.stage]} />
               ))}
             </Funnel>
           </FunnelChart>

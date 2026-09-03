@@ -96,7 +96,7 @@ export function GoalProgressBanner({ soldCount, goal, now = new Date() }: GoalPr
             onClick={() => setEditing(true)}
             className="text-xs font-bold uppercase tracking-wide text-white/70 hover:text-white"
           >
-            Editar meta
+            {goal == null ? 'Definir meta' : 'Editar meta'}
           </button>
         )}
       </div>
