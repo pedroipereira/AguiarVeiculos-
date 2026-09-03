@@ -22,7 +22,7 @@ function makeLead(overrides: Partial<Lead> = {}): Lead {
   return {
     id: 'l-1', type: 'manual', name: 'Maria', phone: '98999999999', details: null,
     vehicle_id: null, stage: 'novo', first_contact_at: null, store_visit_at: null,
-    scheduled_visit_date: null, scheduled_visit_time: null, notes: null,
+    scheduled_visit_date: null, scheduled_visit_time: null, callback_at: null, callback_time: null, notes: null,
     created_at: '2026-09-01T10:00:00.000Z',
     ...overrides,
   }

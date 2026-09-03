@@ -43,6 +43,9 @@ export function LeadQuickAddModal({
   const [firstContactAt, setFirstContactAt] = useState(lead?.first_contact_at ?? '')
   const [storeVisitAt, setStoreVisitAt] = useState(lead?.store_visit_at ?? '')
   const [scheduledVisitDate, setScheduledVisitDate] = useState(lead?.scheduled_visit_date ?? '')
+  const [stage, setStage] = useState<LeadStage>(lead?.stage ?? defaultStage)
+  const [callbackAt, setCallbackAt] = useState(lead?.callback_at ?? '')
+  const [callbackTime, setCallbackTime] = useState(lead?.callback_time ?? '')
 
   const modalTitle = title ?? (lead ? 'Editar lead' : 'Novo cliente')
 
@@ -61,6 +64,8 @@ export function LeadQuickAddModal({
       storeVisitAt: storeVisitAt || undefined,
       scheduledVisitDate: scheduledVisitDate || undefined,
       scheduledVisitTime: String(formData.get('scheduledVisitTime') || '') || undefined,
+      callbackAt: callbackAt || undefined,
+      callbackTime: callbackTime || undefined,
     }
 
     setSaving(true)
@@ -120,7 +125,7 @@ export function LeadQuickAddModal({
 
             <div className="flex flex-col gap-1">
               <label htmlFor="lead-stage" className={labelClass}>Estágio no funil</label>
-              <select id="lead-stage" name="stage" defaultValue={lead?.stage ?? defaultStage} className={inputClass}>
+              <select id="lead-stage" name="stage" value={stage} onChange={(event) => setStage(event.target.value as LeadStage)} className={inputClass}>
                 {STAGE_OPTIONS.map((option) => (
                   <option
                     key={option.value}
@@ -154,6 +159,19 @@ export function LeadQuickAddModal({
                 <input id="lead-scheduled-time" name="scheduledVisitTime" type="time" defaultValue={lead?.scheduled_visit_time ?? ''} className={inputClass} />
               </div>
             </div>
+
+            {stage === 'ligar_de_volta' && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="lead-callback-date" className={labelClass}>Data de retorno</label>
+                  <VehicleDatePicker id="lead-callback-date" value={callbackAt} onChange={setCallbackAt} />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="lead-callback-time" className={labelClass}>Hora do retorno</label>
+                  <input id="lead-callback-time" type="time" value={callbackTime} onChange={(event) => setCallbackTime(event.target.value)} className={inputClass} />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-1 border-t border-support-gray/15 pt-5">

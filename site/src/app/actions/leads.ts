@@ -61,6 +61,8 @@ export async function adminCreateManualLead(input: ManualLeadValues) {
     storeVisitAt: values.storeVisitAt,
     scheduledVisitDate: values.scheduledVisitDate,
     scheduledVisitTime: values.scheduledVisitTime,
+    callbackAt: values.callbackAt,
+    callbackTime: values.callbackTime,
   })
   revalidatePath('/admin/leads')
 }
@@ -79,6 +81,8 @@ export async function adminUpdateLead(id: string, input: ManualLeadValues) {
     storeVisitAt: values.storeVisitAt,
     scheduledVisitDate: values.scheduledVisitDate,
     scheduledVisitTime: values.scheduledVisitTime,
+    callbackAt: values.callbackAt,
+    callbackTime: values.callbackTime,
   })
   revalidatePath('/admin/leads')
 }

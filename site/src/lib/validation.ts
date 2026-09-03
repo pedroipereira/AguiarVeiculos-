@@ -82,5 +82,7 @@ export const manualLeadSchema = z.object({
   storeVisitAt: z.string().optional(),
   scheduledVisitDate: z.string().optional(),
   scheduledVisitTime: z.string().optional(),
+  callbackAt: z.string().optional(),
+  callbackTime: z.string().optional(),
 })
 export type ManualLeadValues = z.infer<typeof manualLeadSchema>

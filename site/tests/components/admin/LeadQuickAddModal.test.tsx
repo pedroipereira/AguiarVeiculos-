@@ -49,7 +49,38 @@ describe('LeadQuickAddModal', () => {
       expect(adminCreateManualLead).toHaveBeenCalledWith({
         name: 'João', phone: '98988888888', vehicleId: undefined, stage: 'novo',
         firstContactAt: undefined, storeVisitAt: undefined, scheduledVisitDate: undefined, scheduledVisitTime: undefined,
+        callbackAt: undefined, callbackTime: undefined,
       }),
+    )
+  })
+
+  it('shows the retorno date/time only when the stage is "Ligar de volta", and includes them in the payload', async () => {
+    render(<LeadQuickAddModal vehicles={[]} onClose={vi.fn()} />)
+
+    expect(screen.queryByLabelText(/data de retorno/i)).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText(/^nome$/i), { target: { value: 'Rita' } })
+    fireEvent.change(screen.getByLabelText(/telefone/i), { target: { value: '98955555555' } })
+    fireEvent.change(screen.getByLabelText(/estágio no funil/i), { target: { value: 'ligar_de_volta' } })
+
+    expect(screen.getByLabelText(/data de retorno/i)).toBeInTheDocument()
+
+    const now = new Date()
+    const isoPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
+    fireEvent.click(screen.getByLabelText(/data de retorno/i))
+    fireEvent.click(screen.getByRole('button', { name: '20' }))
+    fireEvent.change(screen.getByLabelText(/hora do retorno/i), { target: { value: '09:00' } })
+    fireEvent.click(screen.getByRole('button', { name: /salvar lead/i }))
+
+    await waitFor(() =>
+      expect(adminCreateManualLead).toHaveBeenCalledWith(
+        expect.objectContaining({
+          stage: 'ligar_de_volta',
+          callbackAt: `${isoPrefix}-20`,
+          callbackTime: '09:00',
+        }),
+      ),
     )
   })
 
@@ -125,6 +156,27 @@ describe('LeadQuickAddModal', () => {
     )
     expect(onClose).toHaveBeenCalled()
     expect(adminCreateManualLead).not.toHaveBeenCalled()
+  })
+
+  it('keeps callback date and time when saving from a stage other than ligar_de_volta after they were set', async () => {
+    const lead = {
+      id: 'l-1', type: 'manual', name: 'Rita', phone: '98955555555', details: null,
+      vehicle_id: null, stage: 'ligar_de_volta', first_contact_at: null, store_visit_at: null,
+      scheduled_visit_date: null, scheduled_visit_time: null,
+      callback_at: '2026-09-20', callback_time: '09:00',
+      notes: null, created_at: '2026-08-01T10:00:00.000Z',
+    } as any
+    render(<LeadQuickAddModal vehicles={[]} lead={lead} onClose={vi.fn()} />)
+
+    fireEvent.change(screen.getByLabelText(/estágio no funil/i), { target: { value: 'negociando' } })
+    fireEvent.click(screen.getByRole('button', { name: /salvar lead/i }))
+
+    await waitFor(() =>
+      expect(adminUpdateLead).toHaveBeenCalledWith('l-1', expect.objectContaining({
+        callbackAt: '2026-09-20',
+        callbackTime: '09:00',
+      })),
+    )
   })
 
   it('disables the "Comprou" option when editing a vehicle-linked lead that is not already vendeu', () => {
