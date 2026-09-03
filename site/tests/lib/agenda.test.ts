@@ -63,8 +63,14 @@ describe('getAgendaEventsByDate', () => {
     expect(events.map((event) => event.type)).toEqual(['visita', 'retorno', 'comercial'])
   })
 
-  it('returns an empty object for a month with no leads and no matching commercial dates', () => {
-    expect(getAgendaEventsByDate([], '2026-04')).toEqual({})
+  it('returns only commercial-date entries for a month with no leads', () => {
+    // The commercial-dates catalog has grown to cover every month of the
+    // year, so there's no longer a month guaranteed to resolve to {} —
+    // assert the real invariant instead: no leads in, no lead-derived
+    // events out, whatever commercial dates that month happens to carry.
+    const events = Object.values(getAgendaEventsByDate([], '2026-04')).flat()
+    expect(events.length).toBeGreaterThan(0)
+    expect(events.every((event) => event.type === 'comercial')).toBe(true)
   })
 })
 
