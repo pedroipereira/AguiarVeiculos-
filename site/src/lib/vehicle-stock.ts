@@ -46,6 +46,11 @@ export function countStockFilters(
   }
 }
 
+/** Vehicles physically on the lot right now — everything except sold (all − vendidos). */
+export function countInStock(vehicles: Pick<Vehicle, 'status'>[]): number {
+  return vehicles.filter((v) => v.status !== 'sold').length
+}
+
 export function applyStockFilter<T extends StockVehicle>(
   vehicles: T[],
   filter: StockFilter,

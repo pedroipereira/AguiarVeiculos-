@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   daysInStock, hasMarginDefined, countStockFilters, applyStockFilter, matchesStockSearch, parseTurnoverThreshold,
+  countInStock,
 } from '@/lib/vehicle-stock'
 
 const NOW = new Date('2026-09-01T12:00:00.000Z')
@@ -66,6 +67,26 @@ describe('countStockFilters / applyStockFilter', () => {
 
   it('"all" returns every vehicle unfiltered', () => {
     expect(applyStockFilter(vehicles, 'all', 90, NOW).map((v) => v.id)).toEqual(['a', 'b', 'c', 'd'])
+  })
+})
+
+describe('countInStock', () => {
+  it('counts every vehicle except sold ones (available + preparing)', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'available' }),
+      makeVehicle({ id: 'b', status: 'preparing' }),
+      makeVehicle({ id: 'c', status: 'sold' }),
+      makeVehicle({ id: 'd', status: 'sold' }),
+    ]
+    expect(countInStock(vehicles)).toBe(2)
+  })
+
+  it('returns 0 when every vehicle is sold', () => {
+    expect(countInStock([makeVehicle({ status: 'sold' })])).toBe(0)
+  })
+
+  it('returns 0 for an empty list', () => {
+    expect(countInStock([])).toBe(0)
   })
 })
 

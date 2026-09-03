@@ -4,7 +4,7 @@ import { getAllVehiclesAdmin } from '@/lib/queries/vehicles'
 import { getPrimaryImageUrlsByVehicleIds } from '@/lib/queries/vehicle-images'
 import { getVehicleExpenseTotals } from '@/lib/queries/vehicle-expenses'
 import { getSiteSetting } from '@/lib/queries/site-settings'
-import { parseTurnoverThreshold, countStockFilters } from '@/lib/vehicle-stock'
+import { parseTurnoverThreshold, countStockFilters, countInStock } from '@/lib/vehicle-stock'
 import { calculateTotalCostCents } from '@/lib/vehicle-costs'
 import { VehicleStockGrid } from '@/components/admin/VehicleStockGrid'
 import { StockStatsRow } from '@/components/admin/StockStatsRow'
@@ -37,7 +37,7 @@ export default async function AdminVeiculosPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className={`${anton.className} text-4xl uppercase tracking-wide text-graphite`}>Estoque</h1>
-          <p className="text-sm text-support-gray">{vehicles.length} veículos no pátio</p>
+          <p className="text-sm text-support-gray">{countInStock(vehicles)} veículos no pátio</p>
         </div>
         <div className="flex items-center gap-3">
           <StockPdfExportButton vehicles={vehicles} totalCostCentsByVehicleId={totalCostCentsByVehicleId} />
