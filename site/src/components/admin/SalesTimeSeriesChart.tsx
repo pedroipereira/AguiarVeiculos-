@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts'
 import type { Vehicle } from '@/lib/types'
 import { getSalesTimeSeries, type TimeSeriesGranularity } from '@/lib/dashboard'
 
@@ -48,11 +48,6 @@ export function SalesTimeSeriesChart({ vehicles, now = new Date() }: SalesTimeSe
         <BarChart data={data} barCategoryGap="35%">
           <XAxis dataKey="bucketLabel" tick={{ fontSize: 12 }} />
           <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-          {/* Recharts' default hover cursor is a gray rectangle spanning the
-              whole category width, not just the (now much thinner) bar —
-              reads as a smudge on the chart. Hide it; the tooltip box
-              itself still shows on hover. */}
-          <Tooltip cursor={false} />
           <Bar dataKey="count" fill="#D32027" radius={[4, 4, 0, 0]} maxBarSize={28} />
         </BarChart>
       </ResponsiveContainer>
