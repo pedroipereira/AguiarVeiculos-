@@ -187,6 +187,7 @@ describe('getStoreSnapshot', () => {
     const snapshot = getStoreSnapshot(vehicles, {})
     expect(snapshot.listValueCents).toBe(11000000)
     expect(snapshot.investedCents).toBe(7000000)
+    expect(snapshot.vehicleCount).toBe(2)
   })
 
   it('computes expected profit as list value minus invested', () => {

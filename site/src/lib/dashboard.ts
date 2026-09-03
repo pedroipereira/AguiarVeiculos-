@@ -137,6 +137,7 @@ export interface StoreSnapshot {
   investedCents: number
   listValueCents: number
   expectedProfitCents: number
+  vehicleCount: number
 }
 
 export function getStoreSnapshot(vehicles: Vehicle[], expenseTotals: Record<string, number>): StoreSnapshot {
@@ -151,7 +152,7 @@ export function getStoreSnapshot(vehicles: Vehicle[], expenseTotals: Record<stri
     listValueCents += vehicle.price_cents
   }
 
-  return { investedCents, listValueCents, expectedProfitCents: listValueCents - investedCents }
+  return { investedCents, listValueCents, expectedProfitCents: listValueCents - investedCents, vehicleCount: inStock.length }
 }
 
 import type { Lead, LeadStage } from './types'

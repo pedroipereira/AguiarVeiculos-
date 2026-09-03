@@ -24,12 +24,23 @@ describe('StoreSnapshotCard', () => {
       makeVehicle({ id: 'a', status: 'available', price_cents: 8000000, acquisition_cost_cents: 5000000 }),
     ]
     render(<StoreSnapshotCard vehicles={vehicles} expenseTotals={{}} />)
-    expect(screen.getByText('Valor gasto no estoque')).toBeInTheDocument()
+    expect(screen.getByText('Investido no estoque')).toBeInTheDocument()
     expect(screen.getByText('Valor de venda do estoque')).toBeInTheDocument()
     expect(screen.getByText('Lucro esperado')).toBeInTheDocument()
     expect(screen.getByText('R$ 50.000')).toBeInTheDocument()
     expect(screen.getByText('R$ 80.000')).toBeInTheDocument()
     expect(screen.getByText('R$ 30.000')).toBeInTheDocument()
+    expect(screen.getByText('investido no 1 carro em estoque')).toBeInTheDocument()
+    expect(screen.getByText('se vender na margem atual')).toBeInTheDocument()
+  })
+
+  it('pluralizes the vehicle count subtext for more than one vehicle', () => {
+    const vehicles = [
+      makeVehicle({ id: 'a', status: 'available', price_cents: 8000000, acquisition_cost_cents: 5000000 }),
+      makeVehicle({ id: 'b', status: 'preparing', price_cents: 6000000, acquisition_cost_cents: 4000000 }),
+    ]
+    render(<StoreSnapshotCard vehicles={vehicles} expenseTotals={{}} />)
+    expect(screen.getByText('investido nos 2 carros em estoque')).toBeInTheDocument()
   })
 
   it('shows expected profit in red when the stock is upside down', () => {
