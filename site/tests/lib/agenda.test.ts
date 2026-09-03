@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getAgendaEventsByDate, buildAgendaMonthGrid } from '@/lib/agenda'
+import { getAgendaEventsByDate, buildAgendaMonthGrid, getAgendaStats } from '@/lib/agenda'
 import type { Lead } from '@/lib/types'
 
 function makeLead(overrides: Partial<Lead> = {}): Lead {
@@ -99,5 +99,58 @@ describe('buildAgendaMonthGrid', () => {
   it('produces exactly 6 rows for a 31-day month starting on Friday (May 2026)', () => {
     const grid = buildAgendaMonthGrid(2026, 4)
     expect(grid).toHaveLength(6)
+  })
+})
+
+describe('getAgendaStats', () => {
+  const NOW = new Date(2026, 8, 25) // Friday, September 25th 2026
+
+  it('counts visits scheduled for today, excluding other days', () => {
+    const leads = [
+      makeLead({ id: 'a', scheduled_visit_date: '2026-09-25' }),
+      makeLead({ id: 'b', scheduled_visit_date: '2026-09-26' }),
+    ]
+    expect(getAgendaStats(leads, NOW).visitsToday).toBe(1)
+  })
+
+  it('counts callbacks due today, only for leads still in ligar_de_volta', () => {
+    const leads = [
+      makeLead({ id: 'a', stage: 'ligar_de_volta', callback_at: '2026-09-25' }),
+      makeLead({ id: 'b', stage: 'negociando', callback_at: '2026-09-25' }),
+    ]
+    expect(getAgendaStats(leads, NOW).callbacksToday).toBe(1)
+  })
+
+  it('counts visits and callbacks within the next 7 days, inclusive of today', () => {
+    const leads = [
+      makeLead({ id: 'a', scheduled_visit_date: '2026-09-25' }), // today, +0
+      makeLead({ id: 'b', scheduled_visit_date: '2026-10-01' }), // +6, still in range
+      makeLead({ id: 'c', scheduled_visit_date: '2026-10-02' }), // +7, out of range
+      makeLead({ id: 'd', stage: 'ligar_de_volta', callback_at: '2026-09-27' }), // +2
+    ]
+    expect(getAgendaStats(leads, NOW).next7Days).toBe(3)
+  })
+
+  it('counts overdue callbacks as a past callback_at OR no callback_at at all, only while still in ligar_de_volta', () => {
+    const leads = [
+      makeLead({ id: 'a', stage: 'ligar_de_volta', callback_at: '2026-09-20' }), // past
+      makeLead({ id: 'b', stage: 'ligar_de_volta', callback_at: null }), // no date set
+      makeLead({ id: 'c', stage: 'ligar_de_volta', callback_at: '2026-09-25' }), // due today, not overdue
+      makeLead({ id: 'd', stage: 'ligar_de_volta', callback_at: '2026-09-30' }), // future
+      makeLead({ id: 'e', stage: 'negociando', callback_at: '2026-09-01' }), // moved on, no longer counts
+    ]
+    expect(getAgendaStats(leads, NOW).overdueCallbacks).toBe(2)
+  })
+
+  it('excludes inactive leads from every stat', () => {
+    const leads = [
+      makeLead({ id: 'a', stage: 'vendeu', scheduled_visit_date: '2026-09-25' }),
+      makeLead({ id: 'b', stage: 'nao_comprou', scheduled_visit_date: '2026-09-25' }),
+    ]
+    expect(getAgendaStats(leads, NOW)).toEqual({ visitsToday: 0, callbacksToday: 0, next7Days: 0, overdueCallbacks: 0 })
+  })
+
+  it('returns all zeros for an empty lead list', () => {
+    expect(getAgendaStats([], NOW)).toEqual({ visitsToday: 0, callbacksToday: 0, next7Days: 0, overdueCallbacks: 0 })
   })
 })

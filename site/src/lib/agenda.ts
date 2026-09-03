@@ -68,6 +68,49 @@ export function getAgendaEventsByDate(leads: Lead[], month: string): Record<stri
   return map
 }
 
+export interface AgendaStats {
+  visitsToday: number
+  callbacksToday: number
+  next7Days: number
+  overdueCallbacks: number
+}
+
+/** Formats a Date using its local calendar fields — never toISOString(), which
+ *  shifts to UTC and can roll the date back a day in timezones behind UTC. */
+export function toIsoDate(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+export function getAgendaStats(leads: Lead[], now: Date): AgendaStats {
+  const today = toIsoDate(now)
+  const weekEnd = toIsoDate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 6))
+
+  let visitsToday = 0
+  let callbacksToday = 0
+  let next7Days = 0
+  let overdueCallbacks = 0
+
+  for (const lead of leads) {
+    if (!isActiveLead(lead)) continue
+
+    if (lead.scheduled_visit_date === today) visitsToday++
+    if (lead.scheduled_visit_date && lead.scheduled_visit_date >= today && lead.scheduled_visit_date <= weekEnd) {
+      next7Days++
+    }
+
+    if (lead.stage === 'ligar_de_volta') {
+      if (lead.callback_at === today) callbacksToday++
+      if (lead.callback_at && lead.callback_at >= today && lead.callback_at <= weekEnd) next7Days++
+      if (!lead.callback_at || lead.callback_at < today) overdueCallbacks++
+    }
+  }
+
+  return { visitsToday, callbacksToday, next7Days, overdueCallbacks }
+}
+
 export function buildAgendaMonthGrid(year: number, month: number): (string | null)[][] {
   const firstOfMonth = new Date(year, month, 1)
   const daysInMonth = new Date(year, month + 1, 0).getDate()
