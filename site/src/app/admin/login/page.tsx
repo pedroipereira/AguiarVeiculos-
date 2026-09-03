@@ -27,7 +27,11 @@ export default function LoginPage() {
   return (
     <main className="mx-auto flex max-w-sm flex-col gap-4 px-6 py-24">
       <h1 className="text-2xl font-bold uppercase">Painel Aguiar Veículos</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      {/* method="post" is a safety net, not the real submit path — onSubmit's
+          preventDefault() below normally intercepts it. But if JS ever fails
+          to hydrate, a method-less <form> defaults to GET and would put the
+          password in the URL, browser history, and server logs. */}
+      <form onSubmit={handleSubmit} method="post" className="flex flex-col gap-3">
         <label htmlFor="email">E-mail</label>
         <input id="email" name="email" type="email" required className="rounded border p-2 text-graphite" />
         <label htmlFor="password">Senha</label>

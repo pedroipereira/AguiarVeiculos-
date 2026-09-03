@@ -33,4 +33,14 @@ describe('/admin/login', () => {
 
     expect(await screen.findByText(/e-mail ou senha inválidos/i)).toBeInTheDocument()
   })
+
+  it('sets method="post" on the form as a fallback so a native submit never puts the password in the URL', () => {
+    // Defense in depth: onSubmit's preventDefault() is what normally handles
+    // this, but if JS fails to hydrate (as actually happened once locally),
+    // an unmethod'd <form> defaults to GET and leaks email+password into the
+    // URL, browser history, and server logs. method="post" makes that
+    // fallback path safe too.
+    render(<LoginPage />)
+    expect(screen.getByRole('button', { name: /entrar/i }).closest('form')).toHaveAttribute('method', 'post')
+  })
 })
