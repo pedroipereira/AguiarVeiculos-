@@ -1,7 +1,7 @@
 # Aguiar Veículos
 
 ## O que é
-Revenda de veículos novos e seminovos (carros, motos e utilitários) em Presidente Dutra - MA, com mais de 15 anos de mercado (aniversário celebrado em junho). Trabalha com estoque próprio (+30 veículos à pronta entrega), financiamento facilitado, troca de veículo usado e venda 100% online para clientes de outras cidades/estados - se necessário, mas não obrigatóriamente funciona assim -.
+Revenda de veículos novos e seminovos (carros, motos e utilitários) em Presidente Dutra - MA, com mais de 15 anos de mercado (aniversário celebrado em 18 de junho). Trabalha com estoque próprio (+30 veículos à pronta entrega), financiamento facilitado, troca de veículo usado e venda 100% online para clientes de outras cidades/estados - se necessário, mas não obrigatóriamente funciona assim -.
 
 > Fonte: extraído do histórico de posts do Instagram (@aguiarveiculospk) em `_fontes/instagram/`.
 
