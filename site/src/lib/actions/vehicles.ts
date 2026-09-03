@@ -4,6 +4,7 @@ import type { VehicleStatus } from '../types'
 import { vehicleFormSchema, markVehicleSoldSchema } from '../validation'
 import { buildVehicleSlug } from '../format'
 import { normalizeTransmission, normalizeFuelType, normalizeColor } from '../normalize'
+import { updateLeadStage } from './leads'
 
 export interface SaveVehicleInput extends z.input<typeof vehicleFormSchema> {
   id?: string
@@ -108,6 +109,16 @@ export async function markVehicleSold(client: SupabaseClient, id: string, input:
     })
     .eq('id', id)
   if (error) throw error
+
+  // The kanban's own "Vendeu" drag flips the lead's stage as part of
+  // completing the sale; this is the other place a sale gets recorded
+  // (Estoque's "Marcar como vendido"), and it linked a buyer without ever
+  // moving them off whatever kanban column they were sitting in — so a
+  // buyer marked sold from Estoque never left the funnel. Mirror the same
+  // stage flip here whenever a buyer is linked.
+  if (values.buyerLeadId) {
+    await updateLeadStage(client, values.buyerLeadId, 'vendeu')
+  }
 }
 
 export async function setVehicleFeatured(client: SupabaseClient, id: string, isFeatured: boolean): Promise<void> {

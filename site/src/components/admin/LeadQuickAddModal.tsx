@@ -6,6 +6,7 @@ import { adminCreateManualLead, adminUpdateLead } from '@/app/actions/leads'
 import type { Lead, LeadStage } from '@/lib/types'
 import type { VehicleOption } from '@/lib/queries/vehicles'
 import { formatPriceFromCents } from '@/lib/format'
+import { LEAD_STAGES, LEAD_STAGE_LABELS } from '@/lib/lead-kanban'
 import { VehicleDatePicker } from './VehicleDatePicker'
 
 interface LeadQuickAddModalProps {
@@ -17,14 +18,10 @@ interface LeadQuickAddModalProps {
   title?: string
 }
 
-const STAGE_OPTIONS: { value: LeadStage; label: string }[] = [
-  { value: 'novo', label: 'Lead novo' },
-  { value: 'visita_marcada', label: 'Visita marcada' },
-  { value: 'negociando', label: 'Negociando' },
-  { value: 'ligar_de_volta', label: 'Ligar de volta' },
-  { value: 'vendeu', label: 'Vendeu' },
-  { value: 'nao_comprou', label: 'Não comprou' },
-]
+const STAGE_OPTIONS: { value: LeadStage; label: string }[] = LEAD_STAGES.map((stage) => ({
+  value: stage,
+  label: LEAD_STAGE_LABELS[stage],
+}))
 
 const inputClass =
   'h-11 rounded-lg border border-support-gray/25 p-2.5 text-sm text-graphite transition-colors focus:border-aguiar-red focus:outline-none'

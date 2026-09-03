@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react'
 import type { Lead } from '@/lib/types'
 import { adminMarkVehicleSold } from '@/app/actions/vehicles'
+import { VehicleDatePicker } from './VehicleDatePicker'
 
 interface VehicleSaleFormProps {
   vehicleId: string
@@ -18,13 +19,17 @@ const inputClass =
 export function VehicleSaleForm({ vehicleId, leads, defaultBuyerLeadId, onCancel, onSaved }: VehicleSaleFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [soldAt, setSoldAt] = useState('')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
+    if (!soldAt) {
+      setError('Escolha a data da venda.')
+      return
+    }
     const formData = new FormData(event.currentTarget)
     const salePriceReais = String(formData.get('salePriceReais') || '')
-    const soldAt = String(formData.get('soldAt') || '')
     const buyerLeadId = String(formData.get('buyerLeadId') || '')
 
     setSaving(true)
@@ -50,7 +55,7 @@ export function VehicleSaleForm({ vehicleId, leads, defaultBuyerLeadId, onCancel
       </div>
       <div className="flex flex-col gap-1">
         <label htmlFor={`soldAt-${vehicleId}`} className="text-sm font-bold">Data da venda</label>
-        <input id={`soldAt-${vehicleId}`} name="soldAt" type="date" required className={inputClass} />
+        <VehicleDatePicker id={`soldAt-${vehicleId}`} value={soldAt} onChange={setSoldAt} />
       </div>
       <div className="flex flex-col gap-1">
         <label htmlFor={`buyerLeadId-${vehicleId}`} className="text-sm font-bold">Comprador (opcional)</label>
@@ -66,14 +71,14 @@ export function VehicleSaleForm({ vehicleId, leads, defaultBuyerLeadId, onCancel
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-graphite px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-graphite/80 disabled:opacity-50"
+          className="flex-1 rounded-lg bg-graphite px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-graphite/80 disabled:opacity-50"
         >
           Confirmar venda
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border border-support-gray/25 px-4 py-2 text-sm font-bold text-graphite hover:border-graphite"
+          className="flex-1 rounded-lg border border-support-gray/25 px-4 py-2 text-sm font-bold text-graphite hover:border-graphite"
         >
           Cancelar
         </button>

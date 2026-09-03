@@ -45,11 +45,11 @@ export function SalesTimeSeriesChart({ vehicles, now = new Date() }: SalesTimeSe
       </div>
 
       <ResponsiveContainer width="100%" height={240}>
-        <BarChart data={data}>
+        <BarChart data={data} barCategoryGap="35%">
           <XAxis dataKey="bucketLabel" tick={{ fontSize: 12 }} />
           <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
           <Tooltip />
-          <Bar dataKey="count" fill="#D32027" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="count" fill="#D32027" radius={[4, 4, 0, 0]} maxBarSize={28} />
         </BarChart>
       </ResponsiveContainer>
     </section>

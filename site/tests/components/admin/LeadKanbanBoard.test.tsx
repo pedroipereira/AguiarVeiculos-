@@ -30,6 +30,22 @@ function makeLead(overrides: Partial<Lead> = {}): Lead {
 
 const VEHICLES = [{ id: 'v-1', brand: 'Fiat', model: 'Argo', version: 'Drive', status: 'available' as const, price_cents: 6490000 }]
 
+// VehicleSaleForm's date field (VehicleDatePicker) opens on the real
+// wall-clock month when no date is selected yet, so the system clock is
+// pinned to September 2026 for the duration of this click only — fake
+// timers must not still be active during the async submit/waitFor below,
+// or Testing Library's polling never fires.
+function selectSaleDate(day: string) {
+  vi.useFakeTimers()
+  vi.setSystemTime(new Date(2026, 8, 15))
+  try {
+    fireEvent.click(screen.getByLabelText(/data da venda/i))
+    fireEvent.click(screen.getByRole('button', { name: day }))
+  } finally {
+    vi.useRealTimers()
+  }
+}
+
 describe('LeadKanbanBoard', () => {
   beforeEach(() => vi.clearAllMocks())
 
@@ -80,27 +96,27 @@ describe('LeadKanbanBoard', () => {
     })
   })
 
-  it('opens the vehicle sale form instead of moving directly when a lead with a vehicle is moved to "Vendeu"', () => {
+  it('opens the vehicle sale form instead of moving directly when a lead with a vehicle is moved to "Comprou"', () => {
     const leads = [makeLead({ id: 'a', stage: 'negociando', vehicle_id: 'v-1' })]
     render(<LeadKanbanBoard leads={leads} vehicles={VEHICLES} />)
 
     fireEvent.click(screen.getByLabelText('Mais opções'))
-    fireEvent.click(screen.getByRole('button', { name: 'Vendeu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Comprou' }))
 
     expect(adminUpdateLeadStage).not.toHaveBeenCalled()
     expect(screen.getByText('Registrar venda')).toBeInTheDocument()
   })
 
-  it('moves the lead to "Vendeu" only after the sale form is saved', async () => {
+  it('moves the lead to "Comprou" only after the sale form is saved', async () => {
     adminMarkVehicleSold.mockResolvedValue(undefined)
     const leads = [makeLead({ id: 'a', stage: 'negociando', vehicle_id: 'v-1' })]
     render(<LeadKanbanBoard leads={leads} vehicles={VEHICLES} />)
 
     fireEvent.click(screen.getByLabelText('Mais opções'))
-    fireEvent.click(screen.getByRole('button', { name: 'Vendeu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Comprou' }))
 
     fireEvent.change(screen.getByLabelText(/preço de venda/i), { target: { value: '62000' } })
-    fireEvent.change(screen.getByLabelText(/data da venda/i), { target: { value: '2026-09-02' } })
+    selectSaleDate('2')
     fireEvent.click(screen.getByRole('button', { name: /confirmar venda/i }))
 
     await waitFor(() => expect(adminMarkVehicleSold).toHaveBeenCalledWith('v-1', {
@@ -116,10 +132,10 @@ describe('LeadKanbanBoard', () => {
     render(<LeadKanbanBoard leads={leads} vehicles={VEHICLES} />)
 
     fireEvent.click(screen.getByLabelText('Mais opções'))
-    fireEvent.click(screen.getByRole('button', { name: 'Vendeu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Comprou' }))
 
     fireEvent.change(screen.getByLabelText(/preço de venda/i), { target: { value: '62000' } })
-    fireEvent.change(screen.getByLabelText(/data da venda/i), { target: { value: '2026-09-02' } })
+    selectSaleDate('2')
     fireEvent.click(screen.getByRole('button', { name: /confirmar venda/i }))
 
     await waitFor(() => expect(adminMarkVehicleSold).toHaveBeenCalledWith('v-1', {
@@ -127,7 +143,7 @@ describe('LeadKanbanBoard', () => {
     }))
     await waitFor(() =>
       expect(
-        screen.getByText('Venda registrada, mas não foi possível mover o lead para "Vendeu". Tente mover manualmente pelo quadro.'),
+        screen.getByText('Venda registrada, mas não foi possível mover o lead para "Comprou". Tente mover manualmente pelo quadro.'),
       ).toBeInTheDocument(),
     )
     // The sale-completion modal stays open (not rolled back) so the admin can see the error.
@@ -139,7 +155,7 @@ describe('LeadKanbanBoard', () => {
     render(<LeadKanbanBoard leads={leads} vehicles={VEHICLES} />)
 
     fireEvent.click(screen.getByLabelText('Mais opções'))
-    fireEvent.click(screen.getByRole('button', { name: 'Vendeu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Comprou' }))
     fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
 
     expect(adminUpdateLeadStage).not.toHaveBeenCalled()
@@ -160,7 +176,7 @@ describe('LeadKanbanBoard', () => {
   it('applies the stage accent color to each column header', () => {
     const leads = [makeLead({ id: 'a', stage: 'vendeu', vehicle_id: null })]
     render(<LeadKanbanBoard leads={leads} vehicles={VEHICLES} />)
-    const heading = screen.getByText('Vendeu')
+    const heading = screen.getByText('Comprou')
     expect(heading).toHaveClass('text-green-700')
     expect(heading.parentElement).toHaveClass('bg-green-50')
   })

@@ -114,7 +114,7 @@ export function LeadKanbanBoard({ leads, vehicles }: LeadKanbanBoardProps) {
                   setSaleFormLead(null)
                   setSaleStageError(null)
                 } catch {
-                  setSaleStageError('Venda registrada, mas não foi possível mover o lead para "Vendeu". Tente mover manualmente pelo quadro.')
+                  setSaleStageError('Venda registrada, mas não foi possível mover o lead para "Comprou". Tente mover manualmente pelo quadro.')
                 }
               }}
             />

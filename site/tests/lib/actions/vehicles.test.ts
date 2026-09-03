@@ -215,6 +215,22 @@ describe('markVehicleSold', () => {
     const { from } = makeClient()
     await expect(markVehicleSold({ from } as any, 'v-1', { salePriceCents: -100, soldAt: '2026-08-31' } as any)).rejects.toThrow()
   })
+
+  it('moves the linked buyer lead to "vendeu" when a buyer is selected', async () => {
+    const { from, chain } = makeClient()
+    await markVehicleSold({ from } as any, 'v-1', {
+      salePriceCents: 6200000, soldAt: '2026-08-31', buyerLeadId: '11111111-1111-1111-1111-111111111111',
+    })
+    expect(from).toHaveBeenCalledWith('leads')
+    expect(chain.update).toHaveBeenCalledWith({ stage: 'vendeu' })
+    expect(chain.eq).toHaveBeenCalledWith('id', '11111111-1111-1111-1111-111111111111')
+  })
+
+  it('does not touch the leads table when no buyer is selected', async () => {
+    const { from } = makeClient()
+    await markVehicleSold({ from } as any, 'v-1', { salePriceCents: 6200000, soldAt: '2026-08-31' })
+    expect(from).not.toHaveBeenCalledWith('leads')
+  })
 })
 
 describe('deleteVehicle', () => {

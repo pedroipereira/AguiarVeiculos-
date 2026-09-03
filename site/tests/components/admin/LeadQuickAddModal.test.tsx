@@ -127,7 +127,7 @@ describe('LeadQuickAddModal', () => {
     expect(adminCreateManualLead).not.toHaveBeenCalled()
   })
 
-  it('disables the "Vendeu" option when editing a vehicle-linked lead that is not already vendeu', () => {
+  it('disables the "Comprou" option when editing a vehicle-linked lead that is not already vendeu', () => {
     const lead = {
       id: 'l-1', type: 'manual', name: 'Carlos', phone: '98977776666', details: null,
       vehicle_id: 'v-1', stage: 'negociando', first_contact_at: null, store_visit_at: null,
@@ -135,10 +135,10 @@ describe('LeadQuickAddModal', () => {
       created_at: '2026-08-01T10:00:00.000Z',
     } as any
     render(<LeadQuickAddModal vehicles={VEHICLES} lead={lead} onClose={vi.fn()} />)
-    expect(screen.getByRole('option', { name: 'Vendeu' })).toBeDisabled()
+    expect(screen.getByRole('option', { name: 'Comprou' })).toBeDisabled()
   })
 
-  it('does not disable the "Vendeu" option when the lead has no vehicle linked', () => {
+  it('does not disable the "Comprou" option when the lead has no vehicle linked', () => {
     const lead = {
       id: 'l-1', type: 'manual', name: 'Carlos', phone: '98977776666', details: null,
       vehicle_id: null, stage: 'negociando', first_contact_at: null, store_visit_at: null,
@@ -146,10 +146,10 @@ describe('LeadQuickAddModal', () => {
       created_at: '2026-08-01T10:00:00.000Z',
     } as any
     render(<LeadQuickAddModal vehicles={VEHICLES} lead={lead} onClose={vi.fn()} />)
-    expect(screen.getByRole('option', { name: 'Vendeu' })).not.toBeDisabled()
+    expect(screen.getByRole('option', { name: 'Comprou' })).not.toBeDisabled()
   })
 
-  it('does not disable the "Vendeu" option when the lead is already at the vendeu stage', () => {
+  it('does not disable the "Comprou" option when the lead is already at the vendeu stage', () => {
     const lead = {
       id: 'l-1', type: 'manual', name: 'Carlos', phone: '98977776666', details: null,
       vehicle_id: 'v-1', stage: 'vendeu', first_contact_at: null, store_visit_at: null,
@@ -157,6 +157,6 @@ describe('LeadQuickAddModal', () => {
       created_at: '2026-08-01T10:00:00.000Z',
     } as any
     render(<LeadQuickAddModal vehicles={VEHICLES} lead={lead} onClose={vi.fn()} />)
-    expect(screen.getByRole('option', { name: 'Vendeu' })).not.toBeDisabled()
+    expect(screen.getByRole('option', { name: 'Comprou' })).not.toBeDisabled()
   })
 })

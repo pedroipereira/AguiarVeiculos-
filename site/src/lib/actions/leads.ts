@@ -55,7 +55,7 @@ export async function updateLead(client: SupabaseClient, id: string, input: Upda
     const { data: current, error: fetchError } = await client.from('leads').select('stage').eq('id', id).single()
     if (fetchError) throw fetchError
     if ((current as { stage: LeadStage }).stage !== 'vendeu') {
-      throw new Error('Mova para "Vendeu" pelo quadro de leads, completando a venda do veículo.')
+      throw new Error('Mova para "Comprou" pelo quadro de leads, completando a venda do veículo.')
     }
   }
 

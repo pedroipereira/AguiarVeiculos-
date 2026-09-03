@@ -118,7 +118,7 @@ describe('updateLead', () => {
 
     await expect(
       updateLead(client as any, 'l-1', { name: 'Maria', phone: '98999999999', vehicleId: 'v-1', stage: 'vendeu' }),
-    ).rejects.toThrow('Mova para "Vendeu" pelo quadro de leads, completando a venda do veículo.')
+    ).rejects.toThrow('Mova para "Comprou" pelo quadro de leads, completando a venda do veículo.')
     expect(update).not.toHaveBeenCalled()
   })
 

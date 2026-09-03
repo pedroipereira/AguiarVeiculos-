@@ -45,7 +45,7 @@ describe('LeadFunnelChart', () => {
     expect(getRowCount('Visita marcada')).toBe('0')
     expect(getRowCount('Negociando')).toBe('1')
     expect(getRowCount('Ligar de volta')).toBe('0')
-    expect(getRowCount('Vendeu')).toBe('0')
+    expect(getRowCount('Comprou')).toBe('0')
   })
 
   it('gives a stage with more leads a wider bar, even when a later stage outnumbers an earlier one', () => {
@@ -68,6 +68,6 @@ describe('LeadFunnelChart', () => {
   it('renders an empty track with no fill for a stage with zero leads', () => {
     const leads = [makeLead({ id: '1', stage: 'novo' })]
     render(<LeadFunnelChart leads={leads} />)
-    expect(getFillWidthPercent('Vendeu')).toBe(0)
+    expect(getFillWidthPercent('Comprou')).toBe(0)
   })
 })

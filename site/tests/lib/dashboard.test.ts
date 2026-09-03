@@ -229,7 +229,7 @@ describe('getFunnelData', () => {
       { stage: 'visita_marcada', label: 'Visita marcada', count: 0 },
       { stage: 'negociando', label: 'Negociando', count: 1 },
       { stage: 'ligar_de_volta', label: 'Ligar de volta', count: 0 },
-      { stage: 'vendeu', label: 'Vendeu', count: 1 },
+      { stage: 'vendeu', label: 'Comprou', count: 1 },
     ])
   })
 

@@ -9,7 +9,7 @@ export const LEAD_STAGE_LABELS: Record<LeadStage, string> = {
   visita_marcada: 'Visita marcada',
   negociando: 'Negociando',
   ligar_de_volta: 'Ligar de volta',
-  vendeu: 'Vendeu',
+  vendeu: 'Comprou',
   nao_comprou: 'Não comprou',
 }
 
