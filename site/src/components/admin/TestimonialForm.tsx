@@ -4,7 +4,7 @@ import { useState, type FormEvent, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 import { adminSaveTestimonial } from '@/app/actions/testimonials'
-import { validateImageFile } from '@/lib/storage'
+import { sanitizeFileName, validateImageFile } from '@/lib/storage'
 import type { Testimonial } from '@/lib/types'
 import { Button } from '@/components/ui/Button'
 
@@ -25,7 +25,7 @@ export function TestimonialForm({ testimonial }: { testimonial?: Testimonial }) 
     }
 
     const client = createBrowserSupabaseClient()
-    const path = `${crypto.randomUUID()}-${file.name}`
+    const path = `${crypto.randomUUID()}-${sanitizeFileName(file.name)}`
     const { error } = await client.storage.from('testimonial-images').upload(path, file)
     if (error) return
     const { data } = client.storage.from('testimonial-images').getPublicUrl(path)

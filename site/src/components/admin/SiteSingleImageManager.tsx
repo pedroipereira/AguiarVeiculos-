@@ -37,8 +37,7 @@ export function SiteSingleImageManager({ slot, title, description, initialImageU
       const path = await uploadSiteImage(client, file)
       await adminReplaceSiteImage(slot, path)
       setImageUrl(getPublicImageUrl(client, 'site-images', path))
-    } catch (err) {
-      console.error('[site-images upload diagnostic]', err)
+    } catch {
       setImageError('Não foi possível enviar a foto. Tente novamente.')
     } finally {
       setUploading(false)

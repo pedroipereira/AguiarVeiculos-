@@ -19,15 +19,26 @@ export function validateImageFile(file: File): string | null {
   return null
 }
 
+/**
+ * Supabase Storage rejects object keys containing accents or other non-ASCII/
+ * unsafe characters (e.g. a macOS screenshot named "Captura de Tela ... às
+ * ....png") with a 400 InvalidKey error. Strip diacritics and swap anything
+ * else unsafe for "-" before it ever reaches the key.
+ */
+export function sanitizeFileName(name: string): string {
+  const withoutDiacritics = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  return withoutDiacritics.replace(/[^a-zA-Z0-9._-]/g, '-')
+}
+
 export async function uploadVehicleImage(client: SupabaseClient, file: File): Promise<string> {
-  const path = `${crypto.randomUUID()}-${file.name}`
+  const path = `${crypto.randomUUID()}-${sanitizeFileName(file.name)}`
   const { error } = await client.storage.from('vehicle-images').upload(path, file)
   if (error) throw error
   return path
 }
 
 export async function uploadSiteImage(client: SupabaseClient, file: File): Promise<string> {
-  const path = `${crypto.randomUUID()}-${file.name}`
+  const path = `${crypto.randomUUID()}-${sanitizeFileName(file.name)}`
   const { error } = await client.storage.from('site-images').upload(path, file)
   if (error) throw error
   return path
