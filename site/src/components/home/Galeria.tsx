@@ -94,8 +94,19 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
     >
       <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
         <div data-testid="showroom-background" className="absolute inset-0" style={{ opacity: 1 - shown }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={gallery[0]} alt="" aria-hidden="true" className="h-full w-full object-cover" />
+          {/* Same photo as the card, changing with it at the same time. */}
+          {gallery.map((photo, index) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={`${photo}-${index}`}
+              src={photo}
+              alt=""
+              aria-hidden="true"
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[900ms] ${
+                index === photoIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+          ))}
           <div className="absolute inset-0 bg-graphite/50" />
         </div>
 

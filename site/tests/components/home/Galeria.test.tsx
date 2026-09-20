@@ -161,6 +161,28 @@ describe('Galeria', () => {
       expect(background).toHaveStyle({ opacity: '0' })
     })
 
+    it('follows the card: the background shows the same photo as the card, and changes with it', () => {
+      vi.useFakeTimers()
+      const photos = ['/a.jpg', '/b.jpg', '/c.jpg']
+      render(<Galeria photos={photos} />)
+      const visibleBackground = () =>
+        Array.from(screen.getByTestId('showroom-background').querySelectorAll('img'))
+          .filter((img) => img.classList.contains('opacity-100'))
+          .map((img) => img.getAttribute('src'))
+      expect(visibleBackground()).toEqual(['/a.jpg'])
+      act(() => { vi.advanceTimersByTime(4000) })
+      expect(visibleBackground()).toEqual(['/b.jpg'])
+      fireEvent.click(screen.getByLabelText(/ver foto 3 do showroom/i))
+      expect(visibleBackground()).toEqual(['/c.jpg'])
+    })
+
+    it('keeps the background photos hidden from screen readers', () => {
+      render(<Galeria photos={['/a.jpg', '/b.jpg']} />)
+      const images = screen.getByTestId('showroom-background').querySelectorAll('img')
+      expect(images).toHaveLength(2)
+      images.forEach((img) => expect(img).toHaveAttribute('aria-hidden', 'true'))
+    })
+
     it('has no progress line at the bottom, at any point of the scroll', () => {
       render(<Galeria />)
       expect(screen.queryByTestId('showroom-progress')).not.toBeInTheDocument()
