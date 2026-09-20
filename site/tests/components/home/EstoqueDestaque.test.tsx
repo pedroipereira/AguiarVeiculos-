@@ -62,4 +62,11 @@ describe('EstoqueDestaque', () => {
     render(await EstoqueDestaque({ client: fakeClient([polo]), tone: 'light' }))
     expect(screen.getByRole('link', { name: /volkswagen polo/i })).toHaveClass('bg-white')
   })
+
+  it('shows two cars side by side on a phone, like the stock page, and four on a computer', async () => {
+    const { container } = render(await EstoqueDestaque({ client: fakeClient([polo]) }))
+    const grid = container.querySelector('.grid')!
+    expect(grid).toHaveClass('grid-cols-2', 'gap-4', 'sm:gap-6', 'lg:grid-cols-4')
+    expect(grid).not.toHaveClass('grid-cols-1')
+  })
 })

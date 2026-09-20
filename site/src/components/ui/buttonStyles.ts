@@ -1,5 +1,5 @@
 export const buttonBase =
-  'inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-bold uppercase tracking-wide transition-colors'
+  'inline-flex items-center justify-center min-h-11 rounded-full px-6 py-2.5 text-sm lg:min-h-0 font-bold uppercase tracking-wide transition-colors'
 
 export const buttonVariants = {
   primary: 'bg-aguiar-red text-white hover:bg-red-700',

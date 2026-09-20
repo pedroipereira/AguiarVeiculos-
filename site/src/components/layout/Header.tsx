@@ -60,7 +60,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="whitespace-nowrap text-sm font-bold text-white underline decoration-transparent decoration-2 underline-offset-4 transition-all hover:decoration-aguiar-red"
+                className="whitespace-nowrap py-3 text-sm font-bold text-white underline decoration-transparent decoration-2 underline-offset-4 transition-all hover:decoration-aguiar-red lg:py-0"
               >
                 {link.label}
               </Link>
@@ -79,7 +79,7 @@ export function Header() {
             aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
-            className="flex h-10 w-10 shrink-0 flex-col items-center justify-center gap-1.5 md:hidden"
+            className="flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-1.5 md:hidden"
           >
             <span
               className={`h-0.5 w-6 bg-white transition-transform ${menuOpen ? 'translate-y-2 rotate-45' : ''}`}
@@ -93,12 +93,12 @@ export function Header() {
 
         {menuOpen && (
           <div id="mobile-menu" className="mt-2 flex flex-col gap-2 pb-4 md:hidden">
-            <nav className="flex flex-col items-center gap-4 pt-2">
+            <nav className="flex flex-col items-center pt-2">
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-bold text-white underline decoration-transparent decoration-2 underline-offset-4 transition-all hover:decoration-aguiar-red"
+                  className="py-3 text-sm font-bold text-white underline decoration-transparent decoration-2 underline-offset-4 transition-all hover:decoration-aguiar-red"
                 >
                   {link.label}
                 </Link>

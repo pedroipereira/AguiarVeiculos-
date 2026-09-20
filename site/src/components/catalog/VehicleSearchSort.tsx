@@ -58,7 +58,7 @@ export function VehicleSearchSort({
             onClick={onToggleMobileFilters}
             aria-expanded={mobileFiltersOpen}
             aria-controls="mobile-filters-panel"
-            className="flex shrink-0 items-center gap-1.5 rounded-full border border-support-gray/20 px-3.5 py-2 text-sm font-bold text-graphite transition-colors hover:border-aguiar-red hover:text-aguiar-red lg:hidden"
+            className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-support-gray/20 px-3.5 py-2 text-sm font-bold text-graphite transition-colors hover:border-aguiar-red hover:text-aguiar-red lg:hidden"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="h-4 w-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M7 12h10M10 18h4" />
@@ -81,7 +81,7 @@ export function VehicleSearchSort({
             aria-label="Ordenar por"
             value={searchParams.get('sort') ?? 'recent'}
             onChange={(e) => updateParam('sort', e.target.value)}
-            className="w-full appearance-none rounded-full border border-support-gray/20 py-2.5 pl-4 pr-9 text-sm font-bold text-graphite transition-colors focus:border-aguiar-red focus:outline-none lg:w-auto"
+            className="min-h-11 w-full appearance-none rounded-full border border-support-gray/20 py-2.5 pl-4 pr-9 text-sm font-bold text-graphite transition-colors focus:border-aguiar-red focus:outline-none lg:w-auto"
           >
             {SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>

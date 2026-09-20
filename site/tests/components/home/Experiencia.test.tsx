@@ -36,7 +36,7 @@ describe('Experiencia', () => {
   it('frames the vertical video in a rounded card on the left, with the text on the right', async () => {
     render(await Experiencia({ client: fakeClient('https://example.com/como-chegar.mp4') }))
     const frame = screen.getByTestId('experiencia-midia')
-    expect(frame).toHaveClass('rounded-[2rem]', 'border', 'border-white/15', 'bg-white/5', 'p-2', 'max-w-[416px]')
+    expect(frame).toHaveClass('rounded-[2rem]', 'border', 'border-white/15', 'bg-white/5', 'p-2', 'sm:max-w-[416px]')
     expect(frame).toContainElement(screen.getByTestId('location-video'))
     expect(screen.getByTestId('location-video')).toHaveClass('aspect-[9/16]', 'rounded-3xl')
     const column = screen.getByTestId('experiencia-texto').parentElement!
@@ -151,6 +151,20 @@ describe('Experiencia', () => {
       const icon = row.querySelector('[aria-hidden="true"]')!
       expect(icon).toHaveClass('text-aguiar-red')
       expect(icon.className).not.toMatch(/(^|\s)bg-|rounded-xl/)
+    }
+  })
+
+  it('keeps the video frame narrower on a phone, so the text is not pushed a whole screen down', async () => {
+    render(await Experiencia({ client: fakeClient('https://example.com/como-chegar.mp4') }))
+    const frame = screen.getByTestId('experiencia-midia')
+    expect(frame).toHaveClass('max-w-[280px]', 'sm:max-w-[416px]')
+    expect(frame).not.toHaveClass('max-w-[416px]')
+  })
+
+  it('on a phone, stacks the two visit buttons at full width', async () => {
+    render(await Experiencia({ client: fakeClient(null) }))
+    for (const name of ['Agendar minha visita', 'Traçar rota']) {
+      expect(screen.getByRole('link', { name })).toHaveClass('w-full', 'sm:w-64')
     }
   })
 })

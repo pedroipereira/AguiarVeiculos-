@@ -13,7 +13,7 @@ export async function EstoqueDestaque({ client, tone = 'dark' }: { client: Supab
 
   return (
     <Section eyebrow="Estoque" title="Destaques da semana" tone={tone} contained>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         {vehicles.map((vehicle) => (
           <VehicleCard
             key={vehicle.id}

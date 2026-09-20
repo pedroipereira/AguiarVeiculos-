@@ -12,7 +12,7 @@ vi.mock('@/lib/supabase/server', () => ({
   })),
 }))
 
-import LinksPage from '@/app/links/page'
+import LinksPage, { viewport } from '@/app/links/page'
 
 describe('/links page', () => {
   beforeEach(() => { rows.current = [] })
@@ -78,5 +78,14 @@ describe('/links page', () => {
   it('omits the carousel section when there are no published testimonials', async () => {
     render(await LinksPage())
     expect(screen.queryByText(/sonhos que ganharam rodas/i)).not.toBeInTheDocument()
+  })
+
+  it('does not let the visitor zoom or select text, like the rest of the public site', async () => {
+    expect(viewport).toMatchObject({ width: 'device-width', initialScale: 1, maximumScale: 1, userScalable: false })
+    const { container } = render(await LinksPage())
+    expect(container.querySelector('main')).toHaveClass('no-select')
+    const pinch = new Event('gesturestart', { cancelable: true })
+    document.dispatchEvent(pinch)
+    expect(pinch.defaultPrevented).toBe(true)
   })
 })

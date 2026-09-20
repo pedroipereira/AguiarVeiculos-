@@ -73,4 +73,10 @@ describe('VehicleSearchSort', () => {
     render(<VehicleSearchSort {...baseProps} resultCount={0} mobileFiltersOpen={false} onToggleMobileFilters={onToggleMobileFilters} />)
     expect(screen.getByRole('button', { name: /^Filtros/i })).toHaveTextContent('Filtros3')
   })
+
+  it('gives the Filtros button and the sort menu a 44px touch height', () => {
+    render(<VehicleSearchSort {...baseProps} resultCount={3} mobileFiltersOpen={false} onToggleMobileFilters={onToggleMobileFilters} />)
+    expect(screen.getByRole('button', { name: /filtros/i })).toHaveClass('min-h-11')
+    expect(screen.getByLabelText('Ordenar por')).toHaveClass('min-h-11')
+  })
 })

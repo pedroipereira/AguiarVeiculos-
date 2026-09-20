@@ -15,3 +15,24 @@ input[type='number']::-webkit-inner-spin-button {
 input[type='number'] {
   -moz-appearance: textfield;
 }
+
+/* Public pages: no text selection, no long-press menu, no blue flash on tap, no pinch or double-tap zoom. */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-x pan-y;
+}
+
+.no-select img {
+  -webkit-user-drag: none;
+}
+
+/* Form fields keep working: Safari will not let people type in a field inside a non-selectable area. */
+.no-select input,
+.no-select textarea,
+.no-select select {
+  -webkit-user-select: text;
+  user-select: text;
+}

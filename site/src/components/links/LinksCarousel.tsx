@@ -30,10 +30,14 @@ export function LinksCarousel({ testimonials }: { testimonials: Testimonial[] })
               type="button"
               onClick={() => setIndex(i)}
               aria-label={`Ver foto ${i + 1}`}
-              className={`h-2 rounded-full transition-all ${
-                i === index ? 'w-6 bg-aguiar-red' : 'w-2 bg-support-gray/30'
-              }`}
-            />
+              className="flex h-11 items-center justify-center px-2"
+            >
+              <span
+                className={`h-2 rounded-full transition-all ${
+                  i === index ? 'w-6 bg-aguiar-red' : 'w-2 bg-support-gray/30'
+                }`}
+              />
+            </button>
           ))}
         </div>
       )}

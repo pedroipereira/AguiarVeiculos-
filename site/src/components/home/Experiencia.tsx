@@ -62,7 +62,7 @@ export async function Experiencia({ client, tone = 'dark' }: { client: SupabaseC
         {/* A rounded frame around the vertical video: 8px of ring around the 400px video. */}
         <div
           data-testid="experiencia-midia"
-          className={`mx-auto w-full max-w-[416px] rounded-[2rem] border p-2 ${
+          className={`mx-auto w-full max-w-[280px] rounded-[2rem] border p-2 sm:max-w-[416px] ${
             light ? 'border-graphite/15 bg-graphite/5' : 'border-white/15 bg-white/5'
           }`}
         >

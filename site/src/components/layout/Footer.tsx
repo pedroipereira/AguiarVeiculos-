@@ -33,12 +33,12 @@ export function Footer() {
               <span className="h-px w-8 bg-aguiar-red" aria-hidden="true" />
               <p className="text-xs font-bold uppercase tracking-widest text-white/85">Navegação</p>
             </div>
-            <nav className="flex flex-col gap-3">
+            <nav className="flex flex-col">
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-base tracking-wide text-white transition-colors hover:text-aguiar-red"
+                  className="py-2.5 text-base tracking-wide text-white transition-colors hover:text-aguiar-red"
                 >
                   {link.label}
                 </Link>
@@ -51,24 +51,24 @@ export function Footer() {
               <span className="h-px w-8 bg-aguiar-red" aria-hidden="true" />
               <p className="text-xs font-bold uppercase tracking-widest text-white/85">Contato</p>
             </div>
-            <div className="flex flex-col gap-3 text-base tracking-wide">
+            <div className="flex flex-col text-base tracking-wide [&>p]:py-2.5">
               {textLinks.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white transition-colors hover:text-aguiar-red"
+                  className="py-2.5 text-white transition-colors hover:text-aguiar-red"
                 >
                   {item.label}
                 </a>
               ))}
-              <a href="tel:+5598991030107" className="text-white transition-colors hover:text-aguiar-red">
+              <a href="tel:+5598991030107" className="py-2.5 text-white transition-colors hover:text-aguiar-red">
                 Telefone
               </a>
               <a
                 href="mailto:aguiarveiculospdutra@hotmail.com"
-                className="text-white transition-colors hover:text-aguiar-red"
+                className="py-2.5 text-white transition-colors hover:text-aguiar-red"
               >
                 E-mail
               </a>
@@ -87,7 +87,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={item.label}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-white/20 transition-colors hover:border-aguiar-red"
+                  className="flex h-11 w-11 items-center justify-center rounded-lg border-2 border-white/20 transition-colors hover:border-aguiar-red"
                 >
                   {item.icon}
                 </a>

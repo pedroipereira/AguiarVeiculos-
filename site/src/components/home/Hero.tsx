@@ -28,7 +28,7 @@ export function Hero({ imageUrl }: { imageUrl?: string }) {
             Aguiar Veículos • Novos e Seminovos
           </p>
         </div>
-        <h1 className="max-w-3xl text-5xl font-bold leading-tight text-white">
+        <h1 className="max-w-3xl text-4xl font-bold leading-tight text-white md:text-5xl">
           Compre seu próximo carro com quem entende de carros e, principalmente, de{' '}
           <span className="text-aguiar-red">confiança.</span>
         </h1>
@@ -37,11 +37,15 @@ export function Hero({ imageUrl }: { imageUrl?: string }) {
           permanece em nome da loja até a transferência e conta com 90 dias de garantia para
           motor e câmbio. Tranquilidade em cada quilômetro rodado.
         </p>
-        <div className="mt-2 flex gap-4">
-          <Link href="/estoque" className={`${buttonBase} ${buttonVariants.primary}`}>
+        <div className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">
+          <Link href="/estoque" className={`${buttonBase} ${buttonVariants.primary} w-full sm:w-auto`}>
             Ver estoque
           </Link>
-          <WhatsAppButton variant="outline" message="Olá! Vim pelo site da Aguiar Veículos e quero saber mais.">
+          <WhatsAppButton
+            variant="outline"
+            className="w-full sm:w-auto"
+            message="Olá! Vim pelo site da Aguiar Veículos e quero saber mais."
+          >
             Falar no WhatsApp
           </WhatsAppButton>
         </div>

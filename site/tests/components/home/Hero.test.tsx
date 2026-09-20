@@ -26,4 +26,22 @@ describe('Hero', () => {
     expect(fade).toHaveAttribute('aria-hidden', 'true')
     expect(fade).toHaveClass('pointer-events-none')
   })
+
+  describe('on a phone', () => {
+    it('makes the headline a size smaller, so the buttons stay in view', () => {
+      render(<Hero />)
+      const title = screen.getByRole('heading', { level: 1 })
+      expect(title).toHaveClass('text-4xl', 'md:text-5xl')
+      expect(title).not.toHaveClass('text-5xl')
+    })
+
+    it('stacks the two buttons at full width, so neither hides under the floating WhatsApp', () => {
+      render(<Hero />)
+      const stock = screen.getByRole('link', { name: /ver estoque/i })
+      const whatsapp = screen.getByRole('link', { name: /falar no whatsapp/i })
+      expect(stock.parentElement).toBe(whatsapp.parentElement)
+      expect(stock.parentElement).toHaveClass('flex-col', 'sm:flex-row', 'w-full', 'sm:w-auto')
+      for (const button of [stock, whatsapp]) expect(button).toHaveClass('w-full', 'sm:w-auto')
+    })
+  })
 })

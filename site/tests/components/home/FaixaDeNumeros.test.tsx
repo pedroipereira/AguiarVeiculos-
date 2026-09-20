@@ -66,4 +66,22 @@ describe('FaixaDeNumeros', () => {
       for (const copy of [...track.querySelectorAll('ul')].slice(1)) expect(copy).toHaveClass('motion-reduce:hidden')
     })
   })
+
+  describe('the size of the strip', () => {
+    it('is a slim strip: less space above and below the numbers', () => {
+      render(<FaixaDeNumeros />)
+      const strip = screen.getByRole('region')
+      expect(strip).toHaveClass('py-6')
+      expect(strip).not.toHaveClass('py-9')
+    })
+
+    it('draws the numbers and the labels smaller', () => {
+      render(<FaixaDeNumeros />)
+      const list = within(screen.getByRole('list'))
+      expect(list.getByText('15+')).toHaveClass('text-3xl', 'md:text-4xl')
+      expect(list.getByText('15+')).not.toHaveClass('md:text-5xl')
+      expect(list.getByText('anos de mercado')).toHaveClass('text-sm', 'md:text-base')
+      expect(list.getByText('anos de mercado')).not.toHaveClass('md:text-lg')
+    })
+  })
 })

@@ -18,7 +18,7 @@ export function FaixaDeNumeros() {
   return (
     <section
       aria-label="A Aguiar em números"
-      className="overflow-hidden border-t border-white/10 bg-graphite py-9 text-white"
+      className="overflow-hidden border-t border-white/10 bg-graphite py-6 text-white"
     >
       <RevealOnScroll>
         <div
@@ -33,8 +33,8 @@ export function FaixaDeNumeros() {
             >
               {NUMEROS.map((item) => (
                 <li key={item.label} className="flex items-baseline gap-3 whitespace-nowrap pl-10 pr-4 motion-reduce:pl-6">
-                  <span className="text-4xl font-extrabold leading-none tracking-tight text-white md:text-5xl">{item.value}</span>
-                  <span className="text-base text-white/85 md:text-lg">{item.label}</span>
+                  <span className="text-3xl font-extrabold leading-none tracking-tight text-white md:text-4xl">{item.value}</span>
+                  <span className="text-sm text-white/85 md:text-base">{item.label}</span>
                   <span className="ml-6 h-1.5 w-1.5 shrink-0 rotate-45 self-center bg-aguiar-red" aria-hidden="true" />
                 </li>
               ))}

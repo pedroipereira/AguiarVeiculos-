@@ -51,4 +51,11 @@ describe('LinksCarousel', () => {
     expect(screen.getByRole('img')).toHaveAttribute('src', 'https://x/1.jpg')
     vi.useRealTimers()
   })
+
+  it('makes each dot a 44px-tall touch area around the small visible dot', () => {
+    render(<LinksCarousel testimonials={makeTestimonials(3)} />)
+    const dot = screen.getByLabelText('Ver foto 2')
+    expect(dot).toHaveClass('h-11', 'px-2')
+    expect(dot.firstElementChild).toHaveClass('h-2', 'rounded-full')
+  })
 })

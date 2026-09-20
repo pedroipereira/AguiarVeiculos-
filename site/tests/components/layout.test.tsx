@@ -119,4 +119,34 @@ describe('Footer', () => {
     expect(screen.getByRole('link', { name: 'Nossos Veículos' })).toHaveClass('text-white')
     expect(screen.getByTestId('footer-panel')).toHaveClass('border-white/15')
   })
+
+describe('touch sizes', () => {
+  it('gives the phone menu button a 44px touch area', () => {
+    render(<Header />)
+    expect(screen.getByLabelText(/abrir menu/i)).toHaveClass('h-11', 'w-11')
+  })
+
+  it('gives the top links of the tablet menu a taller touch area, back to compact on a computer', () => {
+    render(<Header />)
+    expect(screen.getByRole('link', { name: 'Contato' })).toHaveClass('py-3', 'lg:py-0')
+  })
+
+  it('gives the links of the open phone menu a 44px touch area', () => {
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText(/abrir menu/i))
+    const menu = document.getElementById('mobile-menu')!
+    for (const link of menu.querySelectorAll('nav a')) expect(link).toHaveClass('py-3')
+  })
+
+  it('gives every link and icon of the footer a 44px touch area', () => {
+    const { container } = render(<Footer />)
+    const links = [...container.querySelectorAll('footer a')].filter((a) => !a.querySelector('img'))
+    expect(links.length).toBeGreaterThan(8)
+    for (const link of links) {
+      const classes = link.className
+      const compact = /(^|\s)h-11(\s|$)/.test(classes) && /(^|\s)w-11(\s|$)/.test(classes)
+      expect(compact || /(^|\s)py-2\.5(\s|$)/.test(classes)).toBe(true)
+    }
+  })
+})
 })

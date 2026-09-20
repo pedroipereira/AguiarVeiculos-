@@ -3,9 +3,8 @@ import { vi } from 'vitest'
 import { DepoimentosCarousel } from '@/components/home/DepoimentosCarousel'
 import type { Testimonial } from '@/lib/types'
 
-// Same numbers the carousel uses: 277px card + 16px gap. Four cards fit exactly in the
-// 1156px content width, so no card is ever cut off at the edge on desktop.
-const STEP_PX = 293
+// On a computer, four 277px cards plus 16px gaps fill the 1156px content width exactly. On a phone,
+// the card width is the whole width of the carousel, so only one testimonial shows at a time.
 const VISIBLE = 4
 
 function makeTestimonials(count: number): Testimonial[] {
@@ -23,10 +22,10 @@ function track() {
   return screen.getByTestId('carousel-track')
 }
 
-/** How many cards the track is shifted to the left. */
+/** How many cards the track is shifted to the left. The step is one card plus the 16px gap, whatever its width. */
 function offsetInCards() {
-  const px = Number(/translateX\((-?[\d.]+)px\)/.exec(track().style.transform)?.[1])
-  return Math.abs(px) / STEP_PX
+  const match = /translateX\(calc\(\(var\(--card-w\) \+ 16px\) \* (-?[\d.]+)\)\)/.exec(track().style.transform)
+  return Math.abs(Number(match?.[1]))
 }
 
 /** Clicks an arrow and lets the slide animation finish, like a browser would. */
@@ -131,5 +130,74 @@ describe('DepoimentosCarousel', () => {
   it('keeps the white arrows on a dark background', () => {
     render(<DepoimentosCarousel testimonials={makeTestimonials(5)} />)
     expect(screen.getByLabelText('Próximo depoimento')).toHaveClass('border-white', 'text-white')
+  })
+
+  describe('the card around each photo', () => {
+    it('on the black page, is a dark panel with a thin border, not a bright frame', () => {
+      render(<DepoimentosCarousel testimonials={makeTestimonials(5)} />)
+      const card = screen.getAllByTestId('testimonial-card')[0]
+      expect(card).toHaveClass('overflow-hidden', 'rounded-2xl', 'border', 'border-white/10', 'bg-white/[0.04]', 'text-white')
+      expect(card).not.toHaveClass('bg-card-gray')
+      expect(card.className).not.toMatch(/(^|\s)p-\d/)
+    })
+
+    it('lets the photo fill the card edge to edge, with no frame around it', () => {
+      render(<DepoimentosCarousel testimonials={makeTestimonials(5)} />)
+      const photo = screen.getAllByAltText('Depoimento de cliente Aguiar Veículos')[0]
+      expect(photo).toHaveClass('aspect-[3/4]', 'w-full', 'object-cover')
+      expect(photo.className).not.toMatch(/(^|\s)(mb-\d|m-\d|rounded)/)
+    })
+
+    it('puts the caption below the photo, in light text at the smaller size, with its own padding', () => {
+      render(<DepoimentosCarousel testimonials={makeTestimonials(5)} />)
+      const caption = screen.getAllByText('Depoimento 1')[0]
+      expect(caption).toHaveClass('p-5', 'text-sm', 'text-white/90')
+      expect(caption).not.toHaveClass('text-base')
+    })
+
+    it('keeps every card the same height, so the row looks even', () => {
+      render(<DepoimentosCarousel testimonials={makeTestimonials(5)} />)
+      expect(track()).toHaveClass('flex')
+      expect(track().className).not.toMatch(/items-(start|center|end)/)
+    })
+
+    it('on a light background, is a white card with dark text and the same edge-to-edge photo', () => {
+      render(<DepoimentosCarousel testimonials={makeTestimonials(5)} tone="light-soft" />)
+      const card = screen.getAllByTestId('testimonial-card')[0]
+      expect(card).toHaveClass('overflow-hidden', 'rounded-2xl', 'bg-white', 'text-graphite')
+      expect(screen.getAllByText('Depoimento 1')[0]).toHaveClass('p-5', 'text-graphite/80')
+    })
+  })
+
+  describe('on a phone', () => {
+    it('measures its width from its own box, so a card can be as wide as the carousel', () => {
+      const { container } = render(<DepoimentosCarousel testimonials={makeTestimonials(5)} />)
+      expect(container.querySelector('.overflow-hidden')).toHaveClass('[container-type:inline-size]')
+    })
+
+    it('makes each card as wide as the carousel, so only one shows at a time, and 277px from the small-tablet size up', () => {
+      render(<DepoimentosCarousel testimonials={makeTestimonials(5)} />)
+      expect(track()).toHaveClass('[--card-w:100cqw]', 'sm:[--card-w:277px]')
+      for (const card of screen.getAllByTestId('testimonial-card')) expect(card).toHaveClass('w-[var(--card-w)]')
+      expect(screen.getAllByTestId('testimonial-card')[0]).not.toHaveClass('w-[277px]')
+    })
+
+    it('moves by one whole card per arrow, however wide the card is', () => {
+      render(<DepoimentosCarousel testimonials={makeTestimonials(5)} />)
+      const start = offsetInCards()
+      expect(Number.isFinite(start)).toBe(true)
+      fireEvent.click(screen.getByLabelText(/próximo depoimento/i))
+      expect(offsetInCards()).toBe(start + 1)
+    })
+  })
+
+  describe('touch sizes', () => {
+    it('makes the arrows 44px, and the dots as tall as a finger', () => {
+      render(<DepoimentosCarousel testimonials={makeTestimonials(5)} />)
+      for (const arrow of [screen.getByLabelText('Depoimento anterior'), screen.getByLabelText('Próximo depoimento')]) {
+        expect(arrow).toHaveClass('h-11', 'w-11')
+      }
+      for (const dot of screen.getAllByLabelText(/ir para o depoimento/i)) expect(dot).toHaveClass('h-11', 'w-6')
+    })
   })
 })

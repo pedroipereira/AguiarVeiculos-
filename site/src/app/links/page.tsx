@@ -4,6 +4,10 @@ import { getPublishedTestimonials } from '@/lib/queries/testimonials'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
 import { SOCIAL_LINKS } from '@/lib/social-links'
 import { LinksCarousel } from '@/components/links/LinksCarousel'
+import { PreventPinchZoom } from '@/components/layout/PreventPinchZoom'
+import { noZoomViewport } from '@/lib/viewport'
+
+export const viewport = noZoomViewport
 
 export const metadata: Metadata = {
   title: 'Aguiar Veículos — Links',
@@ -60,7 +64,8 @@ export default async function LinksPage() {
   const testimonials = await getPublishedTestimonials(client)
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-graphite px-6 py-16 text-white">
+    <main className="no-select flex min-h-screen flex-col items-center bg-graphite px-6 py-16 text-white">
+      <PreventPinchZoom />
       <div className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/images/logos/logo-horizontal-transparente.png" alt="Aguiar Veículos" className="h-20 w-auto" />

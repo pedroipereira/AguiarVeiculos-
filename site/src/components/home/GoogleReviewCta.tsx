@@ -8,19 +8,30 @@ export function GoogleReviewCta({ tone = 'dark' }: { tone?: SectionTone }) {
 
   return (
     <div
-      className={`mt-10 flex flex-col items-center justify-between gap-6 rounded-2xl border px-6 py-6 text-center md:flex-row md:px-8 md:text-left ${
+      data-testid="google-cta"
+      className={`mt-10 flex flex-col items-center gap-6 rounded-3xl border p-6 text-center md:flex-row md:justify-between md:gap-8 md:rounded-[2.5rem] md:px-8 md:py-7 md:text-left ${
         light ? 'border-graphite/10 bg-white shadow-sm' : 'border-white/10 bg-white/5'
       }`}
     >
-      <div className="max-w-2xl">
-        <p className="mb-1 text-lg tracking-[0.3em] text-yellow-400" aria-hidden="true">
-          ★★★★★
-        </p>
-        <p className="text-xl font-bold md:text-2xl">Sua opinião leva a Aguiar mais longe</p>
-        <p className={`mt-2 ${mutedTextClass(tone)}`}>
-          Foi na Aguiar Veículos e gostou do atendimento? Conte pra nós como foi e ajude outros clientes a chegarem
-          até a gente.
-        </p>
+      <div className="flex flex-col items-center gap-5 md:flex-row md:gap-6">
+        {/* The Google "G" in a white rounded square, like a small app icon. */}
+        <span
+          data-testid="google-tile"
+          aria-hidden="true"
+          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white shadow-lg shadow-black/30 [&>svg]:h-9 [&>svg]:w-9"
+        >
+          {googleIcon}
+        </span>
+        <div className="max-w-2xl">
+          <p className="mb-1 text-lg tracking-[0.3em] text-yellow-400" aria-hidden="true">
+            ★★★★★
+          </p>
+          <p className="text-xl font-bold md:text-2xl">Sua opinião leva a Aguiar mais longe</p>
+          <p className={`mt-2 ${mutedTextClass(tone)}`}>
+            Foi na Aguiar Veículos e gostou do atendimento? Conte pra nós como foi e ajude outros clientes a chegarem
+            até a gente.
+          </p>
+        </div>
       </div>
       <a
         href={GOOGLE_REVIEW_URL}

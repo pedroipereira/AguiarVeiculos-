@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Testimonial } from '@/lib/types'
 import { isLightTone, type SectionTone } from '@/components/ui/Section'
-import { Card } from '@/components/ui/Card'
 
-// Four cards fit exactly in the 1156px content width: 4 * 277 + 3 * 16 = 1156.
-const CARD_WIDTH = 277
+// On a computer, four cards fit exactly in the 1156px content width: 4 * 277 + 3 * 16 = 1156.
+// On a phone, a card is as wide as the carousel itself (`100cqw`), so one testimonial shows at a time.
+// The card width lives in a CSS variable, so the slide step is "one card plus the gap" at any width.
 const GAP = 16
-const STEP = CARD_WIDTH + GAP
 const VISIBLE = 4
 const SLIDE_MS = 500
 // Safety net in case the browser never reports the end of the slide (e.g. hidden tab).
@@ -27,7 +26,7 @@ export function DepoimentosCarousel({
   tone?: SectionTone
 }) {
   const light = isLightTone(tone)
-  const arrowClass = `flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors ${
+  const arrowClass = `flex h-11 w-11 items-center justify-center rounded-full border-2 transition-colors ${
     light
       ? 'border-graphite text-graphite hover:bg-graphite hover:text-white'
       : 'border-white text-white hover:bg-white hover:text-graphite'
@@ -79,12 +78,12 @@ export function DepoimentosCarousel({
 
   return (
     <div>
-      <div className="overflow-hidden">
+      <div className="overflow-hidden [container-type:inline-size]">
         <div
           data-testid="carousel-track"
-          className="flex w-max gap-4"
+          className="flex w-max gap-4 [--card-w:100cqw] sm:[--card-w:277px]"
           style={{
-            transform: `translateX(-${position * STEP}px)`,
+            transform: `translateX(calc((var(--card-w) + ${GAP}px) * -${position}))`,
             transition: jumping || reducedMotion ? 'none' : `transform ${SLIDE_MS}ms ease-out`,
           }}
           onTransitionEnd={(event) => {
@@ -94,16 +93,30 @@ export function DepoimentosCarousel({
           {cards.map((testimonial, index) => {
             const readByScreenReaders = index >= copyLength && index < copyLength + count
             return (
-              <Card key={index} data-testid="testimonial-card" surface={light ? 'white' : 'gray'} className="w-[277px] shrink-0">
+              <div
+                key={index}
+                data-testid="testimonial-card"
+                className={`w-[var(--card-w)] shrink-0 overflow-hidden rounded-2xl border ${
+                  light
+                    ? 'border-support-gray/10 bg-white text-graphite shadow-sm'
+                    : 'border-white/10 bg-white/[0.04] text-white'
+                }`}
+              >
+                {/* The photo fills the card edge to edge, with no frame around it. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={testimonial.image_url}
                   alt={readByScreenReaders ? 'Depoimento de cliente Aguiar Veículos' : ''}
                   aria-hidden={readByScreenReaders ? undefined : true}
-                  className="mb-4 aspect-[3/4] w-full rounded object-cover"
+                  className="aspect-[3/4] w-full object-cover"
                 />
-                <p aria-hidden={readByScreenReaders ? undefined : true}>{testimonial.caption}</p>
-              </Card>
+                <p
+                  aria-hidden={readByScreenReaders ? undefined : true}
+                  className={`p-5 text-sm leading-relaxed ${light ? 'text-graphite/80' : 'text-white/90'}`}
+                >
+                  {testimonial.caption}
+                </p>
+              </div>
             )
           })}
         </div>
@@ -126,7 +139,7 @@ export function DepoimentosCarousel({
               onClick={() => slideTo(() => copyLength + index)}
               aria-label={`Ir para o depoimento ${index + 1}`}
               aria-current={index === activeIndex ? 'true' : undefined}
-              className="flex h-6 w-6 items-center justify-center"
+              className="flex h-11 w-6 items-center justify-center"
             >
               <span
                 className={`h-2 w-2 rounded-full transition-colors ${
