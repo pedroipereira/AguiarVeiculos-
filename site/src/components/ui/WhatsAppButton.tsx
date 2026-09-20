@@ -5,12 +5,13 @@ import { buttonBase, buttonVariants } from './buttonStyles'
 interface WhatsAppButtonProps {
   message: string
   children: ReactNode
-  variant?: 'primary' | 'outline'
+  variant?: keyof typeof buttonVariants
+  className?: string
 }
 
-export function WhatsAppButton({ message, children, variant = 'primary' }: WhatsAppButtonProps) {
+export function WhatsAppButton({ message, children, variant = 'primary', className = '' }: WhatsAppButtonProps) {
   return (
-    <a href={buildWhatsAppUrl(message)} target="_blank" rel="noopener noreferrer" className={`${buttonBase} ${buttonVariants[variant]}`}>
+    <a href={buildWhatsAppUrl(message)} target="_blank" rel="noopener noreferrer" className={`${buttonBase} ${buttonVariants[variant]} ${className}`.trim()}>
       {children}
     </a>
   )

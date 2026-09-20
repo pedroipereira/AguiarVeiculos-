@@ -18,13 +18,13 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: `${SITE_NAME} — Novos e Seminovos em Presidente Dutra - MA`,
     description: DEFAULT_DESCRIPTION,
-    images: [{ url: '/images/showroom-fachada.jpg', width: 1200, height: 800, alt: SITE_NAME }],
+    images: [{ url: '/images/fotos/showroom-fachada.jpg', width: 1200, height: 800, alt: SITE_NAME }],
   },
   twitter: {
     card: 'summary_large_image',
     title: `${SITE_NAME} — Novos e Seminovos em Presidente Dutra - MA`,
     description: DEFAULT_DESCRIPTION,
-    images: ['/images/showroom-fachada.jpg'],
+    images: ['/images/fotos/showroom-fachada.jpg'],
   },
 }
 

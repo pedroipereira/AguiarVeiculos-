@@ -12,7 +12,7 @@ export async function EstoqueDestaque({ client, tone }: { client: SupabaseClient
   const imageUrls = await getPrimaryImageUrlsByVehicleIds(client, vehicles.map((vehicle) => vehicle.id))
 
   return (
-    <Section eyebrow="Estoque" title="Destaques do estoque" tone={tone} contained>
+    <Section eyebrow="Estoque" title="Destaques da semana" tone={tone} contained>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {vehicles.map((vehicle) => (
           <VehicleCard key={vehicle.id} vehicle={vehicle} imageUrl={imageUrls[vehicle.id]} />

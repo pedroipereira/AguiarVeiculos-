@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
-import { Section, type SectionTone } from '@/components/ui/Section'
+import { Section, mutedTextClass, type SectionTone } from '@/components/ui/Section'
 import { buttonBase, buttonVariants } from '@/components/ui/buttonStyles'
 
 const OPCOES = [
@@ -14,20 +14,21 @@ const OPCOES = [
     title: 'Avaliar meu usado',
     text: 'Avaliamos seu carro ou moto na hora e usamos o valor como entrada na troca.',
     cta: 'Avaliar meu carro',
-    accent: 'hover:border-t-graphite',
+    accent: 'hover:border-t-aguiar-red',
   },
 ]
 
-export function FinanciamentoTeaser({ tone }: { tone?: SectionTone } = {}) {
+export function FinanciamentoTeaser({ tone = 'dark' }: { tone?: SectionTone } = {}) {
   return (
     <Section eyebrow="Facilitamos pra você" title="Financiamento e avaliação de usados" tone={tone} contained>
-      <p className="max-w-xl text-support-gray">
+      <p className={`max-w-xl ${mutedTextClass(tone)}`}>
         Duas formas rápidas de dar o próximo passo — sem compromisso.
       </p>
       <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
         {OPCOES.map((item) => (
           <Card
             key={item.title}
+            surface={tone === 'light-soft' ? 'white' : 'gray'}
             className={`flex flex-col gap-3 border-t-4 border-t-transparent transition-colors ${item.accent}`}
           >
             <p className="text-lg font-bold">{item.title}</p>

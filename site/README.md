@@ -20,4 +20,4 @@
    - `NEXT_PUBLIC_WHATSAPP_NUMBER=5598991030107`
 4. Deploy. Depois de validar o preview, aponte o DNS de `aguiarveiculos.com` para a Vercel (registro A/CNAME conforme instruções da própria Vercel ao adicionar o domínio no projeto).
 5. Cadastre os primeiros depoimentos e a foto/história do "15 anos" pelo painel `/admin` antes de divulgar o link (itens em aberto 1 e 8 da spec).
-6. Troque os placeholders de `public/images/` (`loja-1.jpg` … `loja-4.jpg` e `antonio-aguiar.jpg`) pelas fotos reais da loja e do Antônio antes do lançamento — hoje são imagens cinza geradas só para o layout não quebrar.
+6. Troque a foto de `public/images/fotos/showroom-fachada.jpg` por uma foto real da loja em alta resolução (a atual tem só 548x415 px e é usada no Hero, na Galeria e na prévia de compartilhamento). Não existem mais placeholders `loja-*.jpg` nem `antonio-aguiar.jpg` nessa pasta.

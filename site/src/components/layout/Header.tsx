@@ -10,8 +10,8 @@ const NAV_LINKS = [
   { href: '/estoque', label: 'Nossos Veículos' },
   { href: '/financiamento', label: 'Simule' },
   { href: '/#quinze-anos', label: 'Empresa' },
-  { href: '/#diferenciais', label: 'Diferenciais' },
   { href: '/#contato', label: 'Contato' },
+  { href: '/#como-chegar', label: 'Como chegar' },
 ]
 
 export function Header() {
@@ -40,73 +40,78 @@ export function Header() {
   const transparent = isHome && !scrolled && !menuOpen
 
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 px-4 py-2 transition-colors duration-300 ${
-        transparent ? 'bg-transparent' : 'bg-graphite'
-      }`}
-    >
-      <div className="flex items-center justify-between md:justify-center md:gap-x-[85px]">
-        <Link href="/" className="shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/logo-full.png" alt="Aguiar Veículos" className="h-12 w-auto" />
-        </Link>
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-50 px-4 pt-3">
+      <div
+        data-testid="header-bar"
+        className={`pointer-events-auto mx-auto max-w-[1156px] rounded-2xl border px-4 py-2 transition-colors duration-300 ${
+          transparent
+            ? 'border-transparent bg-transparent'
+            : 'border-white/10 bg-graphite/60 shadow-lg backdrop-blur-md'
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <Link href="/" className="shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/logos/logo-horizontal-transparente.png" alt="Aguiar Veículos" className="h-12 w-auto" />
+          </Link>
 
-        <nav className="hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 md:flex">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="whitespace-nowrap text-sm font-bold text-white underline decoration-transparent decoration-2 underline-offset-4 transition-all hover:decoration-aguiar-red"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="hidden shrink-0 md:block">
-          <WhatsAppButton message="Olá! Vim pelo site da Aguiar Veículos e quero saber mais.">
-            WhatsApp
-          </WhatsAppButton>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
-          aria-expanded={menuOpen}
-          aria-controls="mobile-menu"
-          className="flex h-10 w-10 shrink-0 flex-col items-center justify-center gap-1.5 md:hidden"
-        >
-          <span
-            className={`h-0.5 w-6 bg-white transition-transform ${menuOpen ? 'translate-y-2 rotate-45' : ''}`}
-          />
-          <span className={`h-0.5 w-6 bg-white transition-opacity ${menuOpen ? 'opacity-0' : ''}`} />
-          <span
-            className={`h-0.5 w-6 bg-white transition-transform ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`}
-          />
-        </button>
-      </div>
-
-      {menuOpen && (
-        <div id="mobile-menu" className="mt-2 flex flex-col gap-2 bg-graphite pb-4 md:hidden">
-          <nav className="flex flex-col items-center gap-4 pt-2">
+          <nav className="hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 md:flex">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-bold text-white underline decoration-transparent decoration-2 underline-offset-4 transition-all hover:decoration-aguiar-red"
+                className="whitespace-nowrap text-sm font-bold text-white underline decoration-transparent decoration-2 underline-offset-4 transition-all hover:decoration-aguiar-red"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
-          <div className="flex justify-center pt-2">
+
+          <div className="hidden shrink-0 md:block">
             <WhatsAppButton message="Olá! Vim pelo site da Aguiar Veículos e quero saber mais.">
               WhatsApp
             </WhatsAppButton>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            className="flex h-10 w-10 shrink-0 flex-col items-center justify-center gap-1.5 md:hidden"
+          >
+            <span
+              className={`h-0.5 w-6 bg-white transition-transform ${menuOpen ? 'translate-y-2 rotate-45' : ''}`}
+            />
+            <span className={`h-0.5 w-6 bg-white transition-opacity ${menuOpen ? 'opacity-0' : ''}`} />
+            <span
+              className={`h-0.5 w-6 bg-white transition-transform ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`}
+            />
+          </button>
         </div>
-      )}
+
+        {menuOpen && (
+          <div id="mobile-menu" className="mt-2 flex flex-col gap-2 pb-4 md:hidden">
+            <nav className="flex flex-col items-center gap-4 pt-2">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm font-bold text-white underline decoration-transparent decoration-2 underline-offset-4 transition-all hover:decoration-aguiar-red"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="flex justify-center pt-2">
+              <WhatsAppButton message="Olá! Vim pelo site da Aguiar Veículos e quero saber mais.">
+                WhatsApp
+              </WhatsAppButton>
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   )
 }

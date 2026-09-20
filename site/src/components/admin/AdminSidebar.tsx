@@ -42,7 +42,7 @@ export function AdminSidebar({ vehicles }: AdminSidebarProps) {
     <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col gap-6 overflow-y-auto border-r border-support-gray/15 bg-white p-4">
       <Link href="/admin/veiculos" className="flex items-center gap-2 px-2 py-1">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/logo-av.png" alt="Aguiar Veículos" className="h-8 w-8 object-contain" />
+        <img src="/images/logos/logo-simbolo.png" alt="Aguiar Veículos" className="h-8 w-8 object-contain" />
         <span className="text-sm font-bold uppercase tracking-wide text-graphite">Aguiar Veículos</span>
       </Link>
 

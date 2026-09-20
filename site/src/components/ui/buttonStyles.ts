@@ -4,4 +4,5 @@ export const buttonBase =
 export const buttonVariants = {
   primary: 'bg-aguiar-red text-white hover:bg-red-700',
   outline: 'border-2 border-white text-white hover:bg-white hover:text-graphite',
+  outlineOnLight: 'border-2 border-graphite text-graphite hover:bg-graphite hover:text-white',
 }

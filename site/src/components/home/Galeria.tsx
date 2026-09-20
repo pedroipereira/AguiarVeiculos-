@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-const FALLBACK_PHOTO = '/images/showroom-fachada.jpg'
+const FALLBACK_PHOTO = '/images/fotos/showroom-fachada.jpg'
 
 export function Galeria({ photos = [] }: { photos?: string[] }) {
   const gallery = photos.length > 0 ? photos : [FALLBACK_PHOTO]
@@ -94,7 +94,7 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
               <h2 className="max-w-md text-3xl font-bold leading-tight md:text-4xl">
                 Entre no showroom e escolha o seu
               </h2>
-              <p className="text-sm uppercase tracking-widest text-support-gray">Role para expandir</p>
+              <p className="text-sm uppercase tracking-widest text-white/80">Role para expandir</p>
             </div>
             <div
               className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2"

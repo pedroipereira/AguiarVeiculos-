@@ -7,7 +7,7 @@ import { Depoimentos } from '@/components/home/Depoimentos'
 import { QuinzeAnos } from '@/components/home/QuinzeAnos'
 import { Galeria } from '@/components/home/Galeria'
 import { FinanciamentoTeaser } from '@/components/home/FinanciamentoTeaser'
-import { Contato } from '@/components/home/Contato'
+import { Experiencia } from '@/components/home/Experiencia'
 
 export const metadata: Metadata = {
   title: 'Carros novos e seminovos em Presidente Dutra - MA',
@@ -25,19 +25,19 @@ export default async function Home() {
     getSiteImageUrls(client, 'sobre'),
   ])
 
-  const estoqueDestaque = await EstoqueDestaque({ client, tone: 'light' })
+  const estoqueDestaque = await EstoqueDestaque({ client, tone: 'dark' })
   const depoimentos = await Depoimentos({ client, tone: 'dark' })
-  const contato = await Contato({ client, tone: 'dark' })
+  const experiencia = await Experiencia({ client, tone: 'dark' })
 
   return (
     <main>
       <Hero imageUrl={heroImages[0]} />
       {estoqueDestaque}
-      <FinanciamentoTeaser tone="light" />
+      <FinanciamentoTeaser tone="dark" />
       <QuinzeAnos tone="dark" imageUrl={sobreImages[0]} />
       <Galeria photos={galeriaImages} />
       {depoimentos}
-      {contato}
+      {experiencia}
     </main>
   )
 }

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Section, type SectionTone } from '@/components/ui/Section'
+import { Section, isLightTone, mutedTextClass, type SectionTone } from '@/components/ui/Section'
 import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { buttonBase, buttonVariants } from '@/components/ui/buttonStyles'
 
@@ -30,9 +30,10 @@ const RAZOES = [
   },
 ]
 
-const FALLBACK_IMAGE = '/images/showroom-fachada.jpg'
+const FALLBACK_IMAGE = '/images/fotos/showroom-fachada.jpg'
 
-export function QuinzeAnos({ tone, imageUrl }: { tone?: SectionTone; imageUrl?: string } = {}) {
+export function QuinzeAnos({ tone = 'dark', imageUrl }: { tone?: SectionTone; imageUrl?: string } = {}) {
+  const muted = mutedTextClass(tone)
   return (
     <Section id="quinze-anos" eyebrow="Quem está por trás" title="Sobre a Aguiar Veículos" tone={tone} contained>
       <div className="flex flex-col items-start gap-10 lg:flex-row">
@@ -43,16 +44,16 @@ export function QuinzeAnos({ tone, imageUrl }: { tone?: SectionTone; imageUrl?: 
           className="w-full max-w-sm rounded-lg lg:w-1/3"
         />
         <div className="flex-1 space-y-4">
-          <p className="text-support-gray">
+          <p className={muted}>
             Na Aguiar Veículos, cada carro é escolhido com cuidado para entregar mais do que
             qualidade: entregar tranquilidade em cada quilômetro.
           </p>
-          <p className="text-support-gray">
+          <p className={muted}>
             Todos os veículos passam por seleção, revisão e higienização, permanecem em nome da
             loja até a transferência e contam com 90 dias de garantia para motor e câmbio — tudo
             para que sua escolha seja feita com tranquilidade, transparência e segurança.
           </p>
-          <p className="text-support-gray">
+          <p className={muted}>
             Há mais de 15 anos no mesmo endereço em Presidente Dutra - MA, nossa trajetória é
             construída sobre transparência, atendimento próximo e veículos de procedência. Já
             fomos reconhecidos com diversos prêmios de melhor concessionária da região.
@@ -66,7 +67,7 @@ export function QuinzeAnos({ tone, imageUrl }: { tone?: SectionTone; imageUrl?: 
                 Ver estoque
               </Link>
               <WhatsAppButton
-                variant="outline"
+                variant={isLightTone(tone) ? 'outlineOnLight' : 'outline'}
                 message="Olá! Vim pelo site da Aguiar Veículos e quero falar com vocês."
               >
                 Fale conosco
@@ -84,7 +85,7 @@ export function QuinzeAnos({ tone, imageUrl }: { tone?: SectionTone; imageUrl?: 
               <span className="mt-2 h-px w-6 shrink-0 bg-aguiar-red" aria-hidden="true" />
               <div>
                 <p className="font-bold">{item.title}</p>
-                <p className="mt-1 text-sm text-support-gray">{item.text}</p>
+                <p className={`mt-1 text-sm ${muted}`}>{item.text}</p>
               </div>
             </div>
           ))}

@@ -11,4 +11,11 @@ describe('Hero', () => {
     expect(screen.getByRole('link', { name: /ver estoque/i })).toHaveAttribute('href', '/estoque')
     expect(screen.getByRole('link', { name: /whatsapp/i })).toHaveAttribute('href', expect.stringContaining('wa.me'))
   })
+
+  it('keeps the paragraph over the photo readable: light text, not the dim gray', () => {
+    render(<Hero />)
+    const paragraph = screen.getByText(/cada carro é escolhido com cuidado/i)
+    expect(paragraph).toHaveClass('text-white/80')
+    expect(paragraph).not.toHaveClass('text-support-gray')
+  })
 })

@@ -30,6 +30,12 @@ describe('EstoqueDestaque', () => {
     expect(screen.getByRole('link', { name: /veja todos os nossos veículos/i })).toHaveAttribute('href', '/estoque')
   })
 
+  it('titles the section as the week\'s highlights', async () => {
+    const client = fakeClient([polo])
+    render(await EstoqueDestaque({ client }))
+    expect(screen.getByRole('heading', { level: 2, name: 'Destaques da semana' })).toBeInTheDocument()
+  })
+
   it('renders the primary photo when the vehicle has images', async () => {
     const client = fakeClient([polo], [{ id: 'i1', vehicle_id: '1', storage_path: 'polo.jpg', display_order: 0 }])
     render(await EstoqueDestaque({ client }))

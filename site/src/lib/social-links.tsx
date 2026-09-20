@@ -8,6 +8,9 @@ export interface SocialLink {
   icon: ReactNode
 }
 
+/** Opens the Google review screen for the store (from Perfil da Empresa > Pedir avaliações). */
+export const GOOGLE_REVIEW_URL = 'https://g.page/r/CbJ6h9XEzhUTEBM/review'
+
 /** Real, verified profiles for the business — shared by the Footer and the /links page. */
 export const SOCIAL_LINKS: SocialLink[] = [
   {

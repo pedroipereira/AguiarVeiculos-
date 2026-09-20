@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { buttonBase, buttonVariants } from '@/components/ui/buttonStyles'
 
-const FALLBACK_IMAGE = '/images/showroom-fachada.jpg'
+const FALLBACK_IMAGE = '/images/fotos/showroom-fachada.jpg'
 
 export function Hero({ imageUrl }: { imageUrl?: string }) {
   return (
@@ -26,7 +26,7 @@ export function Hero({ imageUrl }: { imageUrl?: string }) {
           Compre seu próximo carro com quem entende de carros e, principalmente, de{' '}
           <span className="text-aguiar-red">confiança.</span>
         </h1>
-        <p className="max-w-xl text-support-gray">
+        <p className="max-w-xl text-white/80">
           Cada carro é escolhido com cuidado: passa por seleção, revisão e higienização,
           permanece em nome da loja até a transferência e conta com 90 dias de garantia para
           motor e câmbio. Tranquilidade em cada quilômetro rodado.

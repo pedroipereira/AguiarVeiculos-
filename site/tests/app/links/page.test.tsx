@@ -23,6 +23,22 @@ describe('/links page', () => {
     expect(screen.getByText(/procedência e confiança/i)).toBeInTheDocument()
   })
 
+  it('keeps the gray-toned lines readable on the black background', async () => {
+    render(await LinksPage())
+    for (const text of [/veículos novos e seminovos em presidente dutra/i, /aguiar veículos — presidente dutra, ma/i]) {
+      const line = screen.getByText(text)
+      expect(line).toHaveClass('text-white/70')
+      expect(line).not.toHaveClass('text-support-gray')
+    }
+  })
+
+  it('uses a lighter red for the small highlighted words on black, so they keep enough contrast', async () => {
+    render(await LinksPage())
+    const highlight = screen.getByText('Procedência e confiança')
+    expect(highlight).toHaveClass('text-aguiar-red-light')
+    expect(highlight).not.toHaveClass('text-aguiar-red')
+  })
+
   it('shows the four CTAs pointing at the right destinations', async () => {
     render(await LinksPage())
     expect(screen.getByRole('link', { name: /compre conosco/i })).toHaveAttribute(
