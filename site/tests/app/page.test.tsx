@@ -35,7 +35,7 @@ describe('Home page', () => {
     expect([...order].sort((a, b) => a - b)).toEqual(order)
   })
 
-  it('is all one near-black gray, apart from the showroom photo section (no vehicles or testimonials in this fake data)', async () => {
+  it('is all one black, the brand graphite (no vehicles or testimonials in this fake data)', async () => {
     const { container } = render(await Home())
     const sections = [...container.querySelectorAll('main > section')]
     const byHeading = (name: RegExp) => screen.getByRole('heading', { level: 2, name }).closest('section')!
@@ -44,9 +44,19 @@ describe('Home page', () => {
       container.querySelector('section#quinze-anos')!,
       container.querySelector('section#como-chegar')!,
     ]) {
-      expect(section).toHaveClass('bg-charcoal')
+      expect(section).toHaveClass('bg-graphite')
     }
-    expect(sections.filter((section) => section.classList.contains('bg-graphite')).length).toBe(1)
+    expect(sections.filter((section) => section.classList.contains('bg-graphite')).length).toBeGreaterThanOrEqual(4)
+    expect(container.querySelectorAll('.bg-charcoal').length).toBe(0)
     expect(container.querySelectorAll('main > section.bg-paper, main > section.bg-white').length).toBe(0)
+  })
+
+  it('puts the numbers strip right below the hero, before the financing section', async () => {
+    render(await Home())
+    const hero = screen.getByRole('heading', { level: 1 })
+    const strip = screen.getByRole('region', { name: 'A Aguiar em números' })
+    const financing = screen.getByRole('heading', { level: 2, name: /financiamento e avaliação/i })
+    expect(hero.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(strip.compareDocumentPosition(financing) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 })

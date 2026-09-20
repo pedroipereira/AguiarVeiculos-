@@ -16,7 +16,7 @@ export function Footer() {
   const textLinks = SOCIAL_LINKS.filter((item) => item.showAsTextLink)
 
   return (
-    <footer id="contato" className="border-t border-white/10 bg-charcoal px-6 py-14 text-white/70">
+    <footer id="contato" className="border-t border-white/10 bg-graphite px-6 py-14 text-white/85">
       <div data-testid="footer-panel" className="mx-auto max-w-[1156px] rounded-3xl border border-white/15 p-8 md:p-12">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
           <div className="flex flex-col items-start gap-3">
@@ -31,7 +31,7 @@ export function Footer() {
           <div>
             <div className="mb-5 flex items-center gap-3">
               <span className="h-px w-8 bg-aguiar-red" aria-hidden="true" />
-              <p className="text-xs font-bold uppercase tracking-widest text-white/70">Navegação</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-white/85">Navegação</p>
             </div>
             <nav className="flex flex-col gap-3">
               {NAV_LINKS.map((link) => (
@@ -49,7 +49,7 @@ export function Footer() {
           <div>
             <div className="mb-5 flex items-center gap-3">
               <span className="h-px w-8 bg-aguiar-red" aria-hidden="true" />
-              <p className="text-xs font-bold uppercase tracking-widest text-white/70">Contato</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-white/85">Contato</p>
             </div>
             <div className="flex flex-col gap-3 text-base tracking-wide">
               {textLinks.map((item) => (

@@ -48,4 +48,20 @@ describe('VehicleCard', () => {
     render(<VehicleCard vehicle={vehicle} imageUrl="https://cdn.test/argo.jpg" />)
     expect(screen.queryByText(/^\d+$/)).not.toBeInTheDocument()
   })
+
+  it('is a white card by default, for the light pages', () => {
+    render(<VehicleCard vehicle={vehicle} />)
+    expect(screen.getByRole('link')).toHaveClass('bg-white', 'text-graphite')
+  })
+
+  it('can be a dark panel for the black home page, with readable light text', () => {
+    render(<VehicleCard vehicle={vehicle} surface="dark" />)
+    const card = screen.getByRole('link')
+    expect(card).toHaveClass('bg-white/[0.04]', 'border-white/10', 'text-white')
+    expect(card).not.toHaveClass('bg-white')
+    expect(screen.getByText(/2023 • 32\.000 km/)).toHaveClass('text-white/85')
+    expect(screen.getByText('R$ 64.900')).toHaveClass('text-white')
+    // The small red link needs the lighter red to stay readable on black.
+    expect(screen.getByText('Ver detalhes ›')).toHaveClass('text-aguiar-red-light')
+  })
 })

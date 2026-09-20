@@ -28,11 +28,11 @@ export function FinanciamentoTeaser({ tone = 'dark' }: { tone?: SectionTone } = 
         {OPCOES.map((item) => (
           <Card
             key={item.title}
-            surface={tone === 'light-soft' ? 'white' : 'gray'}
+            surface={tone === 'dark' ? 'dark' : tone === 'light-soft' ? 'white' : 'gray'}
             className={`flex flex-col gap-3 border-t-4 border-t-transparent transition-colors ${item.accent}`}
           >
             <p className="text-lg font-bold">{item.title}</p>
-            <p className="flex-1 text-sm text-support-gray">{item.text}</p>
+            <p className={`flex-1 text-sm ${tone === 'dark' ? 'text-white/85' : 'text-support-gray'}`}>{item.text}</p>
             <Link href="/financiamento" className={`${buttonBase} ${buttonVariants.primary} self-start`}>
               {item.cta}
             </Link>

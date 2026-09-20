@@ -109,12 +109,12 @@ describe('Footer', () => {
     expect(map.parentElement).toHaveClass('max-w-xs')
   })
 
-  it('is the same near-black gray as the page, with light text and the white logo', () => {
+  it('is the same black as the page, with light text and the white logo', () => {
     const { container } = render(<Footer />)
     const footer = container.querySelector('footer')!
-    expect(footer).toHaveClass('bg-charcoal', 'text-white/70')
+    expect(footer).toHaveClass('bg-graphite', 'text-white/85')
     expect(footer).not.toHaveClass('bg-paper')
-    expect(footer).not.toHaveClass('bg-graphite')
+    expect(footer).not.toHaveClass('bg-charcoal')
     expect(screen.getByAltText('Aguiar Veículos')).toHaveAttribute('src', '/images/logos/logo-horizontal-transparente.png')
     expect(screen.getByRole('link', { name: 'Nossos Veículos' })).toHaveClass('text-white')
     expect(screen.getByTestId('footer-panel')).toHaveClass('border-white/15')

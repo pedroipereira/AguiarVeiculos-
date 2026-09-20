@@ -15,7 +15,7 @@ describe('FinanciamentoTeaser', () => {
 
   it('keeps the intro line readable on a dark background, and gray on a light one', () => {
     const { unmount } = render(<FinanciamentoTeaser tone="dark" />)
-    expect(screen.getByText(/duas formas rápidas/i)).toHaveClass('text-white/70')
+    expect(screen.getByText(/duas formas rápidas/i)).toHaveClass('text-white/85')
     unmount()
     const light = render(<FinanciamentoTeaser tone="light" />)
     expect(screen.getByText(/duas formas rápidas/i)).toHaveClass('text-support-gray')
@@ -36,5 +36,19 @@ describe('FinanciamentoTeaser', () => {
     const card = screen.getByText(/simular financiamento/i).parentElement!
     expect(card).toHaveClass('bg-white')
     expect(card).not.toHaveClass('bg-card-gray')
+  })
+
+  it('on the black page, draws dark panels with light text instead of bright cards', () => {
+    render(<FinanciamentoTeaser tone="dark" />)
+    const card = screen.getByText(/simular financiamento/i).parentElement!
+    expect(card).toHaveClass('bg-white/[0.04]')
+    expect(card).not.toHaveClass('bg-card-gray')
+    expect(screen.getByText(/em até 60x, com mais de 10 bancos/i)).toHaveClass('text-white/85')
+    expect(screen.getByRole('link', { name: /simular agora/i })).toHaveClass('bg-aguiar-red')
+  })
+
+  it('keeps the gray text inside the light cards', () => {
+    render(<FinanciamentoTeaser tone="light-soft" />)
+    expect(screen.getByText(/em até 60x, com mais de 10 bancos/i)).toHaveClass('text-support-gray')
   })
 })

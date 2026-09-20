@@ -30,6 +30,10 @@ const RAZOES = [
   },
 ]
 
+// While the pointer is over the grid every panel dims; the one under it lifts, lights its border and keeps full color.
+const SELECTABLE_PANEL =
+  'group/item rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition-all duration-300 group-hover:opacity-60 hover:!opacity-100 hover:-translate-y-1 hover:border-aguiar-red/60 hover:bg-white/[0.08] motion-reduce:transition-none motion-reduce:hover:translate-y-0'
+
 const FALLBACK_IMAGE = '/images/fotos/showroom-fachada.jpg'
 
 export function QuinzeAnos({ tone = 'dark', imageUrl }: { tone?: SectionTone; imageUrl?: string } = {}) {
@@ -41,7 +45,7 @@ export function QuinzeAnos({ tone = 'dark', imageUrl }: { tone?: SectionTone; im
         <img
           src={imageUrl ?? FALLBACK_IMAGE}
           alt="Antonio Aguiar, fundador da Aguiar Veículos"
-          className="w-full max-w-sm rounded-lg lg:w-1/3"
+          className="w-full max-w-md rounded-2xl lg:w-5/12"
         />
         <div className="flex-1 space-y-4">
           <p className={muted}>
@@ -79,10 +83,17 @@ export function QuinzeAnos({ tone = 'dark', imageUrl }: { tone?: SectionTone; im
 
       <div id="diferenciais" className="mt-14 scroll-mt-24">
         <h3 className="mb-6 text-2xl font-bold">Diferenciais</h3>
-        <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="group grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
           {RAZOES.map((item) => (
-            <div key={item.title} className="flex gap-3">
-              <span className="mt-2 h-px w-6 shrink-0 bg-aguiar-red" aria-hidden="true" />
+            <div
+              key={item.title}
+              data-testid="diferencial"
+              className={`flex gap-3 ${tone === 'dark' ? SELECTABLE_PANEL : ''}`}
+            >
+              <span
+                className={`mt-2 h-px shrink-0 bg-aguiar-red ${tone === 'dark' ? 'w-6 transition-all group-hover/item:w-10' : 'w-6'}`}
+                aria-hidden="true"
+              />
               <div>
                 <p className="font-bold">{item.title}</p>
                 <p className={`mt-1 text-sm ${muted}`}>{item.text}</p>

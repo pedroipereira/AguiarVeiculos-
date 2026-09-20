@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getSiteImageUrls } from '@/lib/queries/site-images'
 import { Hero } from '@/components/home/Hero'
+import { FaixaDeNumeros } from '@/components/home/FaixaDeNumeros'
 import { EstoqueDestaque } from '@/components/home/EstoqueDestaque'
 import { Depoimentos } from '@/components/home/Depoimentos'
 import { QuinzeAnos } from '@/components/home/QuinzeAnos'
@@ -32,6 +33,7 @@ export default async function Home() {
   return (
     <main>
       <Hero imageUrl={heroImages[0]} />
+      <FaixaDeNumeros />
       {estoqueDestaque}
       <FinanciamentoTeaser tone="dark" />
       <QuinzeAnos tone="dark" imageUrl={sobreImages[0]} />

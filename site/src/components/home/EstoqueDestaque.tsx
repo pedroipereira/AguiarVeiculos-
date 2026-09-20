@@ -5,7 +5,7 @@ import { getPrimaryImageUrlsByVehicleIds } from '@/lib/queries/vehicle-images'
 import { Section, type SectionTone } from '@/components/ui/Section'
 import { VehicleCard } from '@/components/catalog/VehicleCard'
 
-export async function EstoqueDestaque({ client, tone }: { client: SupabaseClient; tone?: SectionTone }) {
+export async function EstoqueDestaque({ client, tone = 'dark' }: { client: SupabaseClient; tone?: SectionTone }) {
   const vehicles = await getFeaturedVehicles(client)
   if (vehicles.length === 0) return null
 
@@ -15,7 +15,12 @@ export async function EstoqueDestaque({ client, tone }: { client: SupabaseClient
     <Section eyebrow="Estoque" title="Destaques da semana" tone={tone} contained>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {vehicles.map((vehicle) => (
-          <VehicleCard key={vehicle.id} vehicle={vehicle} imageUrl={imageUrls[vehicle.id]} />
+          <VehicleCard
+            key={vehicle.id}
+            vehicle={vehicle}
+            imageUrl={imageUrls[vehicle.id]}
+            surface={tone === 'dark' ? 'dark' : 'light'}
+          />
         ))}
       </div>
       <div className="mt-8 flex justify-center">

@@ -65,7 +65,7 @@ export default async function LinksPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/images/logos/logo-horizontal-transparente.png" alt="Aguiar Veículos" className="h-20 w-auto" />
 
-        <p className="text-white/70">
+        <p className="text-white/85">
           Veículos novos e seminovos em Presidente Dutra - MA.{' '}
           <span className="font-bold text-aguiar-red-light">Procedência e confiança</span> em cada venda.
         </p>
@@ -120,7 +120,7 @@ export default async function LinksPage() {
         )}
       </div>
 
-      <p className="mt-12 text-sm text-white/70">Aguiar Veículos — Presidente Dutra, MA</p>
+      <p className="mt-12 text-sm text-white/85">Aguiar Veículos — Presidente Dutra, MA</p>
     </main>
   )
 }

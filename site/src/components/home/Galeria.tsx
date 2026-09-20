@@ -4,13 +4,30 @@ import { useEffect, useRef, useState } from 'react'
 
 const FALLBACK_PHOTO = '/images/fotos/showroom-fachada.jpg'
 
+// The section is 2.6 screens tall and pinned: the card grows while the visitor scrolls the extra 1.6.
+const SECTION_HEIGHT_VH = 260
+const CARD_WIDTH = 300
+const CARD_HEIGHT = 400
+const CARD_RADIUS = 18
+// Each title line slides out by this many screen widths, so it is off the screen when the card is full.
+const TITLE_SLIDE = 1.4
+const PHOTO_MS = 4000
+// The hint disappears as soon as the visitor starts scrolling.
+const HINT_UNTIL = 0.05
+// The top edge blends into the section above until this point of the scroll; the bottom edge blends
+// into the section below over the last part of it.
+const FADE_TOP_UNTIL = 0.12
+const FADE_BOTTOM_FROM = 0.85
+
+const clamp = (value: number) => Math.min(1, Math.max(0, value))
+
 export function Galeria({ photos = [] }: { photos?: string[] }) {
   const gallery = photos.length > 0 ? photos : [FALLBACK_PHOTO]
-  const backgroundPhoto = gallery[0]
-  const wrapperRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLElement>(null)
   const [progress, setProgress] = useState(0)
   const [photoIndex, setPhotoIndex] = useState(0)
   const [reducedMotion, setReducedMotion] = useState(false)
+  const [viewport, setViewport] = useState({ width: 1440, height: 900 })
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return
@@ -26,13 +43,10 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
 
     function measure() {
       ticking = false
+      setViewport({ width: window.innerWidth, height: window.innerHeight })
       const rect = wrapper!.getBoundingClientRect()
       const scrollable = rect.height - window.innerHeight
-      if (scrollable <= 0) {
-        setProgress(1)
-        return
-      }
-      setProgress(Math.min(1, Math.max(0, -rect.top / scrollable)))
+      setProgress(scrollable <= 0 ? 1 : clamp(-rect.top / scrollable))
     }
 
     function onScroll() {
@@ -51,71 +65,126 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
     }
   }, [reducedMotion])
 
-  const width = reducedMotion ? 100 : 72 + progress * 28
-  const height = reducedMotion ? 100 : 58 + progress * 42
-  const radius = reducedMotion ? 0 : 24 * (1 - progress)
-  const imgScale = reducedMotion ? 1.1 : 1 + progress * 0.12
-  const cardOpacity = reducedMotion ? 0 : Math.max(0, 1 - progress / 0.35)
+  // Changes photo by itself; picking a photo restarts the wait so the visitor gets the full time.
+  useEffect(() => {
+    if (reducedMotion || gallery.length < 2) return
+    const timer = setTimeout(() => setPhotoIndex((current) => (current + 1) % gallery.length), PHOTO_MS)
+    return () => clearTimeout(timer)
+  }, [photoIndex, reducedMotion, gallery.length])
+
+  // On small screens the starting card is narrower and shorter, so it never overflows.
+  // Without animation the visitor gets the full-screen photo right away, in a section one screen tall.
+  const shown = reducedMotion ? 1 : progress
+  const startWidth = Math.min(CARD_WIDTH, viewport.width * 0.78)
+  const startHeight = Math.min(CARD_HEIGHT, viewport.height * 0.55)
+  const width = startWidth + shown * (viewport.width - startWidth)
+  const height = startHeight + shown * (viewport.height - startHeight)
+  const radius = CARD_RADIUS * (1 - shown)
+  const slide = shown * TITLE_SLIDE * viewport.width
+  // Both edges of the photo blend into the page gray. Without animation the photo stays still, so both stay on.
+  const fadeTop = reducedMotion ? 1 : clamp(1 - shown / FADE_TOP_UNTIL)
+  const fadeBottom = reducedMotion ? 1 : clamp((shown - FADE_BOTTOM_FROM) / (1 - FADE_BOTTOM_FROM))
 
   return (
     <section
       ref={wrapperRef}
       aria-label="Showroom da Aguiar Veículos"
       className="relative bg-graphite"
-      style={{ height: reducedMotion ? '100vh' : '250vh' }}
+      style={{ height: reducedMotion ? '100vh' : `${SECTION_HEIGHT_VH}vh` }}
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={backgroundPhoto}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-graphite/70 via-graphite/40 to-graphite/80" />
-
-        <div className="relative flex h-full w-full items-center justify-center">
-          <div
-            className="relative overflow-hidden shadow-2xl"
-            style={{ width: `${width}vw`, height: `${height}vh`, borderRadius: `${radius}px` }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={gallery[photoIndex] ?? gallery[0]}
-              alt="Showroom da Aguiar Veículos"
-              className="absolute inset-0 h-full w-full object-cover"
-              style={{ transform: `scale(${imgScale})` }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-graphite/70 via-graphite/10 to-transparent" />
-            <div
-              className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center text-white"
-              style={{ opacity: cardOpacity }}
-            >
-              <h2 className="max-w-md text-3xl font-bold leading-tight md:text-4xl">
-                Entre no showroom e escolha o seu
-              </h2>
-              <p className="text-sm uppercase tracking-widest text-white/80">Role para expandir</p>
-            </div>
-            <div
-              className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2"
-              style={{ opacity: cardOpacity, pointerEvents: cardOpacity > 0.05 ? 'auto' : 'none' }}
-            >
-              {gallery.map((photo, index) => (
-                <button
-                  key={`${photo}-${index}`}
-                  type="button"
-                  onClick={() => setPhotoIndex(index)}
-                  aria-label={`Ver foto ${index + 1} do showroom`}
-                  className={`h-2 w-2 rounded-full transition-colors ${
-                    index === photoIndex ? 'bg-white' : 'bg-white/40'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
+      <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
+        <div data-testid="showroom-background" className="absolute inset-0" style={{ opacity: 1 - shown }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={gallery[0]} alt="" aria-hidden="true" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-graphite/50" />
         </div>
+
+        <div
+          data-testid="showroom-card"
+          className="relative z-20 shrink-0 overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.6)]"
+          style={{ width: `${width}px`, height: `${height}px`, borderRadius: `${radius}px` }}
+        >
+          {gallery.map((photo, index) => {
+            const current = index === photoIndex
+            return (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={`${photo}-${index}`}
+                src={photo}
+                alt={current ? 'Showroom da Aguiar Veículos' : ''}
+                aria-hidden={current ? undefined : true}
+                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[900ms] ${
+                  current ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            )
+          })}
+          {gallery.length > 1 && (
+            <div className="absolute bottom-3.5 right-3.5 z-10 flex gap-[7px]">
+              {gallery.map((photo, index) => {
+                const current = index === photoIndex
+                return (
+                  <button
+                    key={`${photo}-${index}`}
+                    type="button"
+                    onClick={() => setPhotoIndex(index)}
+                    aria-label={`Ver foto ${index + 1} do showroom`}
+                    aria-current={current ? 'true' : undefined}
+                    className={`relative h-2 rounded-full transition-all duration-300 before:absolute before:-inset-2 before:content-[''] ${
+                      current ? 'w-[22px] bg-white' : 'w-2 bg-white/50'
+                    }`}
+                  />
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        <h2
+          className="pointer-events-none absolute left-1/2 top-1/2 z-30 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-0.5 whitespace-nowrap"
+        >
+          {[
+            { id: 'a', text: 'Entre no showroom', offset: -slide },
+            { id: 'b', text: 'e escolha o seu.', offset: slide },
+          ].map((line) => (
+            <span
+              key={line.id}
+              data-testid={`showroom-title-${line.id}`}
+              className="block text-[clamp(1.7rem,6vw,2.8rem)] font-extrabold leading-[1.05] tracking-[-0.03em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.5)] md:text-[clamp(2.2rem,4.4vw,5rem)]"
+              style={{ transform: `translateX(${line.offset}px)` }}
+            >
+              {line.text}{' '}
+            </span>
+          ))}
+        </h2>
+
+        <div
+          data-testid="showroom-fade-top"
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 z-[45] h-28 bg-gradient-to-b from-graphite to-transparent"
+          style={{ opacity: fadeTop }}
+        />
+        <div
+          data-testid="showroom-fade-bottom"
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-[45] h-28 bg-gradient-to-t from-graphite to-transparent"
+          style={{ opacity: fadeBottom }}
+        />
+
+        {!reducedMotion && (
+          <div
+            className="absolute bottom-[30px] left-1/2 z-40 flex -translate-x-1/2 flex-col items-center gap-2.5 text-[0.76rem] uppercase tracking-[0.1em] transition-opacity duration-500"
+            style={{ opacity: shown < HINT_UNTIL ? 1 : 0 }}
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-white/40 motion-safe:animate-hint-bounce">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 text-white/90" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m0 0-6-6m6 6 6-6" />
+              </svg>
+            </span>
+            <span className="text-white/90">Role para expandir</span>
+          </div>
+        )}
       </div>
     </section>
   )
 }
-

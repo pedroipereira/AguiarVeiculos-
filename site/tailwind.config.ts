@@ -6,8 +6,6 @@ const config: Config = {
     extend: {
       colors: {
         graphite: '#111111',
-        // Near-black gray for the home page sections and the footer (a little lighter than `graphite`).
-        charcoal: '#1E1E1E',
         // The soft gray used as the page and footer background.
         paper: '#DCDCDC',
         'aguiar-red': '#D32027',
@@ -15,6 +13,22 @@ const config: Config = {
         'aguiar-red-light': '#FF5A60',
         'card-gray': '#F4F4F4',
         'support-gray': '#6E6E6E',
+      },
+      keyframes: {
+        // The numbers strip: the track holds two identical halves, so sliding half its width loops seamlessly.
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        // The little arrow under "Role para expandir" nudges down and back.
+        'hint-bounce': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(5px)' },
+        },
+      },
+      animation: {
+        marquee: 'marquee 60s linear infinite',
+        'hint-bounce': 'hint-bounce 2s ease-in-out infinite',
       },
     },
   },

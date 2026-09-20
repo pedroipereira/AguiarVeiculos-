@@ -54,4 +54,12 @@ describe('EstoqueDestaque', () => {
     const { container } = render(await EstoqueDestaque({ client }))
     expect(container).toBeEmptyDOMElement()
   })
+
+  it('shows dark panels on the black home page, and white cards when the section is light', async () => {
+    const dark = render(await EstoqueDestaque({ client: fakeClient([polo]) }))
+    expect(screen.getByRole('link', { name: /volkswagen polo/i })).toHaveClass('bg-white/[0.04]')
+    dark.unmount()
+    render(await EstoqueDestaque({ client: fakeClient([polo]), tone: 'light' }))
+    expect(screen.getByRole('link', { name: /volkswagen polo/i })).toHaveClass('bg-white')
+  })
 })

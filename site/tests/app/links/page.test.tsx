@@ -27,7 +27,7 @@ describe('/links page', () => {
     render(await LinksPage())
     for (const text of [/veículos novos e seminovos em presidente dutra/i, /aguiar veículos — presidente dutra, ma/i]) {
       const line = screen.getByText(text)
-      expect(line).toHaveClass('text-white/70')
+      expect(line).toHaveClass('text-white/85')
       expect(line).not.toHaveClass('text-support-gray')
     }
   })
