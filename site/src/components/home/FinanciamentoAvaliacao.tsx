@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 
 const inputClass =
-  'rounded-md border border-support-gray/25 p-2.5 text-graphite transition-colors focus:border-aguiar-red focus:outline-none'
+  'rounded-md border border-white/20 bg-white/[0.06] p-2.5 text-white transition-colors placeholder:text-white/50 focus:border-aguiar-red focus:outline-none'
 const numberInputClass = `${inputClass} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`
 const labelClass = 'text-sm font-bold'
 
@@ -55,9 +55,9 @@ export function FinanciamentoAvaliacao() {
   }
 
   return (
-    <Section eyebrow="Facilitamos pra você" title="Financiamento e avaliação" tone="light" contained>
+    <Section eyebrow="Facilitamos pra você" title="Financiamento e avaliação" tone="dark" contained>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card className="rounded-xl border border-support-gray/15 p-6 shadow-sm">
+        <Card surface="dark" className="rounded-xl p-6">
           <form onSubmit={handleFinancingSubmit} className="flex flex-col gap-4">
             <h3 className="text-lg font-bold">Simular financiamento</h3>
 
@@ -106,14 +106,14 @@ export function FinanciamentoAvaliacao() {
               </div>
             </div>
 
-            {financingError && <p className="text-sm text-aguiar-red">{financingError}</p>}
+            {financingError && <p className="text-sm text-aguiar-red-light">{financingError}</p>}
             <Button type="submit" className="mt-2 w-full">
               Simular financiamento
             </Button>
           </form>
         </Card>
 
-        <Card className="rounded-xl border border-support-gray/15 p-6 shadow-sm">
+        <Card surface="dark" className="rounded-xl p-6">
           <form onSubmit={handleTradeInSubmit} className="flex flex-col gap-4">
             <h3 className="text-lg font-bold">Avaliar meu carro para troca</h3>
 
@@ -171,7 +171,7 @@ export function FinanciamentoAvaliacao() {
               />
             </div>
 
-            {tradeInError && <p className="text-sm text-aguiar-red">{tradeInError}</p>}
+            {tradeInError && <p className="text-sm text-aguiar-red-light">{tradeInError}</p>}
             <Button type="submit" className="mt-2 w-full">
               Avaliar meu carro
             </Button>

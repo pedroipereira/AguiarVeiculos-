@@ -145,7 +145,7 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
   ]
 
   return (
-    <main className="bg-white px-6 pb-16 pt-32 text-graphite">
+    <main className="bg-graphite px-6 pb-16 pt-32 text-white">
       <JsonLd data={buildVehicleJsonLd(vehicle, imageUrls[0])} />
       <div className="mx-auto max-w-[1156px]">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.2fr_1fr]">
@@ -154,7 +154,7 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
           <div>
             <div className="mb-3 flex items-center gap-3">
               <span className="h-px w-8 bg-aguiar-red" aria-hidden="true" />
-              <p className="text-xs font-bold uppercase tracking-widest text-support-gray">
+              <p className="text-xs font-bold uppercase tracking-widest text-white/70">
                 {vehicle.brand} • {vehicle.year_model}
               </p>
             </div>
@@ -162,30 +162,30 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
               {vehicle.brand} {vehicle.model} {vehicle.version}
             </h1>
 
-            <p className="mt-6 text-xs font-bold uppercase tracking-widest text-support-gray">Valor</p>
+            <p className="mt-6 text-xs font-bold uppercase tracking-widest text-white/70">Valor</p>
             <p className="text-3xl font-bold">{formatPriceFromCents(vehicle.price_cents)}</p>
 
             <div className="mt-6 grid grid-cols-2 gap-3">
               {highlights.map((spec) => (
                 <div
                   key={spec.label}
-                  className={`flex min-w-0 items-center gap-3 rounded-2xl bg-support-gray/5 p-3.5 transition-colors hover:bg-support-gray/10 ${
+                  className={`flex min-w-0 items-center gap-3 rounded-2xl bg-white/[0.04] p-3.5 transition-colors hover:bg-white/[0.08] ${
                     spec.fullWidth ? 'col-span-2' : ''
                   }`}
                 >
                   {spec.swatchHex ? (
                     <div
-                      className="h-11 w-11 shrink-0 rounded-xl border border-support-gray/15"
+                      className="h-11 w-11 shrink-0 rounded-xl border border-white/20"
                       style={{ backgroundColor: spec.swatchHex }}
                       aria-hidden="true"
                     />
                   ) : (
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-aguiar-red/10 text-aguiar-red">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-aguiar-red/15 text-aguiar-red-light">
                       {spec.icon}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="truncate text-xs uppercase tracking-widest text-support-gray">{spec.label}</p>
+                    <p className="truncate text-xs uppercase tracking-widest text-white/70">{spec.label}</p>
                     <p className="break-words font-bold">{spec.value}</p>
                   </div>
                 </div>
@@ -207,15 +207,15 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
               Falar com um vendedor
             </a>
 
-            <div className="mt-4 flex flex-col gap-2 text-sm text-support-gray">
+            <div className="mt-4 flex flex-col gap-2 text-sm text-white/70">
               <span className="flex items-center gap-2">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-aguiar-red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-aguiar-red-light">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
                 Procedência verificada
               </span>
               <span className="flex items-center gap-2">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-aguiar-red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-aguiar-red-light">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
                 Documentação completa
@@ -224,20 +224,20 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
           </div>
         </div>
 
-        <div className="mt-14 border-t border-support-gray/15 pt-10">
+        <div className="mt-14 border-t border-white/10 pt-10">
           <h2 className="text-2xl font-bold">Ficha técnica</h2>
-          <div className="mt-4 overflow-hidden rounded-2xl border border-support-gray/15">
+          <div className="mt-4 overflow-hidden rounded-2xl border border-white/10">
             {toRows(technicalSheet, 2).map((row, rowIndex) => (
               <div
                 key={rowIndex}
-                className={`grid grid-cols-1 divide-y divide-support-gray/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0 ${
-                  rowIndex % 2 === 0 ? 'bg-support-gray/[0.04]' : 'bg-white'
-                } ${rowIndex > 0 ? 'border-t border-support-gray/10' : ''}`}
+                className={`grid grid-cols-1 divide-y divide-white/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0 ${
+                  rowIndex % 2 === 0 ? 'bg-white/[0.04]' : 'bg-transparent'
+                } ${rowIndex > 0 ? 'border-t border-white/10' : ''}`}
               >
                 {row.map((item, cellIndex) =>
                   item ? (
                     <div key={item.label} className="flex items-center justify-between gap-4 px-4 py-3.5">
-                      <dt className="text-support-gray">{item.label}</dt>
+                      <dt className="text-white/70">{item.label}</dt>
                       <dd className="font-bold">{item.value}</dd>
                     </div>
                   ) : (
@@ -260,18 +260,18 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
           {vehicle.description && (
             <div className="mt-10">
               <h2 className="text-2xl font-bold">Descrição</h2>
-              <p className="mt-4 max-w-2xl text-support-gray">{vehicle.description}</p>
+              <p className="mt-4 max-w-2xl text-white/70">{vehicle.description}</p>
             </div>
           )}
         </div>
 
         {relatedVehicles.length > 0 && (
-          <div className="mt-14 border-t border-support-gray/15 pt-10">
+          <div className="mt-14 border-t border-white/10 pt-10">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold">Outros carros disponíveis</h2>
               <Link
                 href="/estoque"
-                className="rounded-full border border-support-gray/25 px-5 py-2 text-sm font-bold transition-colors hover:border-aguiar-red hover:text-aguiar-red"
+                className="rounded-full border border-white/25 px-5 py-2 text-sm font-bold transition-colors hover:border-aguiar-red hover:text-aguiar-red-light"
               >
                 Ver todos
               </Link>
@@ -283,6 +283,7 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
                   vehicle={related}
                   imageUrl={relatedImageUrls[related.id]}
                   photoCount={relatedImageCounts[related.id]}
+                  surface="dark"
                 />
               ))}
             </div>

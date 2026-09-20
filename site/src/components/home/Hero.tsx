@@ -6,22 +6,26 @@ const FALLBACK_IMAGE = '/images/fotos/showroom-fachada.jpg'
 
 export function Hero({ imageUrl }: { imageUrl?: string }) {
   return (
-    <section className="relative flex min-h-[85vh] items-end overflow-hidden px-6 pb-16 pt-32">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={imageUrl ?? FALLBACK_IMAGE}
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-graphite/20 via-graphite/60 to-graphite/70" />
-      {/* Blends the bottom edge of the photo into the page gray of the next section. */}
-      <div
-        data-testid="hero-fade"
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-graphite"
-      />
-      <div className="relative z-10 mx-auto flex w-full max-w-[1156px] flex-col items-start gap-4">
+    <section className="relative flex flex-col overflow-hidden px-6 pb-16 md:min-h-[85vh] md:justify-end md:pt-32">
+      {/* On a phone the photo is a 3:4 block at the top, the same shape as the photo, so nothing is cropped;
+          from the tablet up it fills the whole section behind the text. */}
+      <div className="relative -mx-6 aspect-[3/4] md:absolute md:inset-0 md:mx-0 md:aspect-auto">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl ?? FALLBACK_IMAGE}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover md:object-[center_38%]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-graphite/30 via-transparent to-transparent md:from-graphite/20 md:via-graphite/60 md:to-graphite/70" />
+        {/* Blends the bottom edge of the photo into the page black under it. */}
+        <div
+          data-testid="hero-fade"
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-graphite md:h-28"
+        />
+      </div>
+      <div className="relative z-10 mx-auto -mt-24 flex w-full max-w-[1156px] flex-col items-start gap-4 md:mt-0">
         <div className="flex items-center gap-3">
           <span className="h-px w-8 bg-aguiar-red" aria-hidden="true" />
           <p className="text-xs font-bold uppercase tracking-widest text-white">

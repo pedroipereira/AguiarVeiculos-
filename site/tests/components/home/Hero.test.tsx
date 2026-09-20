@@ -27,6 +27,14 @@ describe('Hero', () => {
     expect(fade).toHaveClass('pointer-events-none')
   })
 
+  it('shows the whole portrait photo on a phone (a 3:4 block, no side crop) and fills the section from the tablet up', () => {
+    const { container } = render(<Hero imageUrl="/foto.jpg" />)
+    const photo = container.querySelector('img')!
+    expect(photo).toHaveClass('object-cover', 'md:object-[center_38%]')
+    const frame = photo.parentElement!
+    expect(frame).toHaveClass('aspect-[3/4]', 'md:absolute', 'md:inset-0', 'md:aspect-auto')
+  })
+
   describe('on a phone', () => {
     it('makes the headline a size smaller, so the buttons stay in view', () => {
       render(<Hero />)

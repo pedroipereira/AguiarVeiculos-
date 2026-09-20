@@ -21,7 +21,7 @@ export interface VehicleFiltersProps {
 }
 
 const SLIDER_CLASS =
-  'h-2 w-full cursor-pointer appearance-none rounded-full bg-support-gray/20 accent-aguiar-red ' +
+  'h-2 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-aguiar-red ' +
   '[&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:appearance-none ' +
   '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-aguiar-red [&::-webkit-slider-thumb]:shadow-sm ' +
   '[&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:rounded-full ' +
@@ -30,11 +30,11 @@ const SLIDER_CLASS =
 function CollapsibleSection({ title, children }: { title: string; children: ReactNode }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="border-t border-support-gray/20 py-3 first:border-t-0 first:pt-0">
+    <div className="border-t border-white/10 py-3 first:border-t-0 first:pt-0">
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="flex w-full items-center justify-between text-base font-bold transition-colors hover:text-aguiar-red"
+        className="flex w-full items-center justify-between text-base font-bold transition-colors hover:text-aguiar-red-light"
         aria-expanded={open}
       >
         {title}
@@ -45,7 +45,7 @@ function CollapsibleSection({ title, children }: { title: string; children: Reac
             stroke="currentColor"
             strokeWidth="2"
             aria-hidden="true"
-            className={`h-4 w-4 text-support-gray transition-transform ${open ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 text-white/70 transition-transform ${open ? 'rotate-180' : ''}`}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
           </svg>
@@ -80,7 +80,7 @@ function PillToggle({
             className={`rounded-full px-4 py-1.5 text-base font-bold transition-colors ${
               active
                 ? 'bg-aguiar-red text-white'
-                : 'border border-support-gray/25 text-graphite hover:border-aguiar-red hover:text-aguiar-red'
+                : 'border border-white/25 text-white hover:border-aguiar-red hover:text-aguiar-red-light'
             }`}
           >
             {option}
@@ -147,7 +147,7 @@ export function VehicleFilters({
 
   return (
     <div
-      className={`rounded-xl border border-support-gray/15 bg-white text-graphite shadow-sm lg:block lg:p-5 ${
+      className={`rounded-xl border border-white/10 bg-white/[0.04] text-white lg:block lg:p-5 ${
         mobileOpen ? 'block p-3' : 'hidden'
       }`}
     >
@@ -160,7 +160,7 @@ export function VehicleFilters({
             {brands.map((item) => (
               <div
                 key={item.brand}
-                className="flex items-center justify-between gap-2 rounded-md px-1.5 py-1 text-base transition-colors hover:bg-support-gray/5"
+                className="flex items-center justify-between gap-2 rounded-md px-1.5 py-1 text-base transition-colors hover:bg-white/5"
               >
                 <label className="flex cursor-pointer items-center gap-2">
                   <input
@@ -171,7 +171,7 @@ export function VehicleFilters({
                   />
                   {item.brand}
                 </label>
-                <span className="text-sm text-support-gray">{item.count}</span>
+                <span className="text-sm text-white/70">{item.count}</span>
               </div>
             ))}
           </div>
@@ -252,7 +252,7 @@ export function VehicleFilters({
       <button
         type="button"
         onClick={clearFilters}
-        className="mt-2 w-full text-center text-base text-support-gray transition-colors hover:text-aguiar-red"
+        className="mt-2 w-full text-center text-base text-white/70 transition-colors hover:text-aguiar-red-light"
       >
         Limpar filtros
       </button>

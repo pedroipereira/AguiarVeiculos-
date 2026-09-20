@@ -11,7 +11,7 @@ export function VehicleGallery({ images, label }: { images: string[]; label: str
       <div
         role="presentation"
         data-testid="vehicle-gallery-placeholder"
-        className="aspect-[4/3] w-full max-w-lg rounded-lg bg-support-gray/20"
+        className="aspect-[4/3] w-full max-w-lg rounded-lg bg-white/10"
       />
     )
   }

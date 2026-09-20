@@ -35,7 +35,7 @@ export function VehicleCard({ vehicle, imageUrl, photoCount, surface = 'light' }
           <div
             role="presentation"
             data-testid="vehicle-card-placeholder"
-            className="h-full w-full bg-support-gray/20"
+            className={`h-full w-full ${dark ? 'bg-white/10' : 'bg-support-gray/20'}`}
           />
         )}
         {photoCount != null && photoCount > 0 && (

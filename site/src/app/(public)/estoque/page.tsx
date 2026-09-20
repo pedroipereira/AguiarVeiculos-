@@ -34,25 +34,25 @@ export default async function EstoquePage({ searchParams }: EstoquePageProps) {
   ])
 
   return (
-    <main className="bg-white px-6 pb-16 pt-32 text-graphite">
+    <main className="bg-graphite px-6 pb-16 pt-32 text-white">
       <div className="mx-auto max-w-[1156px]">
-        <p className="mb-6 text-sm text-support-gray">
-          <Link href="/" className="hover:text-aguiar-red">
+        <p className="mb-6 text-sm text-white/70">
+          <Link href="/" className="hover:text-aguiar-red-light">
             Início
           </Link>
           {' / '}
-          <span className="text-graphite">Nossos Veículos</span>
+          <span className="text-white">Nossos Veículos</span>
         </p>
 
         <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
             <div className="mb-2 flex items-center gap-3">
               <span className="h-px w-8 bg-aguiar-red" aria-hidden="true" />
-              <p className="text-sm font-bold uppercase tracking-widest text-support-gray">Nossos Veículos</p>
+              <p className="text-sm font-bold uppercase tracking-widest text-white/70">Nossos Veículos</p>
             </div>
             <h1 className="text-3xl font-bold md:text-4xl">Encontre o seu próximo carro</h1>
           </div>
-          <p className="max-w-sm text-support-gray">
+          <p className="max-w-sm text-white/70">
             Seminovos selecionados e revisados. Filtre por marca, preço e mais — qualquer dúvida é
             só chamar no WhatsApp.
           </p>
@@ -73,11 +73,11 @@ export default async function EstoquePage({ searchParams }: EstoquePageProps) {
             allVehicleImageUrls={allVehicleImageUrls}
           >
             {vehicles.length === 0 ? (
-              <p className="text-support-gray">Nenhum veículo encontrado com esses filtros.</p>
+              <p className="text-white/70">Nenhum veículo encontrado com esses filtros.</p>
             ) : (
               <div className="grid grid-cols-2 gap-4 sm:gap-8 lg:grid-cols-3">
                 {vehicles.map((vehicle) => (
-                  <VehicleCard key={vehicle.id} vehicle={vehicle} imageUrl={imageUrls[vehicle.id]} />
+                  <VehicleCard key={vehicle.id} vehicle={vehicle} imageUrl={imageUrls[vehicle.id]} surface="dark" />
                 ))}
               </div>
             )}
