@@ -204,6 +204,49 @@ describe('Galeria', () => {
     })
   })
 
+  describe('on a screen taller than wide (phone, tablet standing up)', () => {
+    // The photos are 16:9. Filling a 390 x 844 screen would zoom them almost 4x, so the card
+    // stops at the screen width and keeps a 4:3 shape.
+    const original = { width: window.innerWidth, height: window.innerHeight }
+    beforeEach(() => {
+      window.innerWidth = 390
+      window.innerHeight = 844
+    })
+    afterEach(() => {
+      window.innerWidth = original.width
+      window.innerHeight = original.height
+    })
+
+    it('starts as a small 4:3 card, not a tall portrait one', () => {
+      render(<Galeria photos={['/a.jpg', '/b.jpg']} />)
+      expect(card()).toHaveStyle({ width: '300px', height: '225px', borderRadius: '18px' })
+    })
+
+    it('grows only to the screen width, staying 4:3 and losing its rounded corners', () => {
+      render(<Galeria photos={['/a.jpg', '/b.jpg']} />)
+      scrollTo(1)
+      expect(card()).toHaveStyle({ width: '390px', height: '292.5px', borderRadius: '0px' })
+    })
+
+    it('keeps the background photo, blurred, because the card never covers the screen', () => {
+      render(<Galeria photos={['/a.jpg', '/b.jpg']} />)
+      const background = screen.getByTestId('showroom-background')
+      scrollTo(1)
+      expect(background).toHaveStyle({ opacity: '1' })
+      const photo = background.querySelector('img')!
+      expect(photo.style.filter).toContain('blur(')
+    })
+  })
+
+  describe('on a screen wider than tall', () => {
+    it('keeps the full-screen expansion and a sharp background', () => {
+      render(<Galeria photos={['/a.jpg', '/b.jpg']} />)
+      scrollTo(1)
+      expect(card()).toHaveStyle({ width: '1024px', height: '768px' })
+      expect(screen.getByTestId('showroom-background').querySelector('img')!.style.filter).toBe('')
+    })
+  })
+
   describe('the focus of each photo', () => {
     const photos = ['https://x.co/1-galeria-01-rua-x21.jpg', 'https://x.co/2-galeria-05-recepcao-x63.jpg', 'https://x.co/3-sem-foco.jpg']
 

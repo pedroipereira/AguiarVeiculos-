@@ -10,6 +10,10 @@ const SECTION_HEIGHT_VH = 260
 const CARD_WIDTH = 300
 const CARD_HEIGHT = 400
 const CARD_RADIUS = 18
+// The photos are 16:9. On a screen taller than wide, filling it would zoom them almost 4x (a 390 x 844 phone),
+// so the card stops at the screen width and keeps this shape, and the background becomes a blurred copy.
+const STANDING_CARD_RATIO = 4 / 3
+const STANDING_BACKGROUND_BLUR = 28
 // Each title line slides out by this many screen widths, so it is off the screen when the card is full.
 const TITLE_SLIDE = 1.4
 const PHOTO_MS = 4000
@@ -82,10 +86,12 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
   // On small screens the starting card is narrower and shorter, so it never overflows.
   // Without animation the visitor gets the full-screen photo right away, in a section one screen tall.
   const shown = reducedMotion ? 1 : progress
+  const standing = viewport.width < viewport.height
   const startWidth = Math.min(CARD_WIDTH, viewport.width * 0.78)
-  const startHeight = Math.min(CARD_HEIGHT, viewport.height * 0.55)
+  const startHeight = standing ? startWidth / STANDING_CARD_RATIO : Math.min(CARD_HEIGHT, viewport.height * 0.55)
+  const endHeight = standing ? viewport.width / STANDING_CARD_RATIO : viewport.height
   const width = startWidth + shown * (viewport.width - startWidth)
-  const height = startHeight + shown * (viewport.height - startHeight)
+  const height = startHeight + shown * (endHeight - startHeight)
   const radius = CARD_RADIUS * (1 - shown)
   const slide = shown * TITLE_SLIDE * viewport.width
   // Both edges of the photo blend into the page gray. Without animation the photo stays still, so both stay on.
@@ -100,7 +106,7 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
       style={{ height: reducedMotion ? '100vh' : `${SECTION_HEIGHT_VH}vh` }}
     >
       <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
-        <div data-testid="showroom-background" className="absolute inset-0 [container-type:size]" style={{ opacity: 1 - shown }}>
+        <div data-testid="showroom-background" className="absolute inset-0 [container-type:size]" style={{ opacity: standing ? 1 : 1 - shown }}>
           {/* Same photo as the card, changing with it at the same time. */}
           {gallery.map((photo, index) => (
             // eslint-disable-next-line @next/next/no-img-element
@@ -109,13 +115,17 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
               src={photo}
               alt=""
               aria-hidden="true"
-              style={focalStyle(photo)}
+              style={
+                standing
+                  ? { ...focalStyle(photo), filter: `blur(${STANDING_BACKGROUND_BLUR}px)`, transform: 'scale(1.2)' }
+                  : focalStyle(photo)
+              }
               className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[900ms] ${
                 index === photoIndex ? 'opacity-100' : 'opacity-0'
               }`}
             />
           ))}
-          <div className="absolute inset-0 bg-graphite/50" />
+          <div className={`absolute inset-0 ${standing ? 'bg-graphite/60' : 'bg-graphite/50'}`} />
         </div>
 
         <div
