@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { focalOffset, parseFocalX } from '@/lib/focal-point'
 
 const FALLBACK_PHOTO = '/images/fotos/showroom-fachada.jpg'
 
@@ -20,6 +21,12 @@ const FADE_TOP_UNTIL = 0.12
 const FADE_BOTTOM_FROM = 0.85
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value))
+
+// Centers the photo on the subject written in its file name (`...-x63.jpg`), whatever the size of the box.
+const focalStyle = (photo: string) => {
+  const x = focalOffset(parseFocalX(photo))
+  return x ? { objectPosition: `${x} 50%` } : undefined
+}
 
 export function Galeria({ photos = [] }: { photos?: string[] }) {
   const gallery = photos.length > 0 ? photos : [FALLBACK_PHOTO]
@@ -93,7 +100,7 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
       style={{ height: reducedMotion ? '100vh' : `${SECTION_HEIGHT_VH}vh` }}
     >
       <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
-        <div data-testid="showroom-background" className="absolute inset-0" style={{ opacity: 1 - shown }}>
+        <div data-testid="showroom-background" className="absolute inset-0 [container-type:size]" style={{ opacity: 1 - shown }}>
           {/* Same photo as the card, changing with it at the same time. */}
           {gallery.map((photo, index) => (
             // eslint-disable-next-line @next/next/no-img-element
@@ -102,6 +109,7 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
               src={photo}
               alt=""
               aria-hidden="true"
+              style={focalStyle(photo)}
               className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[900ms] ${
                 index === photoIndex ? 'opacity-100' : 'opacity-0'
               }`}
@@ -112,7 +120,7 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
 
         <div
           data-testid="showroom-card"
-          className="relative z-20 shrink-0 overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.6)]"
+          className="relative z-20 shrink-0 overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.6)] [container-type:size]"
           style={{ width: `${width}px`, height: `${height}px`, borderRadius: `${radius}px` }}
         >
           {gallery.map((photo, index) => {
@@ -124,6 +132,7 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
                 src={photo}
                 alt={current ? 'Showroom da Aguiar Veículos' : ''}
                 aria-hidden={current ? undefined : true}
+                style={focalStyle(photo)}
                 className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[900ms] ${
                   current ? 'opacity-100' : 'opacity-0'
                 }`}

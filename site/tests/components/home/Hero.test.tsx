@@ -27,12 +27,20 @@ describe('Hero', () => {
     expect(fade).toHaveClass('pointer-events-none')
   })
 
-  it('shows the whole portrait photo on a phone (a 3:4 block, no side crop) and fills the section from the tablet up', () => {
+  it('shows the whole storefront on a phone (a square block, both signs in view) and fills the section from the tablet up', () => {
     const { container } = render(<Hero imageUrl="/foto.jpg" />)
     const photo = container.querySelector('img')!
-    expect(photo).toHaveClass('object-cover', 'md:object-[center_38%]')
+    expect(photo).toHaveClass('object-cover', 'object-[var(--focal-x,center)_50%]', 'md:object-[var(--focal-x,center)_38%]')
     const frame = photo.parentElement!
-    expect(frame).toHaveClass('aspect-[3/4]', 'md:absolute', 'md:inset-0', 'md:aspect-auto')
+    expect(frame).toHaveClass('aspect-square', 'md:absolute', 'md:inset-0', 'md:aspect-auto', '[container-type:size]')
+  })
+
+  it('centers the photo on the focus written in its file name, and on the middle when there is none', () => {
+    const { container, rerender } = render(<Hero imageUrl="https://x.co/1a-hero-01-fachada-x59.jpg" />)
+    const frame = container.querySelector('img')!.parentElement!
+    expect(frame.style.getPropertyValue('--focal-x')).toContain('0.59')
+    rerender(<Hero imageUrl="https://x.co/1a-hero.jpg" />)
+    expect(container.querySelector('img')!.parentElement!.style.getPropertyValue('--focal-x')).toBe('')
   })
 
   describe('on a phone', () => {

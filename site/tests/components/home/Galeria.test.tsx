@@ -204,6 +204,31 @@ describe('Galeria', () => {
     })
   })
 
+  describe('the focus of each photo', () => {
+    const photos = ['https://x.co/1-galeria-01-rua-x21.jpg', 'https://x.co/2-galeria-05-recepcao-x63.jpg', 'https://x.co/3-sem-foco.jpg']
+
+    it('lets the card measure itself, so the photo can be centered on its subject at any card size', () => {
+      render(<Galeria photos={photos} />)
+      expect(card()).toHaveClass('[container-type:size]')
+    })
+
+    it('centers each photo on the focus in its file name, in the card and in the background', () => {
+      const { container } = render(<Galeria photos={photos} />)
+      const inCard = Array.from(container.querySelectorAll('[data-testid=showroom-card] img')) as HTMLImageElement[]
+      expect(inCard[0].style.objectPosition).toContain('0.21')
+      expect(inCard[1].style.objectPosition).toContain('0.63')
+      const inBackground = Array.from(container.querySelectorAll('[data-testid=showroom-background] img')) as HTMLImageElement[]
+      expect(inBackground[0].style.objectPosition).toContain('0.21')
+      expect(inBackground[1].style.objectPosition).toContain('0.63')
+    })
+
+    it('keeps the photo centered when the name has no focus', () => {
+      const { container } = render(<Galeria photos={photos} />)
+      const inCard = Array.from(container.querySelectorAll('[data-testid=showroom-card] img')) as HTMLImageElement[]
+      expect(inCard[2].style.objectPosition).toBe('')
+    })
+  })
+
   describe('the photos inside the card', () => {
     const photos = ['/a.jpg', '/b.jpg', '/c.jpg']
     const current = () => screen.getByAltText(/showroom da aguiar veículos/i)

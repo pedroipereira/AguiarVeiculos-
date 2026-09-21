@@ -1,21 +1,27 @@
 import Link from 'next/link'
 import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { buttonBase, buttonVariants } from '@/components/ui/buttonStyles'
+import { focalOffset, parseFocalX } from '@/lib/focal-point'
 
 const FALLBACK_IMAGE = '/images/fotos/showroom-fachada.jpg'
 
 export function Hero({ imageUrl }: { imageUrl?: string }) {
+  const focalX = focalOffset(parseFocalX(imageUrl))
   return (
     <section className="relative flex flex-col overflow-hidden px-6 pb-16 md:min-h-[85vh] md:justify-end md:pt-32">
-      {/* On a phone the photo is a 3:4 block at the top, the same shape as the photo, so nothing is cropped;
-          from the tablet up it fills the whole section behind the text. */}
-      <div className="relative -mx-6 aspect-[3/4] md:absolute md:inset-0 md:mx-0 md:aspect-auto">
+      {/* On a phone the photo is a square block at the top, wide enough for both signs and the cars, so
+          nothing is zoomed; from the tablet up it fills the whole section behind the text. The point of the
+          photo that must stay in view comes from its file name (see `lib/focal-point`). */}
+      <div
+        className="relative -mx-6 aspect-square [container-type:size] md:absolute md:inset-0 md:mx-0 md:aspect-auto"
+        style={focalX ? ({ '--focal-x': focalX } as React.CSSProperties) : undefined}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl ?? FALLBACK_IMAGE}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover md:object-[center_38%]"
+          className="absolute inset-0 h-full w-full object-cover object-[var(--focal-x,center)_50%] md:object-[var(--focal-x,center)_38%]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-graphite/30 via-transparent to-transparent md:from-graphite/20 md:via-graphite/60 md:to-graphite/70" />
         {/* Blends the bottom edge of the photo into the page black under it. */}
