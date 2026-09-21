@@ -101,7 +101,7 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
   return (
     <section
       ref={wrapperRef}
-      aria-label="Showroom da Aguiar Veículos"
+      aria-label="Estrutura da Aguiar Veículos"
       className="relative bg-graphite"
       style={{ height: reducedMotion ? '100vh' : `${SECTION_HEIGHT_VH}vh` }}
     >
@@ -140,7 +140,7 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
               <img
                 key={`${photo}-${index}`}
                 src={photo}
-                alt={current ? 'Showroom da Aguiar Veículos' : ''}
+                alt={current ? 'Estrutura da Aguiar Veículos' : ''}
                 aria-hidden={current ? undefined : true}
                 style={focalStyle(photo)}
                 className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[900ms] ${
@@ -158,7 +158,7 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
                     key={`${photo}-${index}`}
                     type="button"
                     onClick={() => setPhotoIndex(index)}
-                    aria-label={`Ver foto ${index + 1} do showroom`}
+                    aria-label={`Ver foto ${index + 1} da galeria`}
                     aria-current={current ? 'true' : undefined}
                     className={`relative h-2 rounded-full transition-all duration-300 before:absolute before:-inset-2 before:content-[''] ${
                       current ? 'w-[22px] bg-white' : 'w-2 bg-white/50'
@@ -174,8 +174,8 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
           className="pointer-events-none absolute left-1/2 top-1/2 z-30 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-0.5 whitespace-nowrap"
         >
           {[
-            { id: 'a', text: 'Entre no showroom', offset: -slide },
-            { id: 'b', text: 'e escolha o seu.', offset: slide },
+            { id: 'a', text: 'Entre e conheça', offset: -slide },
+            { id: 'b', text: 'a Aguiar Veículos.', offset: slide },
           ].map((line) => (
             <span
               key={line.id}

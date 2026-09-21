@@ -48,13 +48,13 @@ describe('FinanciamentoAvaliacao', () => {
 
   it('submits the trade-in form, saves the lead, and opens WhatsApp', async () => {
     render(<FinanciamentoAvaliacao />)
-    const tradeInForm = within(screen.getByRole('button', { name: /avaliar meu carro/i }).closest('form')!)
+    const tradeInForm = within(screen.getByRole('button', { name: /pedir avaliação rápida no whatsapp/i }).closest('form')!)
     fireEvent.change(tradeInForm.getByLabelText(/^nome$/i), { target: { value: 'João' } })
     fireEvent.change(tradeInForm.getByLabelText(/modelo do seu carro/i), { target: { value: 'Onix' } })
     fireEvent.change(tradeInForm.getByLabelText(/ano do seu carro/i), { target: { value: '2019' } })
     fireEvent.change(tradeInForm.getByLabelText(/km rodados/i), { target: { value: '60000' } })
     fireEvent.change(tradeInForm.getByLabelText(/observações/i), { target: { value: 'Único dono' } })
-    fireEvent.click(tradeInForm.getByRole('button', { name: /avaliar meu carro/i }))
+    fireEvent.click(tradeInForm.getByRole('button', { name: /pedir avaliação rápida no whatsapp/i }))
 
     await waitFor(() => expect(submitTradeInLead).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'João', model: 'Onix', observations: 'Único dono' }),
@@ -64,7 +64,7 @@ describe('FinanciamentoAvaliacao', () => {
 
   it('does not ask for a phone number or brand on the trade-in form', () => {
     render(<FinanciamentoAvaliacao />)
-    const tradeInForm = within(screen.getByRole('button', { name: /avaliar meu carro/i }).closest('form')!)
+    const tradeInForm = within(screen.getByRole('button', { name: /pedir avaliação rápida no whatsapp/i }).closest('form')!)
     expect(tradeInForm.queryByLabelText(/telefone/i)).not.toBeInTheDocument()
     expect(tradeInForm.queryByLabelText(/marca do seu carro/i)).not.toBeInTheDocument()
   })

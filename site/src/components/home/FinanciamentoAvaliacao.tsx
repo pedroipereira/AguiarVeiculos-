@@ -172,8 +172,8 @@ export function FinanciamentoAvaliacao() {
             </div>
 
             {tradeInError && <p className="text-sm text-aguiar-red-light">{tradeInError}</p>}
-            <Button type="submit" className="mt-2 w-full">
-              Avaliar meu carro
+            <Button type="submit" className="mt-2 w-full text-balance">
+              Pedir avaliação rápida no WhatsApp
             </Button>
           </form>
         </Card>

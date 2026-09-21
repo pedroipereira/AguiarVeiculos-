@@ -30,7 +30,7 @@ describe('Home page', () => {
     const text = headings.map((h) => h.textContent ?? '')
     expect(text[0]).toMatch(/confiança/i)
     const position = (pattern: RegExp) => text.findIndex((heading) => pattern.test(heading))
-    const order = [/financiamento e avaliação/i, /sobre a aguiar veículos/i, /showroom/i, /venha viver a experiência aguiar/i].map(position)
+    const order = [/financiamento e avaliação/i, /sobre a aguiar veículos/i, /entre e conheça a aguiar veículos/i, /venha viver a experiência aguiar/i].map(position)
     expect(order.every((index) => index > 0)).toBe(true)
     expect([...order].sort((a, b) => a - b)).toEqual(order)
   })

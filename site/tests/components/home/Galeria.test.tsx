@@ -44,7 +44,7 @@ afterEach(() => {
 describe('Galeria', () => {
   it('falls back to the static showroom photo when no photos are provided', () => {
     render(<Galeria />)
-    expect(screen.getByAltText(/showroom da aguiar veículos/i)).toHaveAttribute('src', '/images/fotos/showroom-fachada.jpg')
+    expect(screen.getByAltText(/estrutura da aguiar veículos/i)).toHaveAttribute('src', '/images/fotos/showroom-fachada.jpg')
   })
 
   it('is a tall section that stays pinned while the visitor scrolls', () => {
@@ -84,10 +84,10 @@ describe('Galeria', () => {
   describe('the title', () => {
     it('reads as one heading, on two lines over the card', () => {
       render(<Galeria />)
-      expect(screen.getByRole('heading', { level: 2, name: 'Entre no showroom e escolha o seu.' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 2, name: 'Entre e conheça a Aguiar Veículos.' })).toBeInTheDocument()
       const [a, b] = titleLines()
-      expect(a).toHaveTextContent('Entre no showroom')
-      expect(b).toHaveTextContent('e escolha o seu.')
+      expect(a).toHaveTextContent('Entre e conheça')
+      expect(b).toHaveTextContent('a Aguiar Veículos.')
     })
 
     it('sits centered at first, then each line slides out to its own side as the card grows', () => {
@@ -172,7 +172,7 @@ describe('Galeria', () => {
       expect(visibleBackground()).toEqual(['/a.jpg'])
       act(() => { vi.advanceTimersByTime(4000) })
       expect(visibleBackground()).toEqual(['/b.jpg'])
-      fireEvent.click(screen.getByLabelText(/ver foto 3 do showroom/i))
+      fireEvent.click(screen.getByLabelText(/ver foto 3 da galeria/i))
       expect(visibleBackground()).toEqual(['/c.jpg'])
     })
 
@@ -274,27 +274,27 @@ describe('Galeria', () => {
 
   describe('the photos inside the card', () => {
     const photos = ['/a.jpg', '/b.jpg', '/c.jpg']
-    const current = () => screen.getByAltText(/showroom da aguiar veículos/i)
+    const current = () => screen.getByAltText(/estrutura da aguiar veículos/i)
 
     it('shows the first photo, and the others only to the eyes, not to screen readers', () => {
       const { container } = render(<Galeria photos={photos} />)
       expect(current()).toHaveAttribute('src', '/a.jpg')
       expect(container.querySelectorAll('[data-testid=showroom-card] img').length).toBe(3)
-      expect(screen.getAllByAltText(/showroom da aguiar veículos/i)).toHaveLength(1)
+      expect(screen.getAllByAltText(/estrutura da aguiar veículos/i)).toHaveLength(1)
     })
 
     it('lets the visitor pick a photo with the dots', () => {
       render(<Galeria photos={photos} />)
-      fireEvent.click(screen.getByLabelText(/ver foto 2 do showroom/i))
+      fireEvent.click(screen.getByLabelText(/ver foto 2 da galeria/i))
       expect(current()).toHaveAttribute('src', '/b.jpg')
-      expect(screen.getByLabelText(/ver foto 2 do showroom/i)).toHaveAttribute('aria-current', 'true')
-      expect(screen.getByLabelText(/ver foto 1 do showroom/i)).not.toHaveAttribute('aria-current')
+      expect(screen.getByLabelText(/ver foto 2 da galeria/i)).toHaveAttribute('aria-current', 'true')
+      expect(screen.getByLabelText(/ver foto 1 da galeria/i)).not.toHaveAttribute('aria-current')
     })
 
     it('draws the current dot as a longer pill', () => {
       render(<Galeria photos={photos} />)
-      expect(screen.getByLabelText(/ver foto 1 do showroom/i)).toHaveClass('w-[22px]')
-      expect(screen.getByLabelText(/ver foto 2 do showroom/i)).toHaveClass('w-2')
+      expect(screen.getByLabelText(/ver foto 1 da galeria/i)).toHaveClass('w-[22px]')
+      expect(screen.getByLabelText(/ver foto 2 da galeria/i)).toHaveClass('w-2')
     })
 
     it('changes photo by itself every 4 seconds, and starts over after the last one', () => {
@@ -313,7 +313,7 @@ describe('Galeria', () => {
       vi.useFakeTimers()
       render(<Galeria photos={photos} />)
       act(() => { vi.advanceTimersByTime(3000) })
-      fireEvent.click(screen.getByLabelText(/ver foto 3 do showroom/i))
+      fireEvent.click(screen.getByLabelText(/ver foto 3 da galeria/i))
       act(() => { vi.advanceTimersByTime(3000) })
       expect(current()).toHaveAttribute('src', '/c.jpg')
       act(() => { vi.advanceTimersByTime(1000) })
@@ -358,7 +358,7 @@ describe('Galeria', () => {
       vi.useFakeTimers()
       render(<Galeria photos={['/a.jpg', '/b.jpg']} />)
       act(() => { vi.advanceTimersByTime(12000) })
-      expect(screen.getByAltText(/showroom da aguiar veículos/i)).toHaveAttribute('src', '/a.jpg')
+      expect(screen.getByAltText(/estrutura da aguiar veículos/i)).toHaveAttribute('src', '/a.jpg')
     })
   })
 })

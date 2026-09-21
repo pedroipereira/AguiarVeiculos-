@@ -49,6 +49,13 @@ describe('VehicleCard', () => {
     expect(screen.queryByText(/^\d+$/)).not.toBeInTheDocument()
   })
 
+  it('grows a little when the mouse is over it, keeping the lift and the photo zoom (mouse only)', () => {
+    render(<VehicleCard vehicle={vehicle} imageUrl="/a.jpg" surface="dark" />)
+    const card = screen.getByRole('link')
+    expect(card).toHaveClass('[@media(hover:hover)]:hover:scale-[1.03]', 'hover:-translate-y-1', 'hover:z-10')
+    expect(screen.getByRole('img')).toHaveClass('group-hover:scale-105')
+  })
+
   it('is a white card by default, for the light pages', () => {
     render(<VehicleCard vehicle={vehicle} />)
     expect(screen.getByRole('link')).toHaveClass('bg-white', 'text-graphite')

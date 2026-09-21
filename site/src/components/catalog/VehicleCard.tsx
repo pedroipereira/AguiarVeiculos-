@@ -17,9 +17,9 @@ export function VehicleCard({ vehicle, imageUrl, photoCount, surface = 'light' }
   return (
     <Link
       href={`/estoque/${vehicle.slug}`}
-      className={`group block overflow-hidden rounded-xl border transition-all hover:-translate-y-1 ${
+      className={`group block overflow-hidden rounded-xl border transition-all hover:z-10 hover:-translate-y-1 [@media(hover:hover)]:hover:scale-[1.03] ${
         dark
-          ? 'border-white/10 bg-white/[0.04] text-white hover:border-white/25'
+          ? 'border-white/10 bg-white/[0.04] text-white hover:border-white/25 hover:shadow-[0_18px_40px_rgba(0,0,0,0.55)]'
           : 'border-support-gray/10 bg-white text-graphite shadow-sm hover:shadow-lg'
       }`}
     >
