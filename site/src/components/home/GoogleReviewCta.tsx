@@ -26,10 +26,10 @@ export function GoogleReviewCta({ tone = 'dark' }: { tone?: SectionTone }) {
           <p className="mb-1 text-lg tracking-[0.3em] text-yellow-400" aria-hidden="true">
             ★★★★★
           </p>
-          <p className="text-xl font-bold md:text-2xl">Sua opinião leva a Aguiar mais longe</p>
+          <p className="text-balance text-xl font-bold md:text-2xl">A sua opinião vale ouro para a Aguiar</p>
           <p className={`mt-2 ${mutedTextClass(tone)}`}>
-            Foi na Aguiar Veículos e gostou do atendimento? Conte pra nós como foi e ajude outros clientes a chegarem
-            até a gente.
+            Como foi seu atendimento na Aguiar Veículos? Conte pra gente! Sua opinião nos ajuda a melhorar e dá mais
+            confiança a quem está procurando o próximo carro.
           </p>
         </div>
       </div>
