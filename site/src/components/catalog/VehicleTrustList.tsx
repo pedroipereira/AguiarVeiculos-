@@ -32,11 +32,17 @@ const PROMISES: { text: string; icon: ReactNode }[] = [
   },
 ]
 
-export function VehicleTrustList() {
+/**
+ * Stacked on a phone; from the tablet up the three sit side by side with hairlines between them, so the
+ * panel is not left with an empty space beside each short line.
+ */
+export function VehicleTrustList({ className = '' }: { className?: string }) {
   return (
-    <ul className="mt-6 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+    <ul
+      className={`flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:grid md:grid-cols-3 md:gap-0 md:divide-x md:divide-white/10 md:p-5 ${className}`}
+    >
       {PROMISES.map((promise) => (
-        <li key={promise.text} className="flex items-center gap-3 text-sm text-white/90">
+        <li key={promise.text} className="flex items-center gap-3 text-sm text-white/90 md:px-5 md:first:pl-0 md:last:pr-0">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-aguiar-red/15 text-aguiar-red-light">
             {promise.icon}
           </span>

@@ -228,9 +228,10 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
                 Simular financiamento
               </Link>
             </div>
-
-            <VehicleTrustList />
           </div>
+
+          {/* A strip as wide as the gallery and the buy panel together on a computer; under the buttons on a phone. */}
+          <VehicleTrustList className="lg:col-span-2" />
         </div>
 
         <div className="mt-14 border-t border-white/10 pt-10">

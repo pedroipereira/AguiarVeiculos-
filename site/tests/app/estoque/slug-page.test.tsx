@@ -91,6 +91,19 @@ describe('/estoque/[slug] page', () => {
     expect(screen.queryByText('Procedência verificada')).not.toBeInTheDocument()
   })
 
+  it('lays the trust promises out as a strip as wide as the gallery and the buy panel together, not squeezed into the panel', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
+    render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    const list = screen.getByText('Revisado e higienizado').closest('ul')!
+    expect(list).toHaveClass('lg:col-span-2')
+    // It is a child of the same grid as the gallery and the panel, after both.
+    expect(list.parentElement).toHaveClass('grid')
+    const buy = screen.getByRole('link', { name: /falar com um vendedor/i })
+    expect(list.parentElement).toContainElement(buy)
+    expect(list.parentElement!.lastElementChild).toBe(list)
+    expect(buy.closest('ul')).toBeNull()
+  })
+
   it('marks the main WhatsApp button, so the phone bar knows when it has left the screen', async () => {
     maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
     const { container } = render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))

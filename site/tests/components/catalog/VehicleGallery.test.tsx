@@ -1,4 +1,5 @@
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import { render, screen, fireEvent, within, act } from '@testing-library/react'
+import { vi } from 'vitest'
 import { VehicleGallery } from '@/components/catalog/VehicleGallery'
 
 const photos = ['/a.jpg', '/b.jpg', '/c.jpg']
@@ -65,22 +66,63 @@ describe('VehicleGallery', () => {
     expect(main()).toHaveAttribute('src', '/a.jpg')
   })
 
-  it('fills the empty sides of a photo with a blurred copy of it, without ever stretching the photo itself', () => {
+  it('fills the frame with the photo, leaving no bars and no blurred filler, and never stretching it', () => {
     render(<VehicleGallery images={photos} label={label} />)
-    const backdrop = screen.getByTestId('vehicle-gallery-backdrop')
-    expect(backdrop.tagName).toBe('IMG')
-    expect(backdrop).toHaveAttribute('alt', '')
-    expect(backdrop).toHaveAttribute('aria-hidden', 'true')
-    expect(backdrop).toHaveAttribute('src', '/a.jpg')
-    expect(backdrop).toHaveClass('blur-2xl', 'object-cover')
-    expect(main()).toHaveClass('object-contain')
-    fireEvent.click(screen.getByLabelText(/próxima foto/i))
-    expect(screen.getByTestId('vehicle-gallery-backdrop')).toHaveAttribute('src', '/b.jpg')
+    expect(main()).toHaveClass('object-cover')
+    expect(main()).not.toHaveClass('object-contain')
+    expect(screen.queryByTestId('vehicle-gallery-backdrop')).not.toBeInTheDocument()
   })
 
-  it('is tall and edge to edge on a phone, and 4:3 inside the page from the small breakpoint up', () => {
+  it('is edge to edge on a phone, and a rounded block inside the page from the small breakpoint up', () => {
     render(<VehicleGallery images={photos} label={label} />)
-    expect(frame()).toHaveClass('aspect-[4/5]', 'sm:aspect-[4/3]', '-mx-6', 'sm:mx-0', 'sm:rounded-lg')
+    expect(frame()).toHaveClass('-mx-6', 'sm:mx-0', 'sm:rounded-lg', 'overflow-hidden')
+  })
+
+  describe('the shape of the frame', () => {
+    // The first photo is the cover, so the frame takes its shape, between a square and 4:3: the photos of a
+    // car are then cut as little as possible, and the whole photo is one tap away in the viewer.
+    class FakeImage {
+      static size = { width: 1600, height: 1200 }
+      naturalWidth = FakeImage.size.width
+      naturalHeight = FakeImage.size.height
+      onload: (() => void) | null = null
+      set src(_value: string) {
+        this.onload?.()
+      }
+    }
+    beforeEach(() => vi.stubGlobal('Image', FakeImage))
+    afterEach(() => vi.unstubAllGlobals())
+    const ratioFor = (width: number, height: number) => {
+      FakeImage.size = { width, height }
+      render(<VehicleGallery images={photos} label={label} />)
+      return Number(frame().style.aspectRatio)
+    }
+
+    it('follows the first photo', () => {
+      expect(ratioFor(1600, 1408)).toBeCloseTo(1600 / 1408)
+    })
+
+    it('never gets wider than 4:3, even for a very wide first photo', () => {
+      expect(ratioFor(2000, 1000)).toBeCloseTo(4 / 3)
+    })
+
+    it('never gets taller than a square, even for a photo taken standing up', () => {
+      expect(ratioFor(1000, 1400)).toBe(1)
+    })
+
+    it('starts at 5:4 until the first photo is measured, so nothing jumps far when it arrives', () => {
+      vi.unstubAllGlobals()
+      vi.stubGlobal('Image', class { naturalWidth = 0; naturalHeight = 0; onload: (() => void) | null = null; set src(_v: string) {} })
+      render(<VehicleGallery images={photos} label={label} />)
+      expect(Number(frame().style.aspectRatio)).toBeCloseTo(1.25)
+    })
+
+    it('keeps the shape of the first photo while the visitor goes through the others', () => {
+      FakeImage.size = { width: 1600, height: 1408 }
+      render(<VehicleGallery images={photos} label={label} />)
+      fireEvent.click(screen.getByLabelText(/próxima foto/i))
+      expect(Number(frame().style.aspectRatio)).toBeCloseTo(1600 / 1408)
+    })
   })
 
   it('shows the strip as a row that scrolls sideways, so it never leaves one photo alone on a second line', () => {
@@ -104,6 +146,15 @@ describe('VehicleGallery', () => {
       render(<VehicleGallery images={photos} label={label} />)
       fireEvent.click(screen.getByRole('button', { name: /ver em tela cheia/i }))
       expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
+
+    it('gives the focus back only when it was opened with the keyboard, so a mouse or a finger never leaves a focus ring behind', () => {
+      render(<VehicleGallery images={photos} label={label} />)
+      const opener = screen.getByRole('button', { name: /ver em tela cheia/i })
+      // A click made by a mouse or a finger reports how many times it was pressed (detail 1); the keyboard reports 0.
+      fireEvent.click(opener, { detail: 1 })
+      fireEvent.keyDown(document, { key: 'Escape' })
+      expect(opener).not.toHaveFocus()
     })
 
     it('closes with the close button and with Escape, giving the focus back to what opened it', () => {

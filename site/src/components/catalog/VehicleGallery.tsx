@@ -4,17 +4,36 @@ import { useEffect, useRef, useState } from 'react'
 import { useSwipe } from '@/lib/use-swipe'
 import { VehicleLightbox } from './VehicleLightbox'
 
+// The frame takes the shape of the first photo (the cover), kept between a square and 4:3: the photos of a car
+// are then cut as little as possible, and the whole photo is one tap away in the viewer. Until the first photo
+// is measured the frame is 5:4, a middle shape, so little moves when it arrives.
+const MIN_RATIO = 1
+const MAX_RATIO = 4 / 3
+const START_RATIO = 5 / 4
+
 const roundButton =
   'flex h-11 w-11 items-center justify-center rounded-full bg-graphite/60 text-white backdrop-blur transition-colors hover:bg-graphite/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
 
 export function VehicleGallery({ images, label }: { images: string[]; label: string }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [viewerOpen, setViewerOpen] = useState(false)
+  const [firstRatio, setFirstRatio] = useState(START_RATIO)
   const opener = useRef<HTMLElement | null>(null)
   const stripRef = useRef<HTMLDivElement>(null)
   const count = images.length
   const goTo = (index: number) => setActiveIndex(count > 0 ? ((index % count) + count) % count : 0)
   const swipe = useSwipe(() => goTo(activeIndex + 1), () => goTo(activeIndex - 1))
+
+  // Measures the first photo (already downloading for the main image, so this costs nothing more).
+  const first = images[0]
+  useEffect(() => {
+    if (!first) return
+    const probe = new Image()
+    probe.onload = () => {
+      if (probe.naturalWidth && probe.naturalHeight) setFirstRatio(probe.naturalWidth / probe.naturalHeight)
+    }
+    probe.src = first
+  }, [first])
 
   // Warms up the photos on each side of the current one, so paging feels instant.
   useEffect(() => {
@@ -56,30 +75,21 @@ export function VehicleGallery({ images, label }: { images: string[]; label: str
 
   return (
     <div>
-      {/* Edge to edge and tall on a phone, so photos taken standing up fill it; 4:3 inside the page from the small
-          breakpoint up. The empty sides of a photo are filled with a blurred copy of it, and the photo itself is
-          always shown whole, never stretched or cropped. */}
+      {/* Edge to edge on a phone, a rounded block inside the page from the small breakpoint up. The photo fills
+          the frame, so there are no bars; whatever it cuts is seen whole in the full-screen viewer. */}
       <div
         data-testid="vehicle-gallery-frame"
         {...(count > 1 ? swipe : {})}
-        className="relative -mx-6 aspect-[4/5] overflow-hidden bg-graphite sm:mx-0 sm:aspect-[4/3] sm:rounded-lg"
+        style={{ aspectRatio: `${Math.min(MAX_RATIO, Math.max(MIN_RATIO, firstRatio))}` }}
+        className="relative -mx-6 overflow-hidden bg-graphite sm:mx-0 sm:rounded-lg"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          data-testid="vehicle-gallery-backdrop"
-          src={images[activeIndex]}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl"
-        />
-        <div className="absolute inset-0 bg-graphite/30" aria-hidden="true" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={images[activeIndex]}
           alt={label}
           draggable={false}
           onClick={() => openViewer(null)}
-          className="relative h-full w-full cursor-zoom-in object-contain"
+          className="h-full w-full cursor-zoom-in object-cover"
         />
 
         {count > 1 && (
@@ -112,7 +122,7 @@ export function VehicleGallery({ images, label }: { images: string[]; label: str
 
         <button
           type="button"
-          onClick={(event) => openViewer(event.currentTarget)}
+          onClick={(event) => openViewer(event.detail === 0 ? event.currentTarget : null)}
           aria-label="Ver em tela cheia"
           className={`absolute bottom-3 right-3 ${roundButton}`}
         >

@@ -19,6 +19,20 @@ describe('VehicleOptionalsList', () => {
     }
   })
 
+  it('always puts "Outros" last, wherever it was marked, keeping the order of the rest', () => {
+    render(<VehicleOptionalsList optionals={['Ar condicionado', 'Outros', 'Bluetooth', 'Vidros elétricos']} />)
+    const pills = Array.from(document.querySelectorAll('span')).map((pill) => pill.textContent)
+    expect(pills).toEqual(['Ar condicionado', 'Bluetooth', 'Vidros elétricos', 'Outros'])
+  })
+
+  it('treats "outros" the same in any case, and keeps the list as it is when there is none', () => {
+    const { unmount } = render(<VehicleOptionalsList optionals={[' outros ', 'ABS', 'Bluetooth']} />)
+    expect(Array.from(document.querySelectorAll('span')).map((pill) => pill.textContent?.trim())).toEqual(['ABS', 'Bluetooth', 'outros'])
+    unmount()
+    render(<VehicleOptionalsList optionals={['Bluetooth', 'ABS']} />)
+    expect(Array.from(document.querySelectorAll('span')).map((pill) => pill.textContent)).toEqual(['Bluetooth', 'ABS'])
+  })
+
   it('renders nothing when the vehicle has no optionals marked', () => {
     const { container } = render(<VehicleOptionalsList optionals={[]} />)
     expect(container).toBeEmptyDOMElement()
