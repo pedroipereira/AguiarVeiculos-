@@ -33,3 +33,31 @@ describe('focalOffset', () => {
     expect(focalOffset(undefined)).toBeUndefined()
   })
 })
+
+import { parsePhotoName, PORTRAIT_RATIO } from '@/lib/focal-point'
+
+describe('parsePhotoName', () => {
+  const U = 'https://x.supabase.co/storage/v1/object/public/site-images/0b3f6a52-1c2d-4e5f-8a9b-0c1d2e3f4a5b'
+
+  it('reads the pair name, the portrait flag and the focus from the file name, ignoring the upload code', () => {
+    expect(parsePhotoName(`${U}-galeria-01-fachada-rua-x24.jpg`)).toEqual({ key: 'galeria-01-fachada-rua', vertical: false, focalX: 24 })
+    expect(parsePhotoName(`${U}-galeria-01-fachada-rua-vertical-x33.jpg`)).toEqual({ key: 'galeria-01-fachada-rua', vertical: true, focalX: 33 })
+  })
+
+  it('also understands the raw name from an upload with "(vertical)" in it', () => {
+    expect(parsePhotoName(`${U}-galeria-01-fachada-rua-x24-vertical-.png`)).toEqual({ key: 'galeria-01-fachada-rua', vertical: true, focalX: 24 })
+  })
+
+  it('works without an upload code, without a focus and with a query string', () => {
+    expect(parsePhotoName('/a.jpg')).toEqual({ key: 'a', vertical: false, focalX: undefined })
+    expect(parsePhotoName('/a/foto-x21.jpg?v=3')).toEqual({ key: 'foto', vertical: false, focalX: 21 })
+    expect(parsePhotoName('/a/foto-x150.jpg').focalX).toBeUndefined()
+  })
+})
+
+describe('focalOffset for a portrait photo', () => {
+  it('uses the 3:4 shape of the photo to know how much of it is hidden', () => {
+    expect(PORTRAIT_RATIO).toBeCloseTo(0.75)
+    expect(focalOffset(50, PORTRAIT_RATIO)).toContain('max(100cqw, 75.0000cqh)')
+  })
+})

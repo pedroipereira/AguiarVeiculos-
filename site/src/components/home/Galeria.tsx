@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { focalOffset, parseFocalX } from '@/lib/focal-point'
+import { buildSlides, slideFocusVars, type Slide } from '@/lib/photo-slides'
 
 const FALLBACK_PHOTO = '/images/fotos/showroom-fachada.jpg'
 
@@ -10,10 +10,6 @@ const SECTION_HEIGHT_VH = 260
 const CARD_WIDTH = 300
 const CARD_HEIGHT = 400
 const CARD_RADIUS = 18
-// The photos are 16:9. On a screen taller than wide, filling it would zoom them almost 4x (a 390 x 844 phone),
-// so the card stops at the screen width and keeps this shape, and the background becomes a blurred copy.
-const STANDING_CARD_RATIO = 4 / 3
-const STANDING_BACKGROUND_BLUR = 28
 // Each title line slides out by this many screen widths, so it is off the screen when the card is full.
 const TITLE_SLIDE = 1.4
 const PHOTO_MS = 4000
@@ -26,14 +22,33 @@ const FADE_BOTTOM_FROM = 0.85
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value))
 
-// Centers the photo on the subject written in its file name (`...-x63.jpg`), whatever the size of the box.
-const focalStyle = (photo: string) => {
-  const x = focalOffset(parseFocalX(photo))
-  return x ? { objectPosition: `${x} 50%` } : undefined
+// Portrait screens get the portrait (3:4) file of a photo, every other screen the landscape (16:9) one; each is
+// centered on the subject written in its file name (`...-x63.jpg`), whatever the size of the box. See `lib/photo-slides`.
+const IMAGE_FOCUS =
+  '[object-position:var(--focal-l,center)_50%] [@media(orientation:portrait)]:[object-position:var(--focal-p,var(--focal-l,center))_50%]'
+
+function SlidePhoto({ slide, alt, hidden, className }: { slide: Slide; alt: string; hidden?: boolean; className: string }) {
+  const image = (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={slide.landscape ?? slide.portrait}
+      alt={alt}
+      aria-hidden={hidden ? true : undefined}
+      style={slideFocusVars(slide) as React.CSSProperties}
+      className={`${className} ${IMAGE_FOCUS}`}
+    />
+  )
+  if (!slide.landscape || !slide.portrait) return image
+  return (
+    <picture>
+      <source media="(orientation: portrait)" srcSet={slide.portrait} />
+      {image}
+    </picture>
+  )
 }
 
 export function Galeria({ photos = [] }: { photos?: string[] }) {
-  const gallery = photos.length > 0 ? photos : [FALLBACK_PHOTO]
+  const gallery = buildSlides(photos.length > 0 ? photos : [FALLBACK_PHOTO])
   const wrapperRef = useRef<HTMLElement>(null)
   const [progress, setProgress] = useState(0)
   const [photoIndex, setPhotoIndex] = useState(0)
@@ -86,12 +101,10 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
   // On small screens the starting card is narrower and shorter, so it never overflows.
   // Without animation the visitor gets the full-screen photo right away, in a section one screen tall.
   const shown = reducedMotion ? 1 : progress
-  const standing = viewport.width < viewport.height
   const startWidth = Math.min(CARD_WIDTH, viewport.width * 0.78)
-  const startHeight = standing ? startWidth / STANDING_CARD_RATIO : Math.min(CARD_HEIGHT, viewport.height * 0.55)
-  const endHeight = standing ? viewport.width / STANDING_CARD_RATIO : viewport.height
+  const startHeight = Math.min(CARD_HEIGHT, viewport.height * 0.55)
   const width = startWidth + shown * (viewport.width - startWidth)
-  const height = startHeight + shown * (endHeight - startHeight)
+  const height = startHeight + shown * (viewport.height - startHeight)
   const radius = CARD_RADIUS * (1 - shown)
   const slide = shown * TITLE_SLIDE * viewport.width
   // Both edges of the photo blend into the page gray. Without animation the photo stays still, so both stay on.
@@ -106,26 +119,20 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
       style={{ height: reducedMotion ? '100vh' : `${SECTION_HEIGHT_VH}vh` }}
     >
       <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
-        <div data-testid="showroom-background" className="absolute inset-0 [container-type:size]" style={{ opacity: standing ? 1 : 1 - shown }}>
+        <div data-testid="showroom-background" className="absolute inset-0 [container-type:size]" style={{ opacity: 1 - shown }}>
           {/* Same photo as the card, changing with it at the same time. */}
-          {gallery.map((photo, index) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={`${photo}-${index}`}
-              src={photo}
+          {gallery.map((slide, index) => (
+            <SlidePhoto
+              key={`${slide.landscape ?? slide.portrait}-${index}`}
+              slide={slide}
               alt=""
-              aria-hidden="true"
-              style={
-                standing
-                  ? { ...focalStyle(photo), filter: `blur(${STANDING_BACKGROUND_BLUR}px)`, transform: 'scale(1.2)' }
-                  : focalStyle(photo)
-              }
+              hidden
               className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[900ms] ${
                 index === photoIndex ? 'opacity-100' : 'opacity-0'
               }`}
             />
           ))}
-          <div className={`absolute inset-0 ${standing ? 'bg-graphite/60' : 'bg-graphite/50'}`} />
+          <div className="absolute inset-0 bg-graphite/50" />
         </div>
 
         <div
@@ -133,16 +140,14 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
           className="relative z-20 shrink-0 overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.6)] [container-type:size]"
           style={{ width: `${width}px`, height: `${height}px`, borderRadius: `${radius}px` }}
         >
-          {gallery.map((photo, index) => {
+          {gallery.map((slide, index) => {
             const current = index === photoIndex
             return (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={`${photo}-${index}`}
-                src={photo}
+              <SlidePhoto
+                key={`${slide.landscape ?? slide.portrait}-${index}`}
+                slide={slide}
                 alt={current ? 'Estrutura da Aguiar Veículos' : ''}
-                aria-hidden={current ? undefined : true}
-                style={focalStyle(photo)}
+                hidden={!current}
                 className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[900ms] ${
                   current ? 'opacity-100' : 'opacity-0'
                 }`}
@@ -151,11 +156,11 @@ export function Galeria({ photos = [] }: { photos?: string[] }) {
           })}
           {gallery.length > 1 && (
             <div className="absolute bottom-3.5 right-3.5 z-10 flex gap-[7px]">
-              {gallery.map((photo, index) => {
+              {gallery.map((slide, index) => {
                 const current = index === photoIndex
                 return (
                   <button
-                    key={`${photo}-${index}`}
+                    key={`${slide.landscape ?? slide.portrait}-${index}`}
                     type="button"
                     onClick={() => setPhotoIndex(index)}
                     aria-label={`Ver foto ${index + 1} da galeria`}

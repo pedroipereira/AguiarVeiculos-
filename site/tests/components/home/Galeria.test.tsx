@@ -205,8 +205,6 @@ describe('Galeria', () => {
   })
 
   describe('on a screen taller than wide (phone, tablet standing up)', () => {
-    // The photos are 16:9. Filling a 390 x 844 screen would zoom them almost 4x, so the card
-    // stops at the screen width and keeps a 4:3 shape.
     const original = { width: window.innerWidth, height: window.innerHeight }
     beforeEach(() => {
       window.innerWidth = 390
@@ -217,24 +215,23 @@ describe('Galeria', () => {
       window.innerHeight = original.height
     })
 
-    it('starts as a small 4:3 card, not a tall portrait one', () => {
+    it('starts as a small portrait card, 300 x 400', () => {
       render(<Galeria photos={['/a.jpg', '/b.jpg']} />)
-      expect(card()).toHaveStyle({ width: '300px', height: '225px', borderRadius: '18px' })
+      expect(card()).toHaveStyle({ width: '300px', height: '400px', borderRadius: '18px' })
     })
 
-    it('grows only to the screen width, staying 4:3 and losing its rounded corners', () => {
+    it('still grows to fill the whole screen, because it shows a portrait photo there', () => {
       render(<Galeria photos={['/a.jpg', '/b.jpg']} />)
       scrollTo(1)
-      expect(card()).toHaveStyle({ width: '390px', height: '292.5px', borderRadius: '0px' })
+      expect(card()).toHaveStyle({ width: '390px', height: '844px', borderRadius: '0px' })
     })
 
-    it('keeps the background photo, blurred, because the card never covers the screen', () => {
+    it('fades the sharp background out as the card grows, like on any other screen', () => {
       render(<Galeria photos={['/a.jpg', '/b.jpg']} />)
       const background = screen.getByTestId('showroom-background')
       scrollTo(1)
-      expect(background).toHaveStyle({ opacity: '1' })
-      const photo = background.querySelector('img')!
-      expect(photo.style.filter).toContain('blur(')
+      expect(background).toHaveStyle({ opacity: '0' })
+      expect(background.querySelector('img')!.style.filter).toBe('')
     })
   })
 
@@ -244,6 +241,51 @@ describe('Galeria', () => {
       scrollTo(1)
       expect(card()).toHaveStyle({ width: '1024px', height: '768px' })
       expect(screen.getByTestId('showroom-background').querySelector('img')!.style.filter).toBe('')
+    })
+  })
+
+  describe('the portrait version of each photo', () => {
+    const U = 'https://x.co/site-images/0b3f6a52-1c2d-4e5f-8a9b-0c1d2e3f4a5b'
+    const photos = [
+      `${U}-galeria-01-rua-x24.jpg`,
+      `${U}-galeria-02-carros-x27.jpg`,
+      `${U}-galeria-01-rua-vertical-x33.jpg`,
+      `${U}-galeria-02-carros-vertical-x45.jpg`,
+    ]
+
+    it('counts a landscape photo and its portrait version as one slide, not two', () => {
+      render(<Galeria photos={photos} />)
+      expect(screen.getAllByLabelText(/ver foto \d+ da galeria/i)).toHaveLength(2)
+    })
+
+    it('gives portrait screens the portrait file and every other screen the landscape one, through <picture>', () => {
+      const { container } = render(<Galeria photos={photos} />)
+      const picture = container.querySelector('[data-testid=showroom-card] picture')!
+      const source = picture.querySelector('source')!
+      expect(source).toHaveAttribute('media', '(orientation: portrait)')
+      expect(source).toHaveAttribute('srcset', `${U}-galeria-01-rua-vertical-x33.jpg`)
+      expect(picture.querySelector('img')).toHaveAttribute('src', `${U}-galeria-01-rua-x24.jpg`)
+    })
+
+    it('does the same in the background, so it follows the card on portrait screens too', () => {
+      const { container } = render(<Galeria photos={photos} />)
+      const source = container.querySelector('[data-testid=showroom-background] picture source')!
+      expect(source).toHaveAttribute('srcset', `${U}-galeria-01-rua-vertical-x33.jpg`)
+    })
+
+    it('keeps a photo without a portrait version as a plain image', () => {
+      const { container } = render(<Galeria photos={[`${U}-galeria-01-rua-x24.jpg`, `${U}-galeria-02-carros-x27.jpg`, `${U}-galeria-01-rua-vertical-x33.jpg`]} />)
+      expect(container.querySelectorAll('[data-testid=showroom-card] picture')).toHaveLength(1)
+      expect(container.querySelectorAll('[data-testid=showroom-card] img')).toHaveLength(2)
+    })
+
+    it('gives each format its own focus, and picks the right one with the screen orientation', () => {
+      const { container } = render(<Galeria photos={photos} />)
+      const img = container.querySelector('[data-testid=showroom-card] img') as HTMLImageElement
+      expect(img.style.getPropertyValue('--focal-l')).toContain('0.24')
+      expect(img.style.getPropertyValue('--focal-p')).toContain('0.33')
+      expect(img).toHaveClass('[object-position:var(--focal-l,center)_50%]')
+      expect(img).toHaveClass('[@media(orientation:portrait)]:[object-position:var(--focal-p,var(--focal-l,center))_50%]')
     })
   })
 
@@ -258,17 +300,17 @@ describe('Galeria', () => {
     it('centers each photo on the focus in its file name, in the card and in the background', () => {
       const { container } = render(<Galeria photos={photos} />)
       const inCard = Array.from(container.querySelectorAll('[data-testid=showroom-card] img')) as HTMLImageElement[]
-      expect(inCard[0].style.objectPosition).toContain('0.21')
-      expect(inCard[1].style.objectPosition).toContain('0.63')
+      expect(inCard[0].style.getPropertyValue('--focal-l')).toContain('0.21')
+      expect(inCard[1].style.getPropertyValue('--focal-l')).toContain('0.63')
       const inBackground = Array.from(container.querySelectorAll('[data-testid=showroom-background] img')) as HTMLImageElement[]
-      expect(inBackground[0].style.objectPosition).toContain('0.21')
-      expect(inBackground[1].style.objectPosition).toContain('0.63')
+      expect(inBackground[0].style.getPropertyValue('--focal-l')).toContain('0.21')
+      expect(inBackground[1].style.getPropertyValue('--focal-l')).toContain('0.63')
     })
 
     it('keeps the photo centered when the name has no focus', () => {
       const { container } = render(<Galeria photos={photos} />)
       const inCard = Array.from(container.querySelectorAll('[data-testid=showroom-card] img')) as HTMLImageElement[]
-      expect(inCard[2].style.objectPosition).toBe('')
+      expect(inCard[2].style.getPropertyValue('--focal-l')).toBe('')
     })
   })
 
