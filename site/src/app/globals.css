@@ -6,6 +6,13 @@ body {
   @apply bg-graphite text-white;
 }
 
+/* A vehicle page has its own WhatsApp bar on the phone (VehicleStickyBar), so the round button steps aside there. */
+@media (max-width: 767px) {
+  body[data-sticky-bar] .floating-whatsapp {
+    display: none;
+  }
+}
+
 input[type='number']::-webkit-outer-spin-button,
 input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;

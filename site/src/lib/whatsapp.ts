@@ -6,10 +6,15 @@ export function buildWhatsAppUrl(message: string): string {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
 }
 
+/** "Fiat Strada Volcano 2022": what a visitor calls the car. Extra spaces typed into a field are squeezed out. */
+export function buildVehicleLabel(vehicle: Pick<VehiclePublic, 'brand' | 'model' | 'version' | 'year_model'>): string {
+  return [vehicle.brand, vehicle.model, vehicle.version, vehicle.year_model].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim()
+}
+
 export function buildVehicleInterestMessage(
   vehicle: Pick<VehiclePublic, 'brand' | 'model' | 'version' | 'year_model'>,
 ): string {
-  const label = [vehicle.brand, vehicle.model, vehicle.version, vehicle.year_model].filter(Boolean).join(' ')
+  const label = buildVehicleLabel(vehicle)
   return `Olá! Tenho interesse no ${label} que vi no site da Aguiar Veículos. Pode me passar mais informações?`
 }
 

@@ -45,7 +45,7 @@ function CollapsibleSection({ title, children }: { title: string; children: Reac
             stroke="currentColor"
             strokeWidth="2"
             aria-hidden="true"
-            className={`h-4 w-4 text-white/70 transition-transform ${open ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 text-white/85 transition-transform ${open ? 'rotate-180' : ''}`}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
           </svg>
@@ -171,7 +171,7 @@ export function VehicleFilters({
                   />
                   {item.brand}
                 </label>
-                <span className="text-sm text-white/70">{item.count}</span>
+                <span className="text-sm text-white/85">{item.count}</span>
               </div>
             ))}
           </div>
@@ -252,7 +252,7 @@ export function VehicleFilters({
       <button
         type="button"
         onClick={clearFilters}
-        className="mt-2 w-full text-center text-base text-white/70 transition-colors hover:text-aguiar-red-light"
+        className="mt-2 w-full text-center text-base text-white/85 transition-colors hover:text-aguiar-red-light"
       >
         Limpar filtros
       </button>

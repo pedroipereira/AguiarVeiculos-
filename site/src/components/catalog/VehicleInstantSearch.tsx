@@ -59,7 +59,7 @@ export function VehicleInstantSearch({ vehicles, imageUrls, brands }: VehicleIns
         stroke="currentColor"
         strokeWidth="2"
         aria-hidden="true"
-        className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70"
+        className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/85"
       >
         <circle cx="11" cy="11" r="7" />
         <path strokeLinecap="round" d="m21 21-4.3-4.3" />
@@ -82,7 +82,7 @@ export function VehicleInstantSearch({ vehicles, imageUrls, brands }: VehicleIns
               stroke="currentColor"
               strokeWidth="2"
               aria-hidden="true"
-              className="h-5 w-5 shrink-0 text-white/70"
+              className="h-5 w-5 shrink-0 text-white/85"
             >
               <circle cx="11" cy="11" r="7" />
               <path strokeLinecap="round" d="m21 21-4.3-4.3" />
@@ -138,13 +138,13 @@ export function VehicleInstantSearch({ vehicles, imageUrls, brands }: VehicleIns
             </div>
           )}
 
-          <p className="px-4 pt-4 text-xs font-bold uppercase tracking-widest text-white/70 sm:px-8">
+          <p className="px-4 pt-4 text-xs font-bold uppercase tracking-widest text-white/85 sm:px-8">
             {results.length} {results.length === 1 ? 'veículo no estoque' : 'veículos no estoque'}
           </p>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-8">
             {results.length === 0 ? (
-              <p className="text-white/70">Nenhum veículo encontrado.</p>
+              <p className="text-white/85">Nenhum veículo encontrado.</p>
             ) : (
               <ul className="flex flex-col">
                 {results.map((vehicle) => {
@@ -173,7 +173,7 @@ export function VehicleInstantSearch({ vehicles, imageUrls, brands }: VehicleIns
                         )}
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-bold">{label}</p>
-                          <p className="text-sm text-white/70">
+                          <p className="text-sm text-white/85">
                             {vehicle.year_model} • {vehicle.mileage_km.toLocaleString('pt-BR')} km
                           </p>
                         </div>

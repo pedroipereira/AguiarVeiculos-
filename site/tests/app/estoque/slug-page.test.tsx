@@ -72,6 +72,61 @@ describe('/estoque/[slug] page', () => {
     expect(document.body.textContent).not.toContain('DEF4G56')
   })
 
+  it('backs the price with what the store already promises about payment, and offers to simulate financing for this very car', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
+    render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    expect(screen.getByText('Financiamento em até 60x')).toBeInTheDocument()
+    expect(screen.getByText('Aceitamos seu usado na troca')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /simular financiamento/i })).toHaveAttribute(
+      'href',
+      '/financiamento?carro=Fiat+Argo+Drive+1.0+2023',
+    )
+  })
+
+  it('shows the trust promises next to the buy buttons', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
+    render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    expect(screen.getByText('90 dias de garantia para motor e câmbio')).toBeInTheDocument()
+    expect(screen.getByText('Em nome da loja até a transferência')).toBeInTheDocument()
+    expect(screen.queryByText('Procedência verificada')).not.toBeInTheDocument()
+  })
+
+  it('marks the main WhatsApp button, so the phone bar knows when it has left the screen', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
+    const { container } = render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    const cta = container.querySelector('#vehicle-cta')
+    expect(cta).not.toBeNull()
+    expect(cta).toContainElement(screen.getByRole('link', { name: /falar com um vendedor/i }))
+  })
+
+  it('shows the highlight labels in full on a phone: in sentence case, never cut short', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
+    render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    for (const name of ['Quilometragem', 'Combustível']) {
+      expect(screen.getByText(name)).not.toHaveClass('uppercase', 'tracking-widest')
+    }
+  })
+
+  it('leaves no empty row at the end of the ficha técnica on a phone when the number of items is odd', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: { ...argo, engine: '1.6' }, error: null })
+    const { container } = render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    // Marca, Modelo, Versão, Motor: even. Adding one more makes it odd and the grid pads the last row.
+    const padding = container.querySelectorAll('[data-testid="ficha-empty-cell"]')
+    for (const cell of Array.from(padding)) expect(cell).toHaveClass('hidden', 'sm:block')
+  })
+
+  it('does not repeat the price in the ficha técnica', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
+    render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    expect(screen.queryByText('Preço')).not.toBeInTheDocument()
+  })
+
+  it('keeps the line breaks the seller typed in the description', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: { ...argo, description: 'Linha 1\nLinha 2' }, error: null })
+    render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    expect(screen.getByText(/linha 1/i)).toHaveClass('whitespace-pre-line')
+  })
+
   it('shows the "Equipamentos e opcionais" section when the vehicle has optionals marked', async () => {
     maybeSingle.mockResolvedValueOnce({ data: { ...argo, optionals: ['Ar condicionado', 'Outros'] }, error: null })
     render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
@@ -192,6 +247,8 @@ describe('/estoque/[slug] page', () => {
     expect(screen.getByText('Outros carros disponíveis')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /volkswagen polo/i })).toHaveAttribute('href', '/estoque/vw-polo-2022')
     expect(screen.getByRole('link', { name: 'Ver todos' })).toHaveAttribute('href', '/estoque')
+    // Two columns on a phone, like the highlights on the home page, instead of one long column.
+    expect(screen.getByTestId('related-vehicles')).toHaveClass('grid-cols-2', 'lg:grid-cols-3')
   })
 
   it('omits the "Outros carros disponíveis" section when there are no other vehicles', async () => {

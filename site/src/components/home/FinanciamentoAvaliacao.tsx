@@ -13,7 +13,7 @@ const inputClass =
 const numberInputClass = `${inputClass} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`
 const labelClass = 'text-sm font-bold'
 
-export function FinanciamentoAvaliacao() {
+export function FinanciamentoAvaliacao({ defaultVehicle }: { defaultVehicle?: string } = {}) {
   const [financingError, setFinancingError] = useState<string | null>(null)
   const [tradeInError, setTradeInError] = useState<string | null>(null)
 
@@ -76,6 +76,7 @@ export function FinanciamentoAvaliacao() {
                 id="financing-vehicle-label"
                 name="vehicleLabel"
                 placeholder="Ex: Fiat Argo 2023"
+                defaultValue={defaultVehicle}
                 className={inputClass}
               />
             </div>

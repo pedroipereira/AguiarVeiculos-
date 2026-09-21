@@ -71,7 +71,7 @@ export function VehicleSearchSort({
             )}
           </button>
 
-          <p className="whitespace-nowrap text-sm text-white/70">
+          <p className="whitespace-nowrap text-sm text-white/85">
             {resultCount} {resultCount === 1 ? 'veículo' : 'veículos'}
           </p>
         </div>
@@ -95,7 +95,7 @@ export function VehicleSearchSort({
             stroke="currentColor"
             strokeWidth="2"
             aria-hidden="true"
-            className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70"
+            className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/85"
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
           </svg>

@@ -40,6 +40,12 @@ describe('FinanciamentoAvaliacao', () => {
     expect(window.location.href).toContain('financiamento')
   })
 
+  it('starts the financing form with the given car, and sends it like any typed value', async () => {
+    render(<FinanciamentoAvaliacao defaultVehicle="Fiat Strada Volcano 2022" />)
+    const financingForm = within(screen.getByRole('button', { name: /simular financiamento/i }).closest('form')!)
+    expect(financingForm.getByLabelText(/carro de interesse/i)).toHaveValue('Fiat Strada Volcano 2022')
+  })
+
   it('does not ask for a phone number on the financing form', () => {
     render(<FinanciamentoAvaliacao />)
     const financingForm = within(screen.getByRole('button', { name: /simular financiamento/i }).closest('form')!)

@@ -36,7 +36,7 @@ export default async function EstoquePage({ searchParams }: EstoquePageProps) {
   return (
     <main className="bg-graphite px-6 pb-16 pt-32 text-white">
       <div className="mx-auto max-w-[1156px]">
-        <p className="mb-6 text-sm text-white/70">
+        <p className="mb-6 text-sm text-white/85">
           <Link href="/" className="hover:text-aguiar-red-light">
             Início
           </Link>
@@ -48,11 +48,11 @@ export default async function EstoquePage({ searchParams }: EstoquePageProps) {
           <div>
             <div className="mb-2 flex items-center gap-3">
               <span className="h-px w-8 bg-aguiar-red" aria-hidden="true" />
-              <p className="text-sm font-bold uppercase tracking-widest text-white/70">Nossos Veículos</p>
+              <p className="text-sm font-bold uppercase tracking-widest text-white/85">Nossos Veículos</p>
             </div>
             <h1 className="text-3xl font-bold md:text-4xl">Encontre o seu próximo carro</h1>
           </div>
-          <p className="max-w-sm text-white/70">
+          <p className="max-w-sm text-white/85">
             Seminovos selecionados e revisados. Filtre por marca, preço e mais — qualquer dúvida é
             só chamar no WhatsApp.
           </p>
@@ -73,7 +73,7 @@ export default async function EstoquePage({ searchParams }: EstoquePageProps) {
             allVehicleImageUrls={allVehicleImageUrls}
           >
             {vehicles.length === 0 ? (
-              <p className="text-white/70">Nenhum veículo encontrado com esses filtros.</p>
+              <p className="text-white/85">Nenhum veículo encontrado com esses filtros.</p>
             ) : (
               <div className="grid grid-cols-2 gap-4 sm:gap-8 lg:grid-cols-3">
                 {vehicles.map((vehicle) => (
