@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react'
 import { useSwipe } from '@/lib/use-swipe'
 
@@ -133,14 +134,19 @@ export function VehicleLightbox({ images, label, index, onIndexChange, onClose }
           {...(zoomed ? {} : swipe)}
           className={`absolute inset-x-0 top-0 bottom-[env(safe-area-inset-bottom)] ${zoomed ? 'overflow-auto' : 'overflow-hidden'}`}
         >
-          <div data-testid="vehicle-viewer-zoom" style={{ width: `${zoomed ? ZOOM * 100 : 100}%`, height: `${zoomed ? ZOOM * 100 : 100}%` }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <div
+            data-testid="vehicle-viewer-zoom"
+            className="relative"
+            style={{ width: `${zoomed ? ZOOM * 100 : 100}%`, height: `${zoomed ? ZOOM * 100 : 100}%` }}
+          >
+            <Image
               src={images[index]}
               alt={label}
+              fill
+              sizes="100vw"
               draggable={false}
               onClick={toggleZoom}
-              className={`h-full w-full object-contain ${zoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}
+              className={`object-contain ${zoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}
             />
           </div>
         </div>

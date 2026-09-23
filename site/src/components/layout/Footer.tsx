@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { SOCIAL_LINKS } from '@/lib/social-links'
 
@@ -20,8 +21,13 @@ export function Footer() {
       <div data-testid="footer-panel" className="mx-auto max-w-[1156px] rounded-3xl border border-white/15 p-8 md:p-12">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
           <div className="flex flex-col items-start gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logos/logo-horizontal-transparente.png" alt="Aguiar Veículos" className="h-16 w-auto" />
+            <Image
+              src="/images/logos/logo-horizontal-transparente.png"
+              alt="Aguiar Veículos"
+              width={1750}
+              height={765}
+              className="h-16 w-auto"
+            />
             <p className="max-w-xs text-base tracking-wide">Realizando sonhos sobre quatro rodas.</p>
             <div className="mt-3 min-h-40 w-full max-w-xs flex-1 overflow-hidden rounded-xl border border-white/15">
               <iframe title="Mapa até a Aguiar Veículos" src={MAP_EMBED} loading="lazy" className="h-full min-h-40 w-full" />

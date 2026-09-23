@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import type { ReactNode } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getSiteSetting } from '@/lib/queries/site-settings'
@@ -69,12 +70,15 @@ export async function Experiencia({ client, tone = 'dark' }: { client: SupabaseC
           {locationVideoUrl ? (
             <video data-testid="location-video" src={locationVideoUrl} controls className={mediaClass} />
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src="/images/fotos/showroom-fachada.jpg"
-              alt="Fachada da Aguiar Veículos"
-              className={`${mediaClass} object-left`}
-            />
+            <div className="relative aspect-[9/16] w-full overflow-hidden rounded-3xl">
+              <Image
+                src="/images/fotos/showroom-fachada.jpg"
+                alt="Fachada da Aguiar Veículos"
+                fill
+                sizes="(min-width: 1024px) 416px, 100vw"
+                className="object-cover object-left"
+              />
+            </div>
           )}
         </div>
 

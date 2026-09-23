@@ -1,5 +1,6 @@
 'use client'
 
+import NextImage from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { useSwipe } from '@/lib/use-swipe'
 import { VehicleLightbox } from './VehicleLightbox'
@@ -83,13 +84,15 @@ export function VehicleGallery({ images, label }: { images: string[]; label: str
         style={{ aspectRatio: `${Math.min(MAX_RATIO, Math.max(MIN_RATIO, firstRatio))}` }}
         className="relative -mx-6 overflow-hidden bg-graphite sm:mx-0 sm:rounded-lg"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <NextImage
           src={images[activeIndex]}
           alt={label}
+          fill
+          priority
+          sizes="(min-width: 1024px) 600px, 100vw"
           draggable={false}
           onClick={() => openViewer(null)}
-          className="h-full w-full cursor-zoom-in object-cover"
+          className="cursor-zoom-in object-cover"
         />
 
         {count > 1 && (
@@ -151,8 +154,7 @@ export function VehicleGallery({ images, label }: { images: string[]; label: str
                   current ? 'border-aguiar-red' : 'border-transparent opacity-70 hover:opacity-100'
                 }`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                <NextImage src={url} alt="" fill sizes="88px" className="object-cover" />
               </button>
             )
           })}

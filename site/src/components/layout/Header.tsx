@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -51,8 +52,14 @@ export function Header() {
       >
         <div className="flex items-center justify-between">
           <Link href="/" className="shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logos/logo-horizontal-transparente.png" alt="Aguiar Veículos" className="h-12 w-auto" />
+            <Image
+              src="/images/logos/logo-horizontal-transparente.png"
+              alt="Aguiar Veículos"
+              width={1750}
+              height={765}
+              priority
+              className="h-12 w-auto"
+            />
           </Link>
 
           <nav className="hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 md:flex">

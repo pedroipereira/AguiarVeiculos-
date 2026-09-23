@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import type { Testimonial } from '@/lib/types'
 
@@ -18,8 +19,7 @@ export function LinksCarousel({ testimonials }: { testimonials: Testimonial[] })
   return (
     <div className="w-full">
       <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl shadow-sm">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={current.image_url} alt={current.caption} className="h-full w-full object-cover" />
+        <Image src={current.image_url} alt={current.caption} fill sizes="384px" className="object-cover" />
       </div>
 
       {testimonials.length > 1 && (

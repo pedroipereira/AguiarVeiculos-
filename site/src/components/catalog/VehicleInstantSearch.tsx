@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { VehiclePublic } from '@/lib/types'
@@ -162,10 +163,11 @@ export function VehicleInstantSearch({ vehicles, imageUrls, brands }: VehicleIns
                         className="flex items-center gap-4 py-3 transition-colors hover:bg-white/5"
                       >
                         {imageUrls[vehicle.id] ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <Image
                             src={imageUrls[vehicle.id]}
                             alt={label}
+                            width={80}
+                            height={64}
                             className="h-16 w-20 shrink-0 rounded-md object-cover"
                           />
                         ) : (

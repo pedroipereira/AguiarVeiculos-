@@ -112,7 +112,9 @@ describe('Experiencia', () => {
     expect(screen.queryByTestId('location-video')).not.toBeInTheDocument()
     const photo = screen.getByAltText(/fachada da aguiar veículos/i)
     expect(photo).toHaveAttribute('src', '/images/fotos/showroom-fachada.jpg')
-    expect(photo).toHaveClass('aspect-[9/16]')
+    // The 9:16 frame lives on the wrapper (next/image's `fill` needs a sized, positioned
+    // parent); the photo itself just covers it.
+    expect(photo.parentElement).toHaveClass('aspect-[9/16]')
   })
 
   it('fills the invitation out with connecting words, keeping the same meaning', async () => {

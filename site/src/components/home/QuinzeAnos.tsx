@@ -41,10 +41,15 @@ export function QuinzeAnos({ tone = 'dark', imageUrl }: { tone?: SectionTone; im
   return (
     <Section id="quinze-anos" eyebrow="Quem está por trás" title="Sobre a Aguiar Veículos" tone={tone} contained>
       <div className="flex flex-col items-start gap-10 lg:flex-row">
+        {/* Photo comes from the CMS at an unknown size/crop, so next/image (which needs a real
+            width+height or would force a crop via `fill`) doesn't fit without either guessing
+            wrong or losing the "never distort/crop a photo" rule — plain <img> is the safe choice. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl ?? FALLBACK_IMAGE}
           alt="Antonio Aguiar, fundador da Aguiar Veículos"
+          loading="lazy"
+          decoding="async"
           className="w-full max-w-md rounded-2xl lg:w-5/12"
         />
         <div className="flex-1 space-y-4">

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getPublishedTestimonials } from '@/lib/queries/testimonials'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
@@ -67,8 +68,14 @@ export default async function LinksPage() {
     <main className="no-select flex min-h-screen flex-col items-center bg-graphite px-6 py-16 text-white">
       <PreventPinchZoom />
       <div className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/logos/logo-horizontal-transparente.png" alt="Aguiar Veículos" className="h-20 w-auto" />
+        <Image
+          src="/images/logos/logo-horizontal-transparente.png"
+          alt="Aguiar Veículos"
+          width={1750}
+          height={765}
+          priority
+          className="h-20 w-auto"
+        />
 
         <p className="text-white/85">
           Veículos novos e seminovos em Presidente Dutra - MA.{' '}

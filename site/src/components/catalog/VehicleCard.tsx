@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import type { VehiclePublic } from '@/lib/types'
 import { formatPriceFromCents } from '@/lib/format'
@@ -25,11 +26,12 @@ export function VehicleCard({ vehicle, imageUrl, photoCount, surface = 'light' }
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden">
         {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={imageUrl}
             alt={label}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
           <div

@@ -27,6 +27,9 @@ const clamp = (value: number) => Math.min(1, Math.max(0, value))
 const IMAGE_FOCUS =
   '[object-position:var(--focal-l,center)_50%] [@media(orientation:portrait)]:[object-position:var(--focal-p,var(--focal-l,center))_50%]'
 
+// Portrait and landscape are different files (different crops), picked by the browser via
+// `<picture>`/`<source media>` — next/image only resizes one given file, it can't switch
+// between two source files by orientation, so this stays a plain <img>.
 function SlidePhoto({ slide, alt, hidden, className }: { slide: Slide; alt: string; hidden?: boolean; className: string }) {
   const image = (
     // eslint-disable-next-line @next/next/no-img-element
@@ -34,6 +37,8 @@ function SlidePhoto({ slide, alt, hidden, className }: { slide: Slide; alt: stri
       src={slide.landscape ?? slide.portrait}
       alt={alt}
       aria-hidden={hidden ? true : undefined}
+      loading="lazy"
+      decoding="async"
       style={slideFocusVars(slide) as React.CSSProperties}
       className={`${className} ${IMAGE_FOCUS}`}
     />

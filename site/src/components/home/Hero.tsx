@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { buttonBase, buttonVariants } from '@/components/ui/buttonStyles'
@@ -16,12 +17,14 @@ export function Hero({ imageUrl }: { imageUrl?: string }) {
         className="relative -mx-6 aspect-square [container-type:size] md:absolute md:inset-0 md:mx-0 md:aspect-auto"
         style={focalX ? ({ '--focal-x': focalX } as React.CSSProperties) : undefined}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={imageUrl ?? FALLBACK_IMAGE}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover object-[var(--focal-x,center)_50%] md:object-[var(--focal-x,center)_38%]"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[var(--focal-x,center)_50%] md:object-[var(--focal-x,center)_38%]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-graphite/30 via-transparent to-transparent md:from-graphite/20 md:via-graphite/60 md:to-graphite/70" />
         {/* Blends the bottom edge of the photo into the page black under it. */}

@@ -144,7 +144,10 @@ describe('DepoimentosCarousel', () => {
     it('lets the photo fill the card edge to edge, with no frame around it', () => {
       render(<DepoimentosCarousel testimonials={makeTestimonials(5)} />)
       const photo = screen.getAllByAltText('Depoimento de cliente Aguiar Veículos')[0]
-      expect(photo).toHaveClass('aspect-[3/4]', 'w-full', 'object-cover')
+      // The 3:4 frame lives on the wrapper (next/image's `fill` needs a sized, positioned
+      // parent); the photo itself just covers it.
+      expect(photo).toHaveClass('object-cover')
+      expect(photo.parentElement).toHaveClass('aspect-[3/4]', 'w-full')
       expect(photo.className).not.toMatch(/(^|\s)(mb-\d|m-\d|rounded)/)
     })
 

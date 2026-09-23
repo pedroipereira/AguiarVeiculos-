@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import type { Testimonial } from '@/lib/types'
 import { isLightTone, type SectionTone } from '@/components/ui/Section'
@@ -103,13 +104,16 @@ export function DepoimentosCarousel({
                 }`}
               >
                 {/* The photo fills the card edge to edge, with no frame around it. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={testimonial.image_url}
-                  alt={readByScreenReaders ? 'Depoimento de cliente Aguiar Veículos' : ''}
-                  aria-hidden={readByScreenReaders ? undefined : true}
-                  className="aspect-[3/4] w-full object-cover"
-                />
+                <div className="relative aspect-[3/4] w-full">
+                  <Image
+                    src={testimonial.image_url}
+                    alt={readByScreenReaders ? 'Depoimento de cliente Aguiar Veículos' : ''}
+                    aria-hidden={readByScreenReaders ? undefined : true}
+                    fill
+                    sizes="(min-width: 640px) 277px, 100vw"
+                    className="object-cover"
+                  />
+                </div>
                 <p
                   aria-hidden={readByScreenReaders ? undefined : true}
                   className={`p-5 text-sm leading-relaxed ${light ? 'text-graphite/80' : 'text-white/90'}`}
