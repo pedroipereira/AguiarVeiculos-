@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import type { Vehicle } from '@/lib/types'
 import {
   daysInStock, hasMarginDefined, countStockFilters, applyStockFilter, matchesStockSearch, parseTurnoverThreshold,
   countInStock,
@@ -6,9 +7,14 @@ import {
 
 const NOW = new Date('2026-09-01T12:00:00.000Z')
 
-function makeVehicle(overrides: Partial<Record<string, any>> = {}) {
+type StockFixture = Pick<Vehicle,
+  'id' | 'status' | 'brand' | 'model' | 'version' | 'color' | 'year_model' |
+  'acquisition_cost_cents' | 'min_sale_price_cents' | 'acquired_at' | 'created_at'
+>
+
+function makeVehicle(overrides: Partial<StockFixture> = {}): StockFixture {
   return {
-    id: 'v-1', status: 'available', brand: 'Fiat', model: 'Argo', version: 'Drive', color: 'Branco',
+    id: 'v-1', status: 'available', brand: 'Fiat', model: 'Argo', version: 'Drive', color: 'Branco', year_model: 2023,
     acquisition_cost_cents: null, min_sale_price_cents: null,
     acquired_at: null, created_at: '2026-08-01T00:00:00.000Z',
     ...overrides,

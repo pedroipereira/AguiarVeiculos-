@@ -16,8 +16,10 @@ Para usar um ambiente Supabase já existente, configure suas variáveis em vez d
 ## Verificações
 
 - `npm test`: suíte Vitest, com Supabase simulado e sem dependência de rede.
-- `npx tsc --noEmit`: verificação de tipos.
+- `npm run typecheck`: verificação de tipos, variáveis e parâmetros sem uso, incluindo os testes.
 - `npm run build`: build de produção; requer a configuração de ambiente e pode precisar de rede para baixar fontes.
+
+O antigo comando `npm run lint` foi retirado porque não havia ESLint instalado nem configurado. A checagem de tipos não é apresentada como lint.
 
 ## Variáveis
 

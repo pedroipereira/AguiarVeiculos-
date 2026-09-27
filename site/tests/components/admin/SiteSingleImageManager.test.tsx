@@ -6,7 +6,7 @@ const { adminReplaceSiteImage } = vi.hoisted(() => ({
 }))
 vi.mock('@/app/actions/site-images', () => ({ adminReplaceSiteImage }))
 
-const upload = vi.fn(async () => ({ error: null }))
+const upload = vi.fn<() => Promise<{ error: { message: string } | null }>>(async () => ({ error: null }))
 const getPublicUrl = vi.fn((path: string) => ({ data: { publicUrl: `https://cdn.test/${path}` } }))
 vi.mock('@/lib/supabase/browser', () => ({
   createBrowserSupabaseClient: () => ({ storage: { from: () => ({ upload, getPublicUrl }) } }),

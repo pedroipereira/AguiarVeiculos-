@@ -9,11 +9,11 @@
 
 ## Verificação
 
-Em `site/`, use `npm ci`, `npm test`, `npx tsc --noEmit` e `npm run build` para alterações de código. O build depende das variáveis de ambiente da aplicação e pode precisar de rede para as fontes. Nunca copie valores de produção para a descrição do pull request.
+Em `site/`, use `npm ci`, `npm test`, `npm run typecheck` e `npm run build` para alterações de código. O build depende das variáveis de ambiente da aplicação e pode precisar de rede para as fontes. Nunca copie valores de produção para a descrição do pull request.
 
 Para alterações somente documentais, valide caminhos e links relativos e confira que nenhum arquivo de aplicação ou configuração de deploy foi alterado.
 
-O script `npm run lint` existente usa `next lint`; não o considere uma verificação concluída sem confirmar sua compatibilidade com a versão instalada. A organização documental não altera esse script.
+O comando antigo `npm run lint` foi retirado: não havia ESLint instalado nem configuração para executar a análise. `npm run typecheck` verifica também os testes e rejeita variáveis e parâmetros sem uso; essa checagem não é apresentada como lint.
 
 ## Banco de dados
 

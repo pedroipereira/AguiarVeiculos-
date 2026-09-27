@@ -59,39 +59,12 @@ export function AgendaIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
-export function RelatoriosIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <IconBase {...props}>
-      <path d="M6.5 3h7l4 4v13a1 1 0 0 1-1 1h-10a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
-      <path d="M13.5 3v4a1 1 0 0 0 1 1h4M8.5 12.5h7M8.5 16h7" />
-    </IconBase>
-  )
-}
-
 export function SiteIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <IconBase {...props}>
       <rect x="3" y="4.5" width="18" height="15" rx="2" />
       <circle cx="8.3" cy="9.8" r="1.4" />
       <path d="M21 15.5l-5.2-5.2a1 1 0 0 0-1.4 0L4 20" />
-    </IconBase>
-  )
-}
-
-export function SearchIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <IconBase {...props}>
-      <circle cx="11" cy="11" r="7" />
-      <path d="M21 21l-4.3-4.3" />
-    </IconBase>
-  )
-}
-
-export function BellIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <IconBase {...props}>
-      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9Z" />
-      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
     </IconBase>
   )
 }

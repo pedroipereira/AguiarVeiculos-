@@ -11,13 +11,12 @@ import {
   EstoqueIcon,
   LeadsIcon,
   AgendaIcon,
-  RelatoriosIcon,
   SiteIcon,
 } from './icons'
 
 interface NavItem {
   label: string
-  href?: string
+  href: string
   Icon: ComponentType<SVGProps<SVGSVGElement>>
 }
 
@@ -26,7 +25,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Estoque', href: '/admin/veiculos', Icon: EstoqueIcon },
   { label: 'Clientes', href: '/admin/leads', Icon: LeadsIcon },
   { label: 'Agenda', href: '/admin/agenda', Icon: AgendaIcon },
-  { label: 'Relatórios', Icon: RelatoriosIcon },
   { label: 'Site', href: '/admin/imagens', Icon: SiteIcon },
 ]
 
@@ -58,20 +56,6 @@ export function AdminSidebar({ vehicles }: AdminSidebarProps) {
 
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map(({ label, href, Icon }) => {
-          if (!href) {
-            return (
-              <span
-                key={label}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold text-support-gray/50"
-              >
-                <Icon />
-                {label}
-                <span className="ml-auto rounded-full bg-support-gray/10 px-2 py-0.5 text-[10px] font-bold uppercase text-support-gray">
-                  Em breve
-                </span>
-              </span>
-            )
-          }
           const active = pathname === href || (href !== '/admin' && pathname.startsWith(`${href}/`))
           return (
             <Link

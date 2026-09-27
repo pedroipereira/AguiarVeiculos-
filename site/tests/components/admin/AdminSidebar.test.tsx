@@ -8,7 +8,7 @@ vi.mock('@/app/actions/leads', () => ({ adminCreateManualLead: vi.fn() }))
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
 
 describe('AdminSidebar', () => {
-  it('links the built sections and keeps unbuilt ones as non-clickable "Em breve" items', () => {
+  it('links only the implemented sections', () => {
     render(<AdminSidebar vehicles={[]} />)
 
     expect(screen.getByRole('link', { name: /painel/i })).toHaveAttribute('href', '/admin')
@@ -19,11 +19,8 @@ describe('AdminSidebar', () => {
 
     expect(screen.queryByText('Metas')).not.toBeInTheDocument()
 
-    for (const label of ['Relatórios']) {
-      expect(screen.queryByRole('link', { name: new RegExp(label, 'i') })).not.toBeInTheDocument()
-      expect(screen.getByText(label)).toBeInTheDocument()
-    }
-    expect(screen.getAllByText(/em breve/i)).toHaveLength(1)
+    expect(screen.queryByText('Relatórios')).not.toBeInTheDocument()
+    expect(screen.queryByText(/em breve/i)).not.toBeInTheDocument()
   })
 
   it('highlights the nav item matching the current route', () => {

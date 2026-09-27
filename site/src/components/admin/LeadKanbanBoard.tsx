@@ -45,7 +45,6 @@ function LeadKanbanColumn({ stage, leads, vehicles, onMoveToStage }: LeadKanbanC
 
 export function LeadKanbanBoard({ leads, vehicles }: LeadKanbanBoardProps) {
   const [saleFormLead, setSaleFormLead] = useState<Lead | null>(null)
-  const [saleStageError, setSaleStageError] = useState<string | null>(null)
   // A small activation distance lets a plain click on a card's buttons pass
   // through as a click instead of being swallowed as a (zero-distance) drag.
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
@@ -66,7 +65,6 @@ export function LeadKanbanBoard({ leads, vehicles }: LeadKanbanBoardProps) {
   function handleStageChange(lead: Lead, stage: LeadStage) {
     if (stage === lead.stage) return
     if (requiresSaleCompletion(lead, stage)) {
-      setSaleStageError(null)
       setSaleFormLead(lead)
       return
     }
@@ -108,17 +106,8 @@ export function LeadKanbanBoard({ leads, vehicles }: LeadKanbanBoardProps) {
               leads={leads}
               defaultBuyerLeadId={saleFormLead.id}
               onCancel={() => setSaleFormLead(null)}
-              onSaved={async () => {
-                try {
-                  await adminUpdateLeadStage(saleFormLead.id, 'vendeu')
-                  setSaleFormLead(null)
-                  setSaleStageError(null)
-                } catch {
-                  setSaleStageError('Venda registrada, mas não foi possível mover o lead para "Comprou". Tente mover manualmente pelo quadro.')
-                }
-              }}
+              onSaved={() => setSaleFormLead(null)}
             />
-            {saleStageError && <p className="mt-2 text-sm text-aguiar-red">{saleStageError}</p>}
           </div>
         </div>
       )}
