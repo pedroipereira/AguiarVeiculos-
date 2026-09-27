@@ -189,7 +189,15 @@ export function VehicleSummaryPanel({ vehicle, imageUrls, totalCostCents, thresh
               )}
               <button
                 type="button"
-                onClick={() => { if (window.confirm('Excluir este veículo?')) adminDeleteVehicle(vehicle.id) }}
+                onClick={async () => {
+                  if (!window.confirm('Excluir este veículo?')) return
+                  try {
+                    await adminDeleteVehicle(vehicle.id)
+                    router.push('/admin/veiculos')
+                  } catch {
+                    window.alert('Não foi possível excluir o veículo. Tente novamente.')
+                  }
+                }}
                 className="rounded-lg bg-red-50 px-4 py-2.5 text-sm font-bold text-aguiar-red transition-colors hover:bg-red-100"
               >
                 Remover carro
