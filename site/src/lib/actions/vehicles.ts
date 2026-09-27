@@ -3,7 +3,7 @@ import type { z } from 'zod'
 import type { VehicleStatus } from '../types'
 import { vehicleFormSchema, markVehicleSoldSchema } from '../validation'
 import { buildVehicleSlug } from '../format'
-import { normalizeTransmission, normalizeFuelType, normalizeColor } from '../normalize'
+import { normalizeTransmission, normalizeFuelType, normalizeColor, capitalizeWords, normalizePlate } from '../normalize'
 import { updateLeadStage } from './leads'
 
 export interface SaveVehicleInput extends z.input<typeof vehicleFormSchema> {
@@ -17,9 +17,11 @@ export async function saveVehicle(client: SupabaseClient, input: SaveVehicleInpu
   const values = vehicleFormSchema.parse(input)
 
   const payload = {
-    brand: values.brand,
-    model: values.model,
-    version: values.version ?? null,
+    // Capitalized (e.g. "fiat" -> "Fiat") so a lowercase/all-caps entry never
+    // fragments listings or facets that group by the exact stored string.
+    brand: capitalizeWords(values.brand),
+    model: capitalizeWords(values.model),
+    version: values.version ? capitalizeWords(values.version) : null,
     year_model: values.yearModel,
     year_fabrication: values.yearFabrication,
     mileage_km: values.mileageKm,
@@ -31,13 +33,14 @@ export async function saveVehicle(client: SupabaseClient, input: SaveVehicleInpu
     transmission: normalizeTransmission(values.transmission),
     color: normalizeColor(values.color),
     description: values.description ?? null,
-    engine: values.engine ?? null,
+    engine: values.engine ? capitalizeWords(values.engine) : null,
     fuel_tank_liters: values.fuelTankLiters ?? null,
     seating_capacity: values.seatingCapacity ?? null,
-    body_type: values.bodyType ?? null,
+    body_type: values.bodyType ? capitalizeWords(values.bodyType) : null,
     doors: values.doors ?? null,
     horsepower: values.horsepower ?? null,
-    plate: values.plate ?? null,
+    // Plates read as one all-caps token by convention, not word-by-word.
+    plate: normalizePlate(values.plate),
     is_featured: values.isFeatured ?? false,
     acquisition_cost_cents: values.acquisitionCostCents ?? null,
     min_sale_price_cents: values.minSalePriceCents ?? null,
@@ -48,6 +51,10 @@ export async function saveVehicle(client: SupabaseClient, input: SaveVehicleInpu
     fipe_value_cents: values.fipeValueCents ?? null,
     fipe_fetched_at: values.fipeFetchedAt ?? null,
     optionals: values.optionals,
+    // Omitted entirely (not just left null) when not given, so editing other
+    // fields on a sold vehicle never touches its status — this form doesn't
+    // offer "sold" at all (see the schema comment on `status`).
+    ...(values.status ? { status: values.status } : {}),
   }
 
   let vehicleId = input.id

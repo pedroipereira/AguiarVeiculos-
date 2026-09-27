@@ -8,6 +8,7 @@ vi.mock('@/lib/supabase/server', () => ({
       const chain: any = {
         select: () => chain,
         eq: () => chain,
+        in: () => chain,
         // `order` must stay chainable (EstoqueDestaque chains `.limit()` after it)
         // while the whole chain remains awaitable directly (Depoimentos awaits
         // `.order(...)` as its terminal call), so the chain is thenable too.

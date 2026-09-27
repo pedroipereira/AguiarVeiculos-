@@ -23,6 +23,7 @@ vi.mock('@/lib/supabase/server', () => ({
       return {
         select: function () { return this },
         eq: function () { return this },
+        in: function () { return this },
         ilike: function () { return this },
         gte: function () { return this },
         lte: function () { return this },

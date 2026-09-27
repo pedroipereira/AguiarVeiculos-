@@ -35,12 +35,16 @@ const SORT_COLUMNS: Record<VehicleSort, { column: string; ascending: boolean }> 
   mileage_asc: { column: 'mileage_km', ascending: true },
 }
 
+// A vehicle "in preparation" is shown everywhere an available one is (with an
+// "Em breve" tag) — only a sold vehicle is hidden from public listings.
+const PUBLIC_STATUSES = ['available', 'preparing']
+
 export async function getFeaturedVehicles(client: SupabaseClient, limit = 6): Promise<VehiclePublic[]> {
   const { data, error } = await client
     .from('vehicles_public')
     .select('*')
     .eq('is_featured', true)
-    .eq('status', 'available')
+    .in('status', PUBLIC_STATUSES)
     .order('created_at', { ascending: false })
     .limit(limit)
   if (error) throw error
@@ -52,7 +56,7 @@ export async function getRelatedVehicles(client: SupabaseClient, excludeId: stri
   const { data, error } = await client
     .from('vehicles_public')
     .select('*')
-    .eq('status', 'available')
+    .in('status', PUBLIC_STATUSES)
     .neq('id', excludeId)
     .order('created_at', { ascending: false })
     .limit(limit)
@@ -61,7 +65,7 @@ export async function getRelatedVehicles(client: SupabaseClient, excludeId: stri
 }
 
 export async function getAvailableVehicles(client: SupabaseClient, filters: VehicleFilters = {}): Promise<VehiclePublic[]> {
-  let query = client.from('vehicles_public').select('*').eq('status', 'available')
+  let query = client.from('vehicles_public').select('*').in('status', PUBLIC_STATUSES)
   // Brand options come from the checkbox list built off real distinct values,
   // so an exact match against any of the checked brands is safe here.
   if (filters.brands && filters.brands.length > 0) query = query.in('brand', filters.brands)
@@ -85,7 +89,7 @@ export async function getVehicleFacets(client: SupabaseClient): Promise<VehicleF
   const { data, error } = await client
     .from('vehicles_public')
     .select('brand, price_cents, mileage_km, transmission, fuel_type')
-    .eq('status', 'available')
+    .in('status', PUBLIC_STATUSES)
     .order('brand', { ascending: true })
   if (error) throw error
   const rows = (data ?? []) as Pick<VehiclePublic, 'brand' | 'price_cents' | 'mileage_km' | 'transmission' | 'fuel_type'>[]
@@ -116,7 +120,7 @@ export async function getSitemapVehicles(client: SupabaseClient): Promise<{ slug
   const { data, error } = await client
     .from('vehicles_public')
     .select('slug, updated_at')
-    .eq('status', 'available')
+    .in('status', PUBLIC_STATUSES)
     .order('updated_at', { ascending: false })
   if (error) throw error
   return data as { slug: string; updated_at: string }[]
@@ -129,7 +133,7 @@ export async function getVehicleBySlug(client: SupabaseClient, slug: string): Pr
     .from('vehicles_public')
     .select('*')
     .eq('slug', slug)
-    .eq('status', 'available')
+    .in('status', PUBLIC_STATUSES)
     .maybeSingle()
   if (error) throw error
   return (data as VehiclePublic) ?? null

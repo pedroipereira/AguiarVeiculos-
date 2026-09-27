@@ -61,6 +61,16 @@ describe('VehicleCard', () => {
     expect(screen.getByRole('link')).toHaveClass('bg-white', 'text-graphite')
   })
 
+  it('shows an "Em breve" tag when the vehicle is still in preparation', () => {
+    render(<VehicleCard vehicle={{ ...vehicle, status: 'preparing' }} />)
+    expect(screen.getByText('Em breve')).toBeInTheDocument()
+  })
+
+  it('hides the "Em breve" tag for an available vehicle', () => {
+    render(<VehicleCard vehicle={vehicle} />)
+    expect(screen.queryByText('Em breve')).not.toBeInTheDocument()
+  })
+
   it('can be a dark panel for the black home page, with readable light text', () => {
     render(<VehicleCard vehicle={vehicle} surface="dark" />)
     const card = screen.getByRole('link')

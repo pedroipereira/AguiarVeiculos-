@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { normalizeTransmission, normalizeFuelType, normalizeColor, withCurrentValue } from '@/lib/normalize'
+import {
+  normalizeTransmission, normalizeFuelType, normalizeColor, withCurrentValue, capitalizeWords, normalizePlate,
+} from '@/lib/normalize'
 
 describe('normalizeTransmission', () => {
   it('collapses case and accent variants to the canonical value', () => {
@@ -9,8 +11,8 @@ describe('normalizeTransmission', () => {
     expect(normalizeTransmission('manual')).toBe('Manual')
   })
 
-  it('keeps an unrecognized value as-is instead of rejecting it', () => {
-    expect(normalizeTransmission('Semi-automático')).toBe('Semi-automático')
+  it('keeps an unrecognized value, but still capitalizes it, instead of rejecting it', () => {
+    expect(normalizeTransmission('semi-automático')).toBe('Semi-automático')
   })
 
   it('returns null for empty or missing input', () => {
@@ -33,6 +35,27 @@ describe('normalizeColor', () => {
   it('collapses case and accent variants to the canonical value', () => {
     expect(normalizeColor('branco')).toBe('Branco')
     expect(normalizeColor('VERMELHO')).toBe('Vermelho')
+  })
+})
+
+describe('capitalizeWords', () => {
+  it('capitalizes the first letter of each word, lowercasing the rest', () => {
+    expect(capitalizeWords('hb20 comfort')).toBe('Hb20 Comfort')
+    expect(capitalizeWords('FIAT')).toBe('Fiat')
+    expect(capitalizeWords('  volkswagen  ')).toBe('Volkswagen')
+  })
+})
+
+describe('normalizePlate', () => {
+  it('uppercases and trims the plate', () => {
+    expect(normalizePlate('abc1d23')).toBe('ABC1D23')
+    expect(normalizePlate('  Abc1D23  ')).toBe('ABC1D23')
+  })
+
+  it('returns null for empty or missing input', () => {
+    expect(normalizePlate('')).toBeNull()
+    expect(normalizePlate(null)).toBeNull()
+    expect(normalizePlate(undefined)).toBeNull()
   })
 })
 

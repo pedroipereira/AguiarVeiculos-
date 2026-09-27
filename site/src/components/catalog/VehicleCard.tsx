@@ -40,6 +40,11 @@ export function VehicleCard({ vehicle, imageUrl, photoCount, surface = 'light' }
             className={`h-full w-full ${dark ? 'bg-white/10' : 'bg-support-gray/20'}`}
           />
         )}
+        {vehicle.status === 'preparing' && (
+          <span className="absolute left-2 top-2 rounded-full bg-aguiar-red px-2.5 py-1 text-xs font-bold text-white">
+            Em breve
+          </span>
+        )}
         {photoCount != null && photoCount > 0 && (
           <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-graphite/60 px-2 py-1 text-xs font-bold text-white">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">

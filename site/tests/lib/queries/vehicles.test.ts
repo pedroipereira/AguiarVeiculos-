@@ -22,31 +22,32 @@ function makeFakeClient(rows: any[]) {
 }
 
 describe('getFeaturedVehicles', () => {
-  it('queries vehicles_public filtered by is_featured', async () => {
+  it('queries vehicles_public filtered by is_featured, including preparing vehicles', async () => {
     const client = makeFakeClient([{ id: '1', slug: 'a', is_featured: true }])
     const result = await getFeaturedVehicles(client as any, 6)
     expect(client.from).toHaveBeenCalledWith('vehicles_public')
+    expect(client.chain.in).toHaveBeenCalledWith('status', ['available', 'preparing'])
     expect(result).toEqual([{ id: '1', slug: 'a', is_featured: true }])
   })
 })
 
 describe('getSitemapVehicles', () => {
-  it('queries vehicles_public for slug and updated_at, restricted to available vehicles', async () => {
+  it('queries vehicles_public for slug and updated_at, including preparing vehicles', async () => {
     const client = makeFakeClient([{ slug: 'a', updated_at: '2026-09-01T00:00:00.000Z' }])
     const result = await getSitemapVehicles(client as any)
     expect(client.from).toHaveBeenCalledWith('vehicles_public')
     expect(client.chain.select).toHaveBeenCalledWith('slug, updated_at')
-    expect(client.chain.eq).toHaveBeenCalledWith('status', 'available')
+    expect(client.chain.in).toHaveBeenCalledWith('status', ['available', 'preparing'])
     expect(result).toEqual([{ slug: 'a', updated_at: '2026-09-01T00:00:00.000Z' }])
   })
 })
 
 describe('getRelatedVehicles', () => {
-  it('excludes the given vehicle, stays within available status, and limits the count', async () => {
+  it('excludes the given vehicle, includes preparing vehicles, and limits the count', async () => {
     const client = makeFakeClient([{ id: '2', slug: 'b' }])
     const result = await getRelatedVehicles(client as any, '1', 3)
     expect(client.from).toHaveBeenCalledWith('vehicles_public')
-    expect(client.chain.eq).toHaveBeenCalledWith('status', 'available')
+    expect(client.chain.in).toHaveBeenCalledWith('status', ['available', 'preparing'])
     expect(client.chain.neq).toHaveBeenCalledWith('id', '1')
     expect(client.chain.limit).toHaveBeenCalledWith(3)
     expect(result).toEqual([{ id: '2', slug: 'b' }])
@@ -66,6 +67,12 @@ describe('getAvailableVehicles', () => {
     expect(result).toEqual([{ id: '2', slug: 'b', brand: 'Fiat' }])
   })
 
+  it('includes preparing vehicles alongside available ones, excluding sold', async () => {
+    const client = makeFakeClient([])
+    await getAvailableVehicles(client as any, {})
+    expect(client.chain.in).toHaveBeenCalledWith('status', ['available', 'preparing'])
+  })
+
   it('matches any of the selected brands with an exact "in" filter', async () => {
     const client = makeFakeClient([{ id: '2', slug: 'b', brand: 'Fiat' }])
     await getAvailableVehicles(client as any, { brands: ['Fiat', 'Audi'] })
@@ -75,7 +82,7 @@ describe('getAvailableVehicles', () => {
   it('omits the brand filter entirely when no brands are selected', async () => {
     const client = makeFakeClient([])
     await getAvailableVehicles(client as any, { brands: [] })
-    expect(client.chain.in).not.toHaveBeenCalled()
+    expect(client.chain.in).not.toHaveBeenCalledWith('brand', expect.anything())
   })
 
   it('keeps minYear as a lower bound and price as a range', async () => {
@@ -123,6 +130,7 @@ describe('getVehicleFacets', () => {
       { brand: 'Fiat', price_cents: 6000000, mileage_km: 50000, transmission: 'Manual', fuel_type: null },
     ])
     const result = await getVehicleFacets(client as any)
+    expect(client.chain.in).toHaveBeenCalledWith('status', ['available', 'preparing'])
     expect(result).toEqual({
       brands: [
         { brand: 'Fiat', count: 2 },
@@ -153,6 +161,6 @@ describe('getVehicleBySlug', () => {
     const client = makeFakeClient([])
     await getVehicleBySlug(client as any, 'vw-polo-2026')
     expect(client.chain.eq).toHaveBeenCalledWith('slug', 'vw-polo-2026')
-    expect(client.chain.eq).toHaveBeenCalledWith('status', 'available')
+    expect(client.chain.in).toHaveBeenCalledWith('status', ['available', 'preparing'])
   })
 })

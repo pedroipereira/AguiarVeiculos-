@@ -39,6 +39,38 @@ describe('saveVehicle', () => {
     )
   })
 
+  it('capitalizes brand, model, version, body type, and engine before saving', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      brand: 'fiat', model: 'ARGO', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+      version: 'trekking', bodyType: 'hatch', engine: 'turbo 200',
+    })
+    expect(chain.insert).toHaveBeenCalledWith(expect.objectContaining({
+      brand: 'Fiat', model: 'Argo', version: 'Trekking', body_type: 'Hatch', engine: 'Turbo 200',
+    }))
+  })
+
+  it('uppercases the plate before saving', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+      plate: 'abc1d23',
+    })
+    expect(chain.insert).toHaveBeenCalledWith(expect.objectContaining({ plate: 'ABC1D23' }))
+  })
+
+  it('accepts fractional values for fuel tank liters and horsepower', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+      fuelTankLiters: 54.5, horsepower: 116.18,
+    })
+    expect(chain.insert).toHaveBeenCalledWith(expect.objectContaining({ fuel_tank_liters: 54.5, horsepower: 116.18 }))
+  })
+
   it('includes engine, fuel tank, and seating capacity when provided', async () => {
     const { from, chain } = makeClient()
     await saveVehicle({ from } as any, {
@@ -180,6 +212,36 @@ describe('saveVehicle', () => {
       { vehicle_id: 'existing-id', category: 'pintura', description: null, amount_cents: 50000 },
       { vehicle_id: 'existing-id', category: 'outros', description: 'Alarme', amount_cents: 20000 },
     ])
+  })
+
+  it('includes the chosen status when creating or editing a vehicle', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+      status: 'preparing',
+    })
+    expect(chain.insert).toHaveBeenCalledWith(expect.objectContaining({ status: 'preparing' }))
+  })
+
+  it('omits status entirely when not given, so an existing sold status is never touched by an unrelated edit', async () => {
+    const { from, chain } = makeClient()
+    await saveVehicle({ from } as any, {
+      id: 'existing-id', brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+    })
+    const payload = chain.update.mock.calls[0][0]
+    expect(payload).not.toHaveProperty('status')
+  })
+
+  it('rejects "sold" as a status — that must only be set through the dedicated sale flow', async () => {
+    const { from, chain } = makeClient()
+    await expect(saveVehicle({ from } as any, {
+      brand: 'Fiat', model: 'Argo', yearModel: 2023, yearFabrication: 2023,
+      mileageKm: 32000, priceCents: 6490000, imagePaths: [],
+      status: 'sold',
+    } as any)).rejects.toThrow()
+    expect(chain.insert).not.toHaveBeenCalled()
   })
 
   it('rejects an expense with category "outros" and no description', async () => {

@@ -3,7 +3,7 @@ import { EstoqueDestaque } from '@/components/home/EstoqueDestaque'
 
 function fakeClient(rows: any[], imageRows: any[] = []) {
   const vehicleChain: any = {
-    select: () => vehicleChain, eq: () => vehicleChain, order: () => vehicleChain,
+    select: () => vehicleChain, eq: () => vehicleChain, in: () => vehicleChain, order: () => vehicleChain,
     limit: async () => ({ data: rows, error: null }),
   }
   const imageChain: any = {

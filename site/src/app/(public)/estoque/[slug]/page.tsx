@@ -161,6 +161,9 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
               <p className="text-xs font-bold uppercase tracking-widest text-white/85">
                 {vehicle.brand} • {vehicle.year_model}
               </p>
+              {vehicle.status === 'preparing' && (
+                <span className="rounded-full bg-aguiar-red px-2.5 py-1 text-xs font-bold text-white">Em breve</span>
+              )}
             </div>
             <h1 className="text-3xl font-bold md:text-4xl">
               {vehicle.brand} {vehicle.model} {vehicle.version}

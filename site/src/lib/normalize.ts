@@ -2,12 +2,28 @@ function stripAccents(value: string): string {
   return value.normalize('NFD').replace(/[̀-ͯ]/g, '')
 }
 
+/** "hb20 comfort" -> "Hb20 Comfort": first letter of each word up, the rest down. */
+export function capitalizeWords(value: string): string {
+  return value
+    .trim()
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
+/** Plates read as one all-caps token by convention (e.g. "ABC1D23"), not word-by-word. */
+export function normalizePlate(value: string | null | undefined): string | null {
+  if (!value) return null
+  const trimmed = value.trim()
+  return trimmed ? trimmed.toUpperCase() : null
+}
+
 /**
  * Builds a normalizer that maps free-text input to one of a fixed set of
  * canonical values whenever it recognizes a match (case/accent-insensitive),
  * so admins typing "automatico", "Automático", or "AUTOMÁTICO" all collapse
  * to the same stored value instead of creating separate public filter pills.
- * Unrecognized input is kept as-is (trimmed) rather than rejected, so a
+ * Unrecognized input is kept, capitalized, rather than rejected, so a
  * genuinely new value never gets blocked.
  */
 function makeNormalizer(canonicalValues: string[]) {
@@ -16,7 +32,7 @@ function makeNormalizer(canonicalValues: string[]) {
     if (!value) return null
     const trimmed = value.trim()
     if (!trimmed) return null
-    return byKey.get(stripAccents(trimmed).toLowerCase()) ?? trimmed
+    return byKey.get(stripAccents(trimmed).toLowerCase()) ?? capitalizeWords(trimmed)
   }
 }
 

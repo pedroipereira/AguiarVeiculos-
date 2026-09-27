@@ -52,6 +52,11 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
   const [bodyType, setBodyType] = useState(vehicle?.body_type ?? '')
   const [horsepower, setHorsepower] = useState(vehicle?.horsepower != null ? String(vehicle.horsepower) : '')
   const [plate, setPlate] = useState(vehicle?.plate ?? '')
+  // "sold" never appears here — that status is only set through the dedicated
+  // "Marcar como vendido" flow, which also records sale price/date/buyer.
+  const [status, setStatus] = useState<'available' | 'preparing'>(
+    vehicle?.status === 'preparing' ? 'preparing' : 'available',
+  )
   const [plateLookupError, setPlateLookupError] = useState<string | null>(null)
   const [imageError, setImageError] = useState<string | null>(null)
   const [priceReais, setPriceReais] = useState(vehicle ? String(vehicle.price_cents / 100) : '')
@@ -217,6 +222,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
         fipeValueCents: fipeSelection?.valueCents ?? vehicle?.fipe_value_cents ?? undefined,
         fipeFetchedAt: fipeSelection?.fetchedAt ?? vehicle?.fipe_fetched_at ?? undefined,
         optionals,
+        ...(vehicle?.status !== 'sold' ? { status } : {}),
       })
       router.push('/admin/veiculos')
     } catch {
@@ -361,7 +367,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
 
             <div className="flex flex-col gap-1.5">
               <label htmlFor="fuelTankLiters" className={carDataLabelClass}>Tanque de combustível (litros)</label>
-              <input id="fuelTankLiters" name="fuelTankLiters" type="number" defaultValue={vehicle?.fuel_tank_liters ?? ''} placeholder="Ex.: 55" className={inputClass} />
+              <input id="fuelTankLiters" name="fuelTankLiters" type="number" step="0.1" defaultValue={vehicle?.fuel_tank_liters ?? ''} placeholder="Ex.: 54.5" className={inputClass} />
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="seatingCapacity" className={carDataLabelClass}>Quantidade de pessoas</label>
@@ -379,7 +385,7 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
 
             <div className="flex flex-col gap-1.5">
               <label htmlFor="horsepower" className={carDataLabelClass}>Potência (cv)</label>
-              <input id="horsepower" name="horsepower" type="number" value={horsepower} onChange={(e) => setHorsepower(e.target.value)} placeholder="Ex.: 116" className={inputClass} />
+              <input id="horsepower" name="horsepower" type="number" step="0.1" value={horsepower} onChange={(e) => setHorsepower(e.target.value)} placeholder="Ex.: 116" className={inputClass} />
             </div>
           </div>
 
@@ -424,10 +430,26 @@ export function VehicleForm({ vehicle, images = [], expenses: initialExpenses = 
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-sm font-bold">
-        <input type="checkbox" name="isFeatured" defaultChecked={vehicle?.is_featured} className="h-4 w-4 accent-aguiar-red" />
-        Destacar na Home
-      </label>
+      <div className="flex flex-wrap items-center gap-6">
+        {vehicle?.status !== 'sold' && (
+          <div className="flex items-center gap-2">
+            <label htmlFor="status" className="text-sm font-bold">Situação</label>
+            <select
+              id="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value as 'available' | 'preparing')}
+              className={inputClass}
+            >
+              <option value="available">Disponível</option>
+              <option value="preparing">Em preparação</option>
+            </select>
+          </div>
+        )}
+        <label className="flex items-center gap-2 text-sm font-bold">
+          <input type="checkbox" name="isFeatured" defaultChecked={vehicle?.is_featured} className="h-4 w-4 accent-aguiar-red" />
+          Destacar na Home
+        </label>
+      </div>
 
       <div className="flex flex-col gap-3 border-t border-support-gray/15 pt-6">
         <h2 className="text-lg font-bold">Opcionais</h2>

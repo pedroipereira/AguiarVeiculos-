@@ -5,9 +5,10 @@ import { notFound } from 'next/navigation'
 vi.mock('next/navigation', () => ({ notFound: vi.fn(() => { throw new Error('NEXT_NOT_FOUND') }) }))
 
 // `vi.hoisted` so the mock factory below can read these (Vitest 2.1.1 hoisting bug).
-const { maybeSingle, vehicleEq, imageRows, relatedRows } = vi.hoisted(() => ({
+const { maybeSingle, vehicleEq, vehicleIn, imageRows, relatedRows } = vi.hoisted(() => ({
   maybeSingle: vi.fn(),
   vehicleEq: vi.fn(),
+  vehicleIn: vi.fn(),
   imageRows: { current: [] as any[] },
   relatedRows: { current: [] as any[] },
 }))
@@ -31,6 +32,7 @@ vi.mock('@/lib/supabase/server', () => ({
       const vehicleChain: any = {
         select: () => vehicleChain,
         eq: (column: string, value: unknown) => { vehicleEq(column, value); return vehicleChain },
+        in: (column: string, value: unknown) => { vehicleIn(column, value); return vehicleChain },
         neq: () => vehicleChain,
         order: () => vehicleChain,
         limit: () => vehicleChain,
@@ -57,6 +59,7 @@ describe('/estoque/[slug] page', () => {
     imageRows.current = []
     relatedRows.current = []
     vehicleEq.mockClear()
+    vehicleIn.mockClear()
   })
 
   it('renders vehicle details, price, and a WhatsApp interest link, never the plate', async () => {
@@ -276,11 +279,23 @@ describe('/estoque/[slug] page', () => {
     expect(notFound).toHaveBeenCalled()
   })
 
-  it('shows the friendly 404 for a sold vehicle — the query itself filters on status available', async () => {
+  it('shows the friendly 404 for a sold vehicle — the query itself filters status', async () => {
     // A sold vehicle is excluded by the query, so the page receives null and 404s.
     maybeSingle.mockResolvedValueOnce({ data: null, error: null })
     await expect(VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) })).rejects.toThrow('NEXT_NOT_FOUND')
-    expect(vehicleEq).toHaveBeenCalledWith('status', 'available')
+    expect(vehicleIn).toHaveBeenCalledWith('status', ['available', 'preparing'])
+  })
+
+  it('shows an "Em breve" tag when the vehicle is still in preparation', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: { ...argo, status: 'preparing' }, error: null })
+    render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    expect(screen.getByText('Em breve')).toBeInTheDocument()
+  })
+
+  it('hides the "Em breve" tag for an available vehicle', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: argo, error: null })
+    render(await VehicleDetailPage({ params: Promise.resolve({ slug: 'fiat-argo-2023' }) }))
+    expect(screen.queryByText('Em breve')).not.toBeInTheDocument()
   })
 
   it('includes a Vehicle JSON-LD block describing the car', async () => {

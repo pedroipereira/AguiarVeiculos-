@@ -4,6 +4,7 @@ const { chain } = vi.hoisted(() => ({
   chain: {
     select: vi.fn(function (this: any) { return this }),
     eq: vi.fn(function (this: any) { return this }),
+    in: vi.fn(function (this: any) { return this }),
     order: vi.fn(function (this: any) { return this }),
     then: (resolve: (value: { data: any[]; error: null }) => void) =>
       resolve({

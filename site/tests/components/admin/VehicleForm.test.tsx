@@ -62,6 +62,24 @@ describe('VehicleForm', () => {
     ))
   })
 
+  it('accepts fractional values for fuel tank and horsepower', async () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/tanque de combustível/i), { target: { value: '54.5' } })
+    fireEvent.change(screen.getByLabelText(/potência/i), { target: { value: '116.18' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ fuelTankLiters: 54.5, horsepower: 116.18 } as any),
+    ))
+  })
+
   it('saves body type, doors, and horsepower when filled in', async () => {
     render(<VehicleForm />)
     fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
@@ -408,6 +426,67 @@ describe('VehicleForm — FIPE', () => {
       fipeBrandCode: '21', fipeModelCode: '437', fipeYearCode: '1987-1',
       fipeValueCents: 614700, fipeFetchedAt: '2026-08-01T12:00:00.000Z',
     })))
+  })
+})
+
+describe('VehicleForm — situação', () => {
+  it('defaults a new vehicle to "Disponível" and saves that status', async () => {
+    render(<VehicleForm />)
+    expect(screen.getByLabelText(/situação/i)).toHaveValue('available')
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'available' } as any),
+    ))
+  })
+
+  it('lets a vehicle be registered or edited as "Em preparação"', async () => {
+    render(<VehicleForm />)
+    fireEvent.change(screen.getByLabelText(/marca/i), { target: { value: 'Fiat' } })
+    fireEvent.change(screen.getByLabelText(/^modelo/i), { target: { value: 'Argo' } })
+    fireEvent.change(screen.getByLabelText(/ano do modelo/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/ano de fabricação/i), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText(/quilometragem/i), { target: { value: '32000' } })
+    fireEvent.change(screen.getByLabelText(/^preço$/i), { target: { value: '64900' } })
+    fireEvent.change(screen.getByLabelText(/situação/i), { target: { value: 'preparing' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'preparing' } as any),
+    ))
+  })
+
+  it('pre-selects the current status when editing an available or preparing vehicle', () => {
+    const vehicle = { id: 'v-1', brand: 'Fiat', model: 'Argo', status: 'preparing' } as any
+    render(<VehicleForm vehicle={vehicle} />)
+    expect(screen.getByLabelText(/situação/i)).toHaveValue('preparing')
+  })
+
+  it('hides the situação selector for a vehicle that is already sold — that status only changes via the sale flow', () => {
+    const vehicle = { id: 'v-1', brand: 'Fiat', model: 'Argo', status: 'sold' } as any
+    render(<VehicleForm vehicle={vehicle} />)
+    expect(screen.queryByLabelText(/situação/i)).not.toBeInTheDocument()
+  })
+
+  it('never sends a status for a vehicle that is already sold, leaving it untouched', async () => {
+    const vehicle = {
+      id: 'v-1', brand: 'Fiat', model: 'Argo', year_model: 2023, year_fabrication: 2023,
+      mileage_km: 32000, price_cents: 6490000, status: 'sold',
+    } as any
+    render(<VehicleForm vehicle={vehicle} />)
+    fireEvent.click(screen.getByRole('button', { name: /^salvar$/i }))
+
+    await waitFor(() => expect(adminSaveVehicle).toHaveBeenCalledWith(
+      expect.not.objectContaining({ status: expect.anything() }),
+    ))
   })
 })
 
