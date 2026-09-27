@@ -1,2 +1,12 @@
-.vercel
-.env*
+# Credenciais locais; o exemplo sem valores deve ser versionado
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+node_modules/
+.next/
+.vercel/
+coverage/
+*.tsbuildinfo
+.DS_Store
