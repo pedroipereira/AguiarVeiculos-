@@ -1,23 +1,45 @@
-# Aguiar Veículos — Site
+# Site e painel — Aguiar Veículos
 
-## Rodando localmente
-1. `npm install`
-2. `npx supabase start` (requer Docker) — sobe Postgres/Auth/Storage local e aplica `supabase/migrations/`.
-3. Copie `.env.local.example` para `.env.local` e preencha com a `API URL`/`anon key` impressas pelo `supabase start`.
-4. `npm run dev`
+Aplicação Next.js com React, TypeScript e Supabase. A estrutura do repositório está no [README principal](../README.md) quando este diretório estiver no repositório público.
 
-## Testes
-`npm test` — roda a suíte Vitest (unitários e de integração leve, com Supabase mockado; nenhum teste depende de rede).
+## Desenvolvimento local
 
-## Deploy (Vercel + Supabase de produção)
-1. Crie um projeto Supabase de produção (via painel Supabase, ou pelo conector MCP autorizado nesta sessão) e rode `npx supabase link` + `npx supabase db push` para aplicar as migrations.
-2. No painel do projeto Supabase: Authentication → crie o usuário admin (e-mail/senha) que vai logar em `/admin`.
-   Importante: mantenha o cadastro público (signup) desativado nas configurações de Auth do projeto Supabase — a política de RLS dá a qualquer usuário autenticado acesso total às tabelas `vehicles` (incluindo a placa) e `leads`, então o único jeito de manter isso restrito ao time da loja é nunca permitir que estranhos criem conta.
-3. Na Vercel: importe o repositório, aponte o "Root Directory" para `site/`, e configure as variáveis de ambiente:
-   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (do projeto Supabase de produção).
-     Não configure a `service role key`: nenhum código do site a usa, e ela ignoraria todas as políticas de RLS.
-   - `PUXAPLACA_TOKEN` (nunca em texto puro fora do painel da Vercel)
-   - `NEXT_PUBLIC_WHATSAPP_NUMBER=5598991030107`
-4. Deploy. Depois de validar o preview, aponte o DNS de `aguiarveiculos.com` para a Vercel (registro A/CNAME conforme instruções da própria Vercel ao adicionar o domínio no projeto).
-5. Cadastre os primeiros depoimentos e a foto/história do "15 anos" pelo painel `/admin` antes de divulgar o link (itens em aberto 1 e 8 da spec).
-6. Troque a foto de `public/images/fotos/showroom-fachada.jpg` por uma foto real da loja em alta resolução (a atual tem só 548x415 px e é usada no Hero, na Galeria e na prévia de compartilhamento). Não existem mais placeholders `loja-*.jpg` nem `antonio-aguiar.jpg` nessa pasta.
+Execute os comandos a partir desta pasta (`site/`):
+
+1. Instale as dependências com `npm ci`.
+2. Inicie o Supabase local com `npx supabase start` (requer Docker).
+3. Copie `.env.local.example` para `.env.local` e preencha com a URL e a chave pública do ambiente de desenvolvimento.
+4. Execute `npm run dev`.
+
+Para usar um ambiente Supabase já existente, configure suas variáveis em vez de iniciar a instância local. Não use dados de produção para testes que alteram registros.
+
+## Verificações
+
+- `npm test`: suíte Vitest, com Supabase simulado e sem dependência de rede.
+- `npx tsc --noEmit`: verificação de tipos.
+- `npm run build`: build de produção; requer a configuração de ambiente e pode precisar de rede para baixar fontes.
+
+## Variáveis
+
+| Nome | Uso |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave pública do Supabase |
+| `PUXAPLACA_TOKEN` | Consulta de placas, somente no servidor |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Número de atendimento |
+
+Não versionar `.env.local` nem configurar a chave service role para esta aplicação. O exemplo contém apenas nomes e dados públicos de configuração.
+
+## Banco e conteúdo
+
+Migrações ficam em `supabase/migrations/`. O `seed.sql` contém dados de demonstração para desenvolvimento; não executá-lo em produção como parte do deploy.
+
+Veículos, clientes, depoimentos e imagens cadastrados são mantidos no Supabase. Alterar arquivos locais ou publicar código não modifica automaticamente esse conteúdo.
+
+Crie as contas administrativas pelo ambiente de autenticação autorizado e mantenha o cadastro público desativado: o modelo atual concede acesso administrativo aos usuários autenticados.
+
+## Produção
+
+O repositório público é `pedroipereira/AguiarVeiculos-`, com branch `main` e Root Directory `site/` na Vercel. Atualizar a `main` pode publicar o site. Use uma branch de trabalho e um pull request para revisar alterações.
+
+Os materiais comerciais, fotos originais e entregas de marketing ficam no workspace interno da agência. Não copiá-los para o repositório público.
