@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const { getUser, deleteChain, revalidatePath } = vi.hoisted(() => ({
   getUser: vi.fn(),
-  deleteChain: { delete: vi.fn(() => deleteChain), eq: vi.fn(async () => ({ error: null })) } as any,
+  deleteChain: { update: vi.fn(() => deleteChain), delete: vi.fn(() => deleteChain), eq: vi.fn(async () => ({ error: null })) } as any,
   revalidatePath: vi.fn(),
 }))
 
@@ -43,4 +43,12 @@ describe('admin server actions — explicit auth check', () => {
     getUser.mockResolvedValue({ data: { user: null }, error: null })
     await expect(adminMarkVehicleSold('v-1', { salePriceCents: 100, soldAt: '2026-08-31' })).rejects.toThrow('Não autenticado.')
   })
+
+  it('refreshes the client board after a successful sale without a second client-side action', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'u-1' } }, error: null })
+    await adminMarkVehicleSold('v-1', { salePriceCents: 6200000, soldAt: '2026-09-02' })
+    expect(revalidatePath).toHaveBeenCalledWith('/admin/leads')
+    expect(revalidatePath).toHaveBeenCalledWith('/admin/veiculos')
+  })
+
 })

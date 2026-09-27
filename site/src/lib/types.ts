@@ -57,7 +57,6 @@ export interface Vehicle extends VehiclePublic {
   fipe_year_code: string | null
   fipe_value_cents: number | null
   fipe_fetched_at: string | null
-  optionals: string[]
 }
 
 export interface VehicleImage {

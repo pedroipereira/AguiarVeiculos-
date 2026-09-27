@@ -107,47 +107,57 @@ describe('LeadKanbanBoard', () => {
     expect(screen.getByText('Registrar venda')).toBeInTheDocument()
   })
 
-  it('moves the lead to "Comprou" only after the sale form is saved', async () => {
-    adminMarkVehicleSold.mockResolvedValue(undefined)
-    const leads = [makeLead({ id: 'a', stage: 'negociando', vehicle_id: 'v-1' })]
+  it.each([
+    ['original buyer', 'a'],
+    ['different buyer', 'b'],
+    ['no linked buyer', ''],
+  ])('saves the sale for %s without repeating a lead-stage update', async (_, buyerId) => {
+    let finishSale: (() => void) | undefined
+    adminMarkVehicleSold.mockImplementationOnce(() => new Promise<void>((resolve) => { finishSale = resolve }))
+    const leads = [
+      makeLead({ id: 'a', stage: 'negociando', vehicle_id: 'v-1' }),
+      makeLead({ id: 'b', name: 'Ana', stage: 'novo' }),
+    ]
     render(<LeadKanbanBoard leads={leads} vehicles={VEHICLES} />)
 
-    fireEvent.click(screen.getByLabelText('Mais opções'))
-    fireEvent.click(screen.getByRole('button', { name: 'Comprou' }))
+    // The original buyer is in the negotiating column; choose its menu explicitly.
+    const negotiating = screen.getByText('Negociando').parentElement?.parentElement as HTMLElement
+    fireEvent.click(within(negotiating).getByLabelText('Mais opções'))
+    fireEvent.click(within(negotiating).getByRole('button', { name: 'Comprou' }))
 
     fireEvent.change(screen.getByLabelText(/preço de venda/i), { target: { value: '62000' } })
     selectSaleDate('2')
+    fireEvent.change(screen.getByLabelText(/comprador/i), { target: { value: buyerId } })
     fireEvent.click(screen.getByRole('button', { name: /confirmar venda/i }))
 
-    await waitFor(() => expect(adminMarkVehicleSold).toHaveBeenCalledWith('v-1', {
-      salePriceCents: 6200000, soldAt: '2026-09-02', buyerLeadId: 'a',
-    }))
-    expect(adminUpdateLeadStage).toHaveBeenCalledWith('a', 'vendeu')
+    expect(adminMarkVehicleSold).toHaveBeenCalledTimes(1)
+    expect(adminMarkVehicleSold).toHaveBeenCalledWith('v-1', {
+      salePriceCents: 6200000, soldAt: '2026-09-02', buyerLeadId: buyerId || undefined,
+    })
+    expect(screen.getByText('Registrar venda')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /confirmar venda/i })).toBeDisabled()
+    expect(adminUpdateLeadStage).not.toHaveBeenCalled()
+
+    await act(async () => { finishSale?.() })
+    expect(screen.queryByText('Registrar venda')).not.toBeInTheDocument()
+    expect(adminUpdateLeadStage).not.toHaveBeenCalled()
   })
 
-  it('shows an inline error and keeps the sale in place when the post-sale stage update fails', async () => {
-    adminMarkVehicleSold.mockResolvedValue(undefined)
-    adminUpdateLeadStage.mockRejectedValueOnce(new Error('boom'))
+  it('keeps the form open and does not move the lead when the sale action fails', async () => {
+    adminMarkVehicleSold.mockRejectedValueOnce(new Error('boom'))
     const leads = [makeLead({ id: 'a', stage: 'negociando', vehicle_id: 'v-1' })]
     render(<LeadKanbanBoard leads={leads} vehicles={VEHICLES} />)
 
     fireEvent.click(screen.getByLabelText('Mais opções'))
     fireEvent.click(screen.getByRole('button', { name: 'Comprou' }))
-
     fireEvent.change(screen.getByLabelText(/preço de venda/i), { target: { value: '62000' } })
     selectSaleDate('2')
     fireEvent.click(screen.getByRole('button', { name: /confirmar venda/i }))
 
-    await waitFor(() => expect(adminMarkVehicleSold).toHaveBeenCalledWith('v-1', {
-      salePriceCents: 6200000, soldAt: '2026-09-02', buyerLeadId: 'a',
-    }))
-    await waitFor(() =>
-      expect(
-        screen.getByText('Venda registrada, mas não foi possível mover o lead para "Comprou". Tente mover manualmente pelo quadro.'),
-      ).toBeInTheDocument(),
-    )
-    // The sale-completion modal stays open (not rolled back) so the admin can see the error.
+    expect(await screen.findByText(/não foi possível registrar a venda/i)).toBeInTheDocument()
     expect(screen.getByText('Registrar venda')).toBeInTheDocument()
+    expect(adminUpdateLeadStage).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /confirmar venda/i })).not.toBeDisabled()
   })
 
   it('keeps the lead in its current stage when the sale form is cancelled', () => {

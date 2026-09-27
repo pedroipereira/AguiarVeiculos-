@@ -21,8 +21,9 @@ describe('AdminTopbar', () => {
     expect(screen.getAllByText('Administrador').length).toBeGreaterThan(0)
   })
 
-  it('renders a search input', () => {
+  it('does not offer search or notifications without an implemented action', () => {
     render(<AdminTopbar userEmail={null} />)
-    expect(screen.getByRole('searchbox', { name: /buscar/i })).toBeInTheDocument()
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /notificações/i })).not.toBeInTheDocument()
   })
 })

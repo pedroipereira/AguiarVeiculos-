@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, within, act } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import { vi } from 'vitest'
 import { VehicleGallery } from '@/components/catalog/VehicleGallery'
 

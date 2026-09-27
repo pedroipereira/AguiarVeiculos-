@@ -285,6 +285,7 @@ describe('markVehicleSold', () => {
     })
     expect(from).toHaveBeenCalledWith('leads')
     expect(chain.update).toHaveBeenCalledWith({ stage: 'vendeu' })
+    expect(chain.update.mock.calls.filter(([payload]: [{ stage?: string }]) => payload.stage === 'vendeu')).toHaveLength(1)
     expect(chain.eq).toHaveBeenCalledWith('id', '11111111-1111-1111-1111-111111111111')
   })
 

@@ -47,6 +47,7 @@ export async function adminMarkVehicleSold(id: string, input: MarkVehicleSoldInp
   await assertAdmin(client)
   await vehicleActions.markVehicleSold(client, id, input)
   revalidatePath('/admin/veiculos')
+  revalidatePath('/admin/leads')
   revalidatePath('/estoque')
   revalidatePath('/')
 }

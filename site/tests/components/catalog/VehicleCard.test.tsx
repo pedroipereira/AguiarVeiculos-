@@ -1,11 +1,14 @@
 import { render, screen } from '@testing-library/react'
 import { VehicleCard } from '@/components/catalog/VehicleCard'
+import type { VehiclePublic } from '@/lib/types'
 
-const vehicle = {
+const vehicle: VehiclePublic = {
   id: 'v1', slug: 'fiat-argo-2023', brand: 'Fiat', model: 'Argo', version: 'Drive',
   year_model: 2023, year_fabrication: 2023, mileage_km: 32000, price_cents: 6490000,
   fuel_type: 'Flex', transmission: 'Manual', color: 'Prata', description: null,
   is_featured: false, status: 'available' as const, created_at: '', updated_at: '',
+  engine: null, fuel_tank_liters: null, seating_capacity: null, body_type: null,
+  doors: null, horsepower: null, optionals: [],
 }
 
 describe('VehicleCard', () => {
